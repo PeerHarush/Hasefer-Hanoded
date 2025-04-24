@@ -14,7 +14,6 @@ function History() {
 <Table bordered hover>
   <thead>
     <tr>
-      
       <th>תאריך </th>
       <th> תיאור הפעולה</th>
       <th>סטטוס </th>
@@ -22,7 +21,6 @@ function History() {
   </thead>
   <tbody>
   <tr>
-        <td></td>
         <td></td>
         <td></td>
         <td></td>

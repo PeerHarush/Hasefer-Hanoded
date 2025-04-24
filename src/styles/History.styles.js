@@ -6,7 +6,7 @@ export const Wrapper = styled.div`
  text-align: center;
   h1 {
   margin: 20px;
-    color: #333;
+  color: #333;
 
   }
 
