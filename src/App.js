@@ -26,7 +26,8 @@ function App() {
         <Route path="/History" element={<History/>} />
         <Route path="/Transaction" element={<Transaction/>} />
         <Route path="/AddBook" element={<AddBook/>} />
-      </Routes>
+
+ </Routes>
       <Footer/>
     </div>
   );
