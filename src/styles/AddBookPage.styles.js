@@ -71,7 +71,6 @@ export const Button = styled.button`
   border-radius: 6px;
   cursor: pointer;
   margin-top:0.15rem;
-
   &:hover {
     background: #bfa78a;
   }

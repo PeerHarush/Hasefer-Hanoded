@@ -3,6 +3,7 @@ import { FormGroup, GenresContainer } from '../styles/GenereSelect.styles';
 import { Label, Input } from '../styles/LoginRegisterPage.styles';
 
 
+
 const genresList = [
     { id: "fantasy", name: "פנטזיה" },
     { id: "thriller", name: "מתח" },
