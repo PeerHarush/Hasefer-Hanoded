@@ -65,6 +65,9 @@ function Home() {
         מעבר לדף profile
       </button>
       
+
+
+      
     </div>
     
   );
