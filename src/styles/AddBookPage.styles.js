@@ -36,26 +36,24 @@ export const Title = styled.h2`
 export const Subtitle = styled.p`
   text-align: center;
   color:rgb(0, 0, 0);
-  margin-bottom: 2rem;
 `;
 
 export const FormGroup = styled.div`
-  margin-bottom: 20px;
+  margin-bottom: 0.45rem;
 `;
 
 export const Label = styled.label`
-  display: block;
-  color: #333;
-  font-size: 16px;
+  font-weight: 500;
+  margin-top:0.15rem;
+  margin-bottom:0.15rem;
 `;
 
 export const Input = styled.input`
   width: 100%;
-  padding: 10px;
-  font-size: 14px;
+  padding: 0.55rem;
   border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
+  border-radius: 6px;
+  font-size:1rem;
 
   &:focus {
     border-color: rgb(130, 76, 6);
@@ -72,6 +70,7 @@ export const Button = styled.button`
   font-size: 1rem;
   border-radius: 6px;
   cursor: pointer;
+  margin-top:0.15rem;
 
   &:hover {
     background: #bfa78a;
