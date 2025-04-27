@@ -54,6 +54,9 @@ function Header() {
             <li className="nav-item">
             <Link to="/Profile" className="nav-link"> לפרופיל שלי</Link>
             </li>
+            <li className="nav-item">
+            <Link to="/AddBook" className="nav-link"> הוספת ספר </Link>
+            </li>
           </ul>
 
        
