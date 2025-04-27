@@ -11,7 +11,7 @@ import Profile from "./pages/UserProfilePage";
 import WishList from "./pages/WishListPage"
 import History from "./pages/HistoryPage"
 import Transaction  from './pages/TransactionPage.jsx';
-
+import AddBook from "./pages/AddBookPage.jsx"
 function App() {
   return (
     <div>
@@ -24,6 +24,7 @@ function App() {
         <Route path="/WishList" element={<WishList/>} />
         <Route path="/History" element={<History/>} />
         <Route path="/Transaction" element={<Transaction/>} />
+        <Route path="/AddBook" element={<AddBook/>} />
       </Routes>
       <Footer/>
     </div>
