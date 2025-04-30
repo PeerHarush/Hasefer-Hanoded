@@ -13,7 +13,10 @@ function Home() {
   const goToProfile = () => {
     navigate('/Profile');
   };
-
+  const messeges = () => {
+    navigate('/MessagesPage');
+  };
+  
   
 
   return (
@@ -64,6 +67,24 @@ function Home() {
       >
         מעבר לדף profile
       </button>
+      
+
+      <button
+        onClick={messeges}
+        style={{
+          padding: '10px 20px',
+          fontSize: '16px',
+          borderRadius: '10px',
+          backgroundColor: '#daaa84',
+          color: '#fff',
+          border: 'none',
+          cursor: 'pointer'
+        }}
+      >
+        הטדעת
+      </button>
+
+
       
     </div>
     

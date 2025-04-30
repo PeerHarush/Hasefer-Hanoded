@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-// import {
-//   Wrapper, Card, Title, Subtitle, Tabs, Tab, FormGroup, Label,
-//   Input, Link, Button
-// } from "../styles/BookDetailsPage.styles";
+import {
+  Wrapper, Card, Title, Subtitle, Tabs, Tab, FormGroup, Label,
+  Input, Link, Button
+} from "../styles/BookDetailsPage.styles";
 
 import Table from 'react-bootstrap/Table';
 

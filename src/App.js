@@ -8,10 +8,11 @@ import BookDetails from './pages/BookDetailsPage'
 import Header from "./components/Header";
 import Footer from './components/Footer'; 
 import Profile from "./pages/UserProfilePage";
-import WishList from "./pages/WishListPage"
-import History from "./pages/HistoryPage"
+import WishList from "./pages/WishListPage";
+import History from "./pages/HistoryPage";
 import Transaction  from './pages/TransactionPage.jsx';
-
+import AddBook from "./pages/AddBookPage.jsx";
+import MessagesPage from "./pages/MessagesPage.jsx";
 function App() {
   return (
     <div>
@@ -24,7 +25,9 @@ function App() {
         <Route path="/WishList" element={<WishList/>} />
         <Route path="/History" element={<History/>} />
         <Route path="/Transaction" element={<Transaction/>} />
-      </Routes>
+        <Route path="/AddBook" element={<AddBook/>} />
+        <Route path="/MessagesPage" element={<MessagesPage/>} />
+ </Routes>
       <Footer/>
     </div>
   );
