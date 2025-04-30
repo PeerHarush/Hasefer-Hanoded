@@ -75,3 +75,26 @@ export const Button = styled.button`
     background: #bfa78a;
   }
 `;
+
+
+
+export const ImageUploadContainer = styled.div`
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  height: 200px;
+  background-color: #f9f9f9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+export const PreviewImage = styled.img`
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: cover;
+`;
+
