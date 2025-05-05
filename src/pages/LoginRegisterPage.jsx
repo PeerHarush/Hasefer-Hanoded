@@ -91,7 +91,7 @@ const LoginRegisterPage = () => {
         if (!res.ok) throw new Error(json.detail || 'Login failed');
         localStorage.setItem('access_token', json.access_token);
         localStorage.setItem('refresh_token', json.refresh_token);
-        navigate('/dashboard');
+        navigate('/profile');
       } catch (err) {
         alert(err.message);
       }
