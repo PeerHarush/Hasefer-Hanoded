@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import BookGallery from '../components/BookGallery'; 
+import BookGallery from '../components/BookGallery.js';
 import { pageWrapper, buttonStyle } from '../styles/Home.styles';
 
 function Home() {
