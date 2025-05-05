@@ -43,7 +43,7 @@ function Header() {
             <Link to="/wishlist" className="nav-link">רשימת משאלות</Link>
             </li>
             <li className="nav-item">
-            <Link to="" className="nav-link"> הודעות</Link>
+            <Link to="MessagesPage" className="nav-link"> הודעות</Link>
             </li>
             <li className="nav-item">
             <Link to="/History" className="nav-link"> היסטוריית פעולות</Link>
