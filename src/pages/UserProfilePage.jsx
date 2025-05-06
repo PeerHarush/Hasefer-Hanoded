@@ -137,7 +137,7 @@ function UserProfile() {
           ) : (
             <span>{profile.full_name}</span>
           )}
-          <EditButton onClick={() => toggleEdit('full_name')}>✏️ ערוך</EditButton>
+          <EditButton onClick={() => toggleEdit('full_name')}> ✏️ערוך</EditButton>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

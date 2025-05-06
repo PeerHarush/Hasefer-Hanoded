@@ -18,9 +18,7 @@ function Home() {
       <button onClick={goToLogin} style={buttonStyle}>מעבר לדף ההתחברות / הרשמה</button>
       <button onClick={goToBook} style={buttonStyle}>מעבר לדף ספר</button>
       <button onClick={goToProfile} style={buttonStyle}>מעבר לדף profile</button>
-      <button onClick={messeges} style={buttonStyle}>הטדעת</button>
 
-      {/* 💡 כאן מוסיפים את רשימת הספרים */}
       <BookGallery />
     </div>
   );
