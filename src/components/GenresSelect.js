@@ -3,18 +3,20 @@ import { FormGroup, GenresContainer } from '../styles/GenereSelect.styles';
 import { Label, Input } from '../styles/LoginRegisterPage.styles';
 
 const genresList = [
-  { id: "פנטזיה", name: "פנטזיה" },
-  { id: "מתח", name: "מתח" },
-  { id: "מדע-בדיוני", name: "מדע בדיוני" },
-  { id: "רומן", name: "רומן" },
-  { id: "ביוגרפיה", name: "ביוגרפיה" },
-  { id: "ילדים", name: "ילדים" },
-  { id: "נוער", name: "נוער" },
-  { id: "פעולה", name: "פעולה" },
-  { id: "לימוד", name: "לימוד" },
+  { id: "פסיכולוגיה ומודעות", name: "פסיכולוגיה ומודעות" },
+  { id: "פעוטות וילדים", name: "פעוטות וילדים" },
+  { id: "מדע בדיוני ופנטזיה", name: "מדע בדיוני ופנטזיה" },
+
   { id: "רומנטיקה", name: "רומנטיקה" },
-  { id: "שפה-זרה", name: "שפה זרה" },
-  { id: "התפתחות-אישית", name: "התפתחות אישית" },
+  { id: "נוער", name: "נוער" },
+  { id: "מתח", name: "מתח" },
+  { id: "בישול ואפיה", name: "בישול ואפיה" },
+  { id: "טיולים", name: "טיולים" },
+  { id: "שירה", name: "שירה" },
+  { id: "ספרי לימוד", name: "ספרי לימוד" },
+  { id: "הורות ", name: "הורות " },
+  { id: "כלכלה", name: "כלכלה" },
+
 ];
 
 const GenresSelect = ({ selectedGenres, onChange, labelText = "ז'אנרים" }) => {
