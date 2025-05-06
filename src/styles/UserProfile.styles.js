@@ -78,7 +78,7 @@ export const InputContainer = styled.div`
 
 export const EditButton = styled.button`
   margin-right: 10px;
-  background: rgb(236, 193, 142);
+  background:rgb(245, 227, 195);
   border-radius: 8px;
   border: none;
 `;

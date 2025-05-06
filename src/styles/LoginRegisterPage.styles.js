@@ -42,11 +42,13 @@ export const Tab = styled.button`
   padding: 0.65rem;
   border: none;
   border-radius: 6px 6px 0 0;
-  background: ${({ active }) => (active ? "rgba(195, 165, 128, 0.46)" : "#f3f4f6")};
+  background: ${({ active }) => (active ? "rgb(234, 199, 156)" : "#f3f4f6")};
   font-weight: ${({ active }) => (active ? "bold" : "normal")};
   color: ${({ active }) => (active ? "black" : "black")};
   cursor: pointer;
 `;
+
+
 
 export const FormGroup = styled.div`
   display: flex;
@@ -68,29 +70,22 @@ export const Input = styled.input`
   margin-bottom: 0.25rem;
 `;
 
-export const Link = styled.a`
-  color: #1e40af;
-  font-size: 0.9rem;
-  text-align: left;
-  display: block;
-  margin-bottom: 1rem;
-  cursor: pointer;
-`;
 
 
 export const Button = styled.button`
   width: 100%;
-  background:rgb(195, 165, 128);
-  color: white;
+ background: rgb(215, 184, 146);
+  &:hover {
+    background:rgb(241, 206, 162);
+  }
+      color: white;
   border: none;
   padding: 0.75rem;
   font-size: 1rem;
   border-radius: 6px;
   cursor: pointer;
 
-  &:hover {
-    background:#bfa78a;
-  }
+ 
 `;
 
 
