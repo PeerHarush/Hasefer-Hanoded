@@ -13,6 +13,8 @@ import History from "./pages/HistoryPage";
 import Transaction  from './pages/TransactionPage.jsx';
 import AddBook from "./pages/AddBookPage.jsx";
 import MessagesPage from "./pages/MessagesPage.jsx";
+import  AllBooksPage from "./pages/AllBooksPage.jsx";
+
 function App() {
   return (
     <div>
@@ -27,6 +29,7 @@ function App() {
         <Route path="/Transaction" element={<Transaction/>} />
         <Route path="/AddBook" element={<AddBook/>} />
         <Route path="/MessagesPage" element={<MessagesPage/>} />
+        <Route path="/AllBooks" element={<AllBooksPage />} />
  </Routes>
       <Footer/>
     </div>

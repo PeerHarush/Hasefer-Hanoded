@@ -40,5 +40,5 @@ const GenresSelect = ({ selectedGenres, onChange, labelText = "ז'אנרים" })
     </FormGroup>
   );
 };
-
+export { genresList };
 export default GenresSelect;
