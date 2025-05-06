@@ -63,7 +63,6 @@ export const Input = styled.input`
 
 export const Button = styled.button`
   width: 100%;
-  background: rgb(195, 165, 128);
   color: white;
   border: none;
   padding: 0.75rem;
@@ -71,8 +70,9 @@ export const Button = styled.button`
   border-radius: 6px;
   cursor: pointer;
   margin-top:0.15rem;
+  background: rgb(215, 184, 146);
   &:hover {
-    background: #bfa78a;
+    background:rgb(241, 206, 162);
   }
 `;
 
