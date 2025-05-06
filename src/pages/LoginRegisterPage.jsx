@@ -51,7 +51,6 @@ const LoginRegisterPage = () => {
     e.preventDefault();
 
     if (activeTab === 'register') {
-      // build multipart form
       const fd = new FormData();
       fd.append('email', form.email);
       fd.append('password', form.password);
@@ -89,9 +88,13 @@ const LoginRegisterPage = () => {
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.detail || 'Login failed');
+        
+        // ✅ שמירת מידע התחברות
         localStorage.setItem('access_token', json.access_token);
         localStorage.setItem('refresh_token', json.refresh_token);
-        navigate('/profile');
+        localStorage.setItem('userLoggedIn', 'true');
+
+        navigate('/');
       } catch (err) {
         alert(err.message);
       }
