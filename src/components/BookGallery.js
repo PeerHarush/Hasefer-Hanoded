@@ -8,8 +8,7 @@ import {
   BookAuthor
 } from '../styles/BookGallery.styles.js';
 
-
-const BookGallery = () => {
+const BookGallery = ({ selectedCategory, sortBy }) => {
   const [books, setBooks] = useState([]);
 
   useEffect(() => {
@@ -19,7 +18,6 @@ const BookGallery = () => {
         const data = await res.json();
         setBooks(data);
         console.log("📚 ספרים מהשרת:", data);
-
       } catch (err) {
         console.error("שגיאה בטעינת ספרים:", err);
       }
@@ -28,10 +26,26 @@ const BookGallery = () => {
     fetchBooks();
   }, []);
 
+  // סינון לפי קטגוריה
+  const filteredBooks = selectedCategory
+    ? books.filter((book) =>
+        Array.isArray(book.genres)
+          ? book.genres.includes(selectedCategory)
+          : book.genres === selectedCategory
+      )
+    : books;
+
+  // מיון לפי א-ב
+  const sortedBooks = [...filteredBooks];
+  if (sortBy === 'az') {
+    sortedBooks.sort((a, b) => a.title.localeCompare(b.title));
+  } else if (sortBy === 'za') {
+    sortedBooks.sort((a, b) => b.title.localeCompare(a.title));
+  }
+
   return (
     <BooksWrapper>
-     
-      {books.map((book) => (
+      {sortedBooks.map((book) => (
         <BookCard key={book._id}>
           <BookImage src={book.image_url} alt={book.title} />
           <BookTitle>{book.title}</BookTitle>
@@ -39,6 +53,7 @@ const BookGallery = () => {
         </BookCard>
       ))}
     </BooksWrapper>
-   );
+  );
 };
+
 export default BookGallery;
