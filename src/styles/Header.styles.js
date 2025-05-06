@@ -5,7 +5,7 @@
   `;
 
   export const StyledNavbar = styled.nav`
-  direction: rtl;
+    direction: rtl;
     text-align: right;
     padding: 10px;
   `;
