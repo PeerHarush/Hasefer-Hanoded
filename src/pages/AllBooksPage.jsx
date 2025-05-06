@@ -12,7 +12,7 @@ import {
 
 function AllBooksPage() {
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [sortBy, setSortBy] = useState(''); // ✅ עבר פנימה
+  const [sortBy, setSortBy] = useState(''); 
 
   return (
     <PageContainer>
@@ -49,7 +49,7 @@ function AllBooksPage() {
           <h1>כל הספרים</h1>
           <BookGallery
             selectedCategory={selectedCategory}
-            sortBy={sortBy} // ✅ מעבירים את המיון ל־BookGallery
+            sortBy={sortBy} 
           />
         </GalleryContainer>
       </Wrapper>
