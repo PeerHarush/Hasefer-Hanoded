@@ -1,7 +1,7 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link, useNavigate } from "react-router-dom";
-import { Wrapper, StyledNavbar } from "../styles/Header.styles";
+import { Wrapper, StyledNavbar, NavbarRight, NavbarLeft } from "../styles/Header.styles";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
 function Header() {
@@ -14,7 +14,7 @@ function Header() {
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("userLoggedIn");
     navigate("/");
-    window.location.reload(); // מרענן את העמוד כדי לעדכן את ההדר
+    window.location.reload(); // מרענן את העמוד
   };
 
   const renderTooltip = (props) => (
@@ -45,7 +45,7 @@ function Header() {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav">
+          <NavbarRight className="navbar-nav">
             <li className="nav-item"><Link to="/AllBooks" className="nav-link">כל הספרים</Link></li>
             <li className="nav-item"><Link to="/about" className="nav-link">אודות</Link></li>
 
@@ -59,29 +59,21 @@ function Header() {
                 <li className="nav-item"><Link to="/AddBook" className="nav-link">הוספת ספר</Link></li>
               </>
             )}
-          </ul>
+          </NavbarRight>
 
-          <form className="d-flex ms-auto" role="search">
-            <input
-              className="form-control me-2"
-              type="search"
-              placeholder="חפש ספר..."
-              aria-label="Search"
-            />
-            <button className="btn btn-outline-secondary" type="submit">חיפוש</button>
-          </form>
-
-          <ul className="navbar-nav ms-3">
+          <NavbarLeft className="navbar-nav ms-3">
             {!isLoggedIn ? (
               <li className="nav-item">
                 <Link to="/login" className="nav-link">התחברות / הרשמה</Link>
               </li>
             ) : (
               <li className="nav-item">
-                <button className="btn btn-link nav-link" onClick={handleLogout} style={{ padding: 0 }}>התנתקות</button>
+                <button className="btn btn-link nav-link" onClick={handleLogout} style={{ padding: 0 }}>
+                  התנתקות
+                </button>
               </li>
             )}
-          </ul>
+          </NavbarLeft>
         </div>
       </StyledNavbar>
     </Wrapper>
