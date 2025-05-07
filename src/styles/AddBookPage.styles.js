@@ -98,3 +98,30 @@ export const PreviewImage = styled.img`
   object-fit: cover;
 `;
 
+
+
+export const EditAddressButton = styled.button`
+  background: none;
+  border: none;
+  color:rgb(5, 93, 186);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+  padding: 0;
+`;
+
+
+
+export const Select = styled.select`
+  padding: 1px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  color: #333;
+  width: 100%;
+  
+  &:focus {
+    outline: none;
+  }
+`;
