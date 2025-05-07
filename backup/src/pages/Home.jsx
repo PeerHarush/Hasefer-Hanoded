@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BookGallery from '../components/BookGallery';
+import BookGallery from '../components/BookGallery.js';
 import { pageWrapper, buttonStyle } from '../styles/Home.styles';
 import API_BASE_URL from '../config';
-import SearchBar from '../components/SearchBar'; // ייבוא קומפוננטת החיפוש
 
 function Home() {
   const navigate = useNavigate();
   const [userName, setUserName] = useState(null);
-  const [books, setBooks] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
 
-  // שליפת שם משתמש לפי טוקן
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) return;
@@ -32,34 +28,6 @@ function Home() {
       });
   }, []);
 
-  // חיפוש דינמי תוך כדי הקלדה
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const url = searchTerm.trim()
-          ? `${API_BASE_URL}/books?search=${encodeURIComponent(searchTerm)}`
-          : `${API_BASE_URL}/books`;
-
-        const res = await fetch(url);
-        const data = await res.json();
-        if (res.ok) {
-          setBooks(data);
-        } else {
-          throw new Error('שגיאה בקבלת הספרים');
-        }
-      } catch (err) {
-        console.error("שגיאה בטעינת ספרים:", err);
-      }
-    };
-
-    const delayDebounce = setTimeout(() => {
-      fetchBooks();
-    }, 300);
-
-    return () => clearTimeout(delayDebounce);
-  }, [searchTerm]);
-
-  // כפתורי ניווט
   const goToLogin = () => navigate('/login');
   const goToBook = () => navigate('/Book');
   const goToProfile = () => navigate('/Profile');
@@ -67,20 +35,20 @@ function Home() {
 
   return (
     <div style={pageWrapper}>
-      <h1>{userName ? `שלום, ${userName}!` : 'שלום אורח!'} 🌸</h1>
+      <h1>
+        {userName ? `שלום, ${userName}!` : 'שלום אורח!'} 🌸
+      </h1>
 
       <button onClick={goToLogin} style={buttonStyle}>מעבר לדף ההתחברות / הרשמה</button>
       <button onClick={goToBook} style={buttonStyle}>מעבר לדף ספר</button>
       <button onClick={goToProfile} style={buttonStyle}>מעבר לדף פרופיל</button>
       <button onClick={messeges} style={buttonStyle}>הודעות</button>
 
-      {/* תיבת חיפוש דינמית */}
-      <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-
-      {/* גלריית הספרים */}
-      <BookGallery books={books} />
+      <BookGallery />
     </div>
   );
 }
 
+
 export default Home;
+

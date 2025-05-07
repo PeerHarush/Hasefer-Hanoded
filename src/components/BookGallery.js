@@ -8,34 +8,36 @@ import {
   BookAuthor
 } from '../styles/BookGallery.styles.js';
 
-const BookGallery = ({ selectedCategory, sortBy }) => {
+const BookGallery = ({ books: externalBooks, selectedCategory, sortBy }) => {
   const [books, setBooks] = useState([]);
 
   useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/books`);
-        const data = await res.json();
-        setBooks(data);
-        console.log("📚 ספרים מהשרת:", data);
-      } catch (err) {
-        console.error("שגיאה בטעינת ספרים:", err);
-      }
-    };
+    if (!externalBooks) {
+      const fetchBooks = async () => {
+        try {
+          const res = await fetch(`${API_BASE_URL}/books`);
+          const data = await res.json();
+          setBooks(data);
+          console.log("📚 ספרים מהשרת:", data);
+        } catch (err) {
+          console.error("שגיאה בטעינת ספרים:", err);
+        }
+      };
 
-    fetchBooks();
-  }, []);
+      fetchBooks();
+    }
+  }, [externalBooks]);
 
-  // סינון לפי קטגוריה
+  const displayedBooks = externalBooks || books;
+
   const filteredBooks = selectedCategory
-    ? books.filter((book) =>
+    ? displayedBooks.filter((book) =>
         Array.isArray(book.genres)
           ? book.genres.includes(selectedCategory)
           : book.genres === selectedCategory
       )
-    : books;
+    : displayedBooks;
 
-  // מיון לפי א-ב
   const sortedBooks = [...filteredBooks];
   if (sortBy === 'az') {
     sortedBooks.sort((a, b) => a.title.localeCompare(b.title));
