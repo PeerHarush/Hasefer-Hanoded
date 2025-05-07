@@ -49,4 +49,8 @@ function Home() {
   );
 }
 
+<<<<<<< HEAD
 export default Home;
+=======
+export default Home;
+>>>>>>> origin/master
