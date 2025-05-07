@@ -97,6 +97,7 @@ const AddBookPage = () => {
         bookDescription: prev.bookDescription || foundBook.description || '',
         genres: prev.genres.length ? prev.genres : foundBook.genres || [],
         bookImage: imageUrl,
+        bookId: foundBook.id || foundBook.book_id, 
       }));
   
       if (imageUrl && !previewImage) {
@@ -134,13 +135,11 @@ const AddBookPage = () => {
     fd.append('price', form.price);
     fd.append('location', form.location);
   
-    // ✅ רק אם bookImage הוא קובץ אמיתי - נצרף אותו
     if (form.bookImage instanceof File) {
       fd.append('book_cover', form.bookImage);
       fd.append('listing_image', form.bookImage);
     }
   
-    // ✅ אם יש bookId (מה-AutoFill למשל), נוסיף אותו
     if (form.bookId) {
       fd.append('book_id', form.bookId);
     }
