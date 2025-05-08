@@ -59,20 +59,10 @@ function Home() {
     return () => clearTimeout(delayDebounce);
   }, [searchTerm]);
 
-  // כפתורי ניווט
-  const goToLogin = () => navigate('/login');
-  const goToBook = () => navigate('/Book');
-  const goToProfile = () => navigate('/Profile');
-  const messeges = () => navigate('/MessagesPage');
 
   return (
     <div style={pageWrapper}>
       <h1>{userName ? `שלום, ${userName}!` : 'שלום אורח!'} 🌸</h1>
-
-      <button onClick={goToLogin} style={buttonStyle}>מעבר לדף ההתחברות / הרשמה</button>
-      <button onClick={goToBook} style={buttonStyle}>מעבר לדף ספר</button>
-      <button onClick={goToProfile} style={buttonStyle}>מעבר לדף פרופיל</button>
-      <button onClick={messeges} style={buttonStyle}>הודעות</button>
 
       {/* תיבת חיפוש דינמית */}
       <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
