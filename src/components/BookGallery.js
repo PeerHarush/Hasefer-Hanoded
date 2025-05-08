@@ -15,9 +15,11 @@ const BookGallery = ({ books: externalBooks, selectedCategory: propCategory, sor
   const [books, setBooks] = useState([]);
   const [favorites, setFavorites] = useState(() => {
     const saved = JSON.parse(localStorage.getItem('wishlist')) || [];
-    return new Set(saved.map(b => b._id));
+    return new Set(saved.map(b => b.id || b.title)); // מזהה ייחודי
   });
+  const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
 
+  
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const selectedCategory = propCategory || searchParams.get('genre');
@@ -50,37 +52,54 @@ const BookGallery = ({ books: externalBooks, selectedCategory: propCategory, sor
   const sortedBooks = [...filteredBooks];
   if (sortBy === 'az') sortedBooks.sort((a, b) => a.title.localeCompare(b.title));
   else if (sortBy === 'za') sortedBooks.sort((a, b) => b.title.localeCompare(a.title));
-
-  const toggleFavorite = (e, book) => {
-    e.preventDefault(); 
-    const updated = new Set(favorites);
-    let newWishlist;
-
-    if (favorites.has(book._id)) {
-      updated.delete(book._id);
-      const oldList = JSON.parse(localStorage.getItem('wishlist')) || [];
-      newWishlist = oldList.filter(b => b._id !== book._id);
+  const toggleFavorite = (book) => {
+    const stored = JSON.parse(localStorage.getItem('wishlist')) || [];
+    const id = book.id || book.title;
+  
+    let updatedFavorites;
+    if (favorites.has(id)) {
+      updatedFavorites = stored.filter(b => (b.id || b.title) !== id);
+      setFavorites(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
     } else {
-      updated.add(book._id);
-      const oldList = JSON.parse(localStorage.getItem('wishlist')) || [];
-      newWishlist = [...oldList, book];
+      const newBook = {
+        id,
+        title: book.title,
+        author: book.authors,
+        imageUrl: book.image_url,
+        inStock: true,
+      };
+      updatedFavorites = [...stored, newBook];
+      setFavorites(prev => new Set(prev).add(id));
     }
-
-    setFavorites(updated);
-    localStorage.setItem('wishlist', JSON.stringify(newWishlist));
+  
+    localStorage.setItem('wishlist', JSON.stringify(updatedFavorites));
   };
+  
+  
+
+  
 
   return (
     <BooksWrapper>
 
       {sortedBooks.map((book) => (
        <BookCard key={book._id}>
-       <FavoriteButton
-         isFavorite={favorites.has(book._id)}
-         onClick={(e) => toggleFavorite(e, book)}
-       >
-         {favorites.has(book._id) ? <FaHeart /> : <FaRegHeart />}
-       </FavoriteButton>
+    {isLoggedIn && (
+        <FavoriteButton
+          isFavorite={favorites.has(book.id || book.title)}
+          onClick={(e) => {
+            e.preventDefault();
+            toggleFavorite(book);
+          }}
+        >
+          {favorites.has(book.id || book.title) ? <FaHeart /> : <FaRegHeart />}
+        </FavoriteButton>
+      )}
+
      
        <Link
          to={`/book/${encodeURIComponent(book.title)}`}
