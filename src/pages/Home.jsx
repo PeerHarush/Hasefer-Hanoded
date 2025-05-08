@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BookGallery from '../components/BookGallery';
-import { PageWrapper , buttonStyle } from '../styles/Home.styles';
+import { PageWrapper , buttonStyle, BooksCapsule } from '../styles/Home.styles';
 import API_BASE_URL from '../config';
 import SearchBar from '../components/SearchBar'; // ייבוא קומפוננטת החיפוש
 
@@ -65,7 +65,9 @@ function Home() {
         <h1>{userName ? `שלום, ${userName}!` : 'שלום אורח!'} 🌸</h1>
 
         <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <BooksCapsule>
         <BookGallery books={books} />
+        </BooksCapsule>
       </PageWrapper>
   );
 }

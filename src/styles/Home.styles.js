@@ -36,11 +36,7 @@ export const Author = styled.p`
   margin: 4px 0 0;
 `;
 
-export const PageWrapper = styled.div`
-  text-align: center;
-  padding-top: 2rem;
-  font-family: Arial, sans-serif;
-`;
+
 
 
 export const StyledButton = styled.button`
@@ -57,6 +53,16 @@ export const StyledButton = styled.button`
 `;
 
 
+export const PageWrapper = styled.div`
+  padding: 2rem;
+  text-align: center;
+`;
 
+export const BooksCapsule = styled.div`
+  transform: scale(0.85); /* מקטין את כל הגלריה */
+  transform-origin: top center;
+  max-width: 90%;
+  margin: 0 auto;
+`;
 
 
