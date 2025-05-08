@@ -95,3 +95,26 @@ export const BookImageMobile = styled.img`
     border-radius: 10px;
   }
 `;
+
+
+
+export const StickyTextContainer = styled.div`
+  text-align: center;
+  margin-top: 15px;
+
+  h2 {
+    font-size: 20px;
+    margin-bottom: 5px;
+    color: #222;
+  }
+
+  h4 {
+    font-size: 16px;
+    color: #555;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;

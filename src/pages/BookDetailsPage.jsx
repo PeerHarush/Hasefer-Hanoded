@@ -8,6 +8,7 @@ import {
   Sidebar,
   BookDescription, 
   BookImageMobile ,
+  StickyTextContainer,
   BookInfo 
 } from '../styles/BookDetailsPage.styles';
 
@@ -61,18 +62,19 @@ const BookDetails = () => {
           <h3>{book.authors}</h3>
           <BookImageMobile src={book.image_url} alt={book.title} />
           <BookDescription>{book.book_description || book.description}</BookDescription>
+
         </BookInfo>
+        
 
         <Sidebar>
-  <BookImage src={book.image_url} alt={book.title} />
-
-        {showStickyTitle && (
-          <div style={{ textAlign: 'center', marginTop: '15px' }}>
-            <h2>{book.title}</h2>
-            <h4>{book.authors}</h4>
-          </div>
-        )}
-      </Sidebar>
+          <BookImage src={book.image_url} alt={book.title} />
+          {showStickyTitle && (
+            <StickyTextContainer>
+              <h2>{book.title}</h2>
+              <h4>{book.authors}</h4>
+            </StickyTextContainer>
+          )}
+        </Sidebar>
 
       </Wrapper>
     </PageContainer>
