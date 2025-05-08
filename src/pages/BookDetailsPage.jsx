@@ -61,12 +61,6 @@ const BookDetails = () => {
           <h3>{book.authors}</h3>
           <BookImageMobile src={book.image_url} alt={book.title} />
           <BookDescription>{book.book_description || book.description}</BookDescription>
-                    <BookDescription>{book.book_description || book.description}</BookDescription>
-                    <BookDescription>{book.book_description || book.description}</BookDescription>
-                    <BookDescription>{book.book_description || book.description}</BookDescription>
-                    <BookDescription>{book.book_description || book.description}</BookDescription>
-                    <BookDescription>{book.book_description || book.description}</BookDescription>
-
         </BookInfo>
 
         <Sidebar>
