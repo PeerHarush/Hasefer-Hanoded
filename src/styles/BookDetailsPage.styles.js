@@ -1,4 +1,6 @@
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
+
 
 export const PageContainer = styled.div`
   display: flex;
@@ -36,7 +38,11 @@ export const Wrapper = styled.div`
   width: 300px;
   border-radius: 16px;
   position: sticky;
-  top: 4rem;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
   height: fit-content;
   @media (max-width: 768px) {
     position: static;
@@ -47,14 +53,12 @@ export const Wrapper = styled.div`
 `;
 
 
-
-
-
 export const BookImage = styled.img`
    width: 100%;
-  height: auto;
+   height: 400px;
+    object-fit: cover;  
   border-radius: 10px;
-margin-top: 30px;
+  margin-top: 30px;
 
   @media (max-width: 768px) {
     display: none; 
@@ -105,16 +109,89 @@ export const StickyTextContainer = styled.div`
   h2 {
     font-size: 20px;
     margin-bottom: 5px;
-    color: #222;
   }
 
   h4 {
     font-size: 16px;
-    color: #555;
     margin: 0;
   }
 
   @media (max-width: 768px) {
     display: none;
+  }
+`;
+
+export const Button = styled.button`
+  color: white;
+  width: 220px;
+  border: none;
+  padding: 0.75rem;
+  display: flex;
+  justify-content: center;
+  border-radius: 6px;
+   align-items: center;
+  cursor: pointer;
+  margin: 2px;
+  background: rgb(218, 195, 164);
+  &:hover {
+  background: rgb(224, 205, 165);
+  }
+`;
+export const ButtonsContainer = styled.div`
+  display: flex;
+  flex-direction: column; 
+  margin-top: 10px;
+  
+
+  @media (max-width: 768px) {
+    flex-direction: row; 
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+`;
+
+export const BackButton = styled.button`
+  position: absolute;
+  top: 100px; /* מתחת ל־Header */
+  right: 30px;
+  z-index: 10;
+  padding: 8px 16px;
+  background-color: rgb(218, 195, 164);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgb(215, 184, 146);
+  }
+
+  @media (max-width: 768px) {
+    top: 80px;
+    right: 15px;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+`;
+
+
+
+export const MobileButtonsContainer = styled.div`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
+`;
+
+
+
+export const StyledLinkButton = styled(Link)`
+  text-decoration: none;
+  
+
+  @media (max-width: 768px) {
+    width: auto;
   }
 `;

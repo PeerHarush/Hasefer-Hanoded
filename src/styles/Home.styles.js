@@ -36,25 +36,27 @@ export const Author = styled.p`
   margin: 4px 0 0;
 `;
 
+export const PageWrapper = styled.div`
+  text-align: center;
+  padding-top: 2rem;
+  font-family: Arial, sans-serif;
+`;
 
-export const pageWrapper = {
-  textAlign: 'center',
-  marginTop: '5rem',
-  fontFamily: 'Arial, sans-serif'
-};
 
-export const buttonStyle = {
-  padding: '10px 20px',
-  fontSize: '16px',
-  borderRadius: '10px',
-  backgroundColor: '#daaa84',
-  color: '#fff',
-  border: 'none',
-  cursor: 'pointer',
-  margin: '0.5rem',
-  fontWeight: 'bold',
-  letterSpacing: '0.5px'
-};
+export const StyledButton = styled.button`
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 10px;
+  background-color: #daaa84;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  margin: 0.5rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+`;
+
+
 
 
 

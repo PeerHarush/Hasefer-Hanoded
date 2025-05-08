@@ -8,20 +8,24 @@ import {
   CategoryList,
   CategoryItem,
   GalleryContainer,
+  FilterHeader,
   Wrapper,
 } from '../styles/AllBooksPage.styles';
 import API_BASE_URL from '../config'; 
+import { useSearchParams } from 'react-router-dom';
+
 
 function AllBooksPage() {
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();   
+  const selectedCategory = searchParams.get('genre'); 
   const [sortBy, setSortBy] = useState('');
   const [searchTerm, setSearchTerm] = useState(''); 
   const [books, setBooks] = useState([]); 
-  const selectedGenreName = selectedCategory
-  ? genresList.find((genre) => genre.id === selectedCategory)?.name
-  : null;
 
-  // פונקציה לשליפת הספרים
+  const selectedGenreName = selectedCategory
+    ? genresList.find((genre) => genre.id === selectedCategory)?.name
+    : null;
+
   useEffect(() => {
     const fetchBooks = async () => {
       try {
@@ -40,37 +44,40 @@ function AllBooksPage() {
       }
     };
 
-    const delayDebounce = setTimeout(() => {
-      fetchBooks();
-    }, 300);
-
+    const delayDebounce = setTimeout(fetchBooks, 300);
     return () => clearTimeout(delayDebounce);
   }, [searchTerm]); 
+
+
+  const handleCategorySelect = (genre) => {
+    setSearchParams(genre ? { genre } : {}); // אם genre=null, זה מוחק את הפרמטר מה-URL
+  };
 
   return (
     <PageContainer>
       <Wrapper>
         <Sidebar>
+        <FilterHeader>
           <h3>סינון לפי קטגוריה:</h3>
-
           <select onChange={(e) => setSortBy(e.target.value)} defaultValue="">
             <option value="">מיין לפי</option>
             <option value="az">א-ב</option>
             <option value="za">ת-א</option>
           </select>
+        </FilterHeader>
 
           <CategoryList>
             {genresList.map((genre) => (
               <CategoryItem
                 key={genre.id}
                 active={selectedCategory === genre.id}
-                onClick={() => setSelectedCategory(genre.id)}
+                onClick={() => handleCategorySelect(genre.id)} // ✅
               >
                 {genre.name}
               </CategoryItem>
             ))}
             <CategoryItem
-              onClick={() => setSelectedCategory(null)}
+              onClick={() => handleCategorySelect(null)} // ✅ איפוס הסינון
               active={selectedCategory === null}
             >
               הצג הכל
@@ -79,15 +86,12 @@ function AllBooksPage() {
         </Sidebar>
 
         <GalleryContainer>
-        <h1>{selectedGenreName ? `ספרים בז'אנר: ${selectedGenreName}` : 'כל הספרים'}</h1>
-          
-          {/* תיבת חיפוש */}
+          <h1>{selectedGenreName ? `ספרים בז'אנר: ${selectedGenreName}` : 'כל הספרים'}</h1>
+
           <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-          {/* גלריית הספרים */}
           <BookGallery
             books={books}
-            selectedCategory={selectedCategory}
             sortBy={sortBy}
           />
         </GalleryContainer>
@@ -97,3 +101,4 @@ function AllBooksPage() {
 }
 
 export default AllBooksPage;
+  

@@ -14,7 +14,7 @@ function Header() {
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("userLoggedIn");
     navigate("/");
-    window.location.reload(); // מרענן את העמוד
+    window.location.reload(); 
   };
 
   const renderTooltip = (props) => (
