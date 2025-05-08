@@ -5,8 +5,10 @@ import {
   BookCard,
   BookImage,
   BookTitle,
-  BookAuthor
+  BookAuthor,
 } from '../styles/BookGallery.styles.js';
+import { Link } from 'react-router-dom';
+
 
 const BookGallery = ({ books: externalBooks, selectedCategory, sortBy }) => {
   const [books, setBooks] = useState([]);
@@ -47,14 +49,26 @@ const BookGallery = ({ books: externalBooks, selectedCategory, sortBy }) => {
 
   return (
     <BooksWrapper>
-      {sortedBooks.map((book) => (
-        <BookCard key={book._id}>
-          <BookImage src={book.image_url} alt={book.title} />
-          <BookTitle>{book.title}</BookTitle>
-          <BookAuthor>{book.authors}</BookAuthor>
-        </BookCard>
-      ))}
-    </BooksWrapper>
+    {sortedBooks.map((book) => (
+      <Link to={`/book/${encodeURIComponent(book.title)}`} key={book._id}>
+      <BookCard key={book._id}>
+        <BookImage
+          src={
+            book.image_url?.startsWith('http')
+              ? book.image_url
+              : `${API_BASE_URL}/${book.image_url}`
+          }
+          alt={book.title}
+        />
+        <BookTitle>{book.title}</BookTitle>
+        <BookAuthor>{book.authors}</BookAuthor>
+      </BookCard>
+      </Link>
+
+    ))}
+  </BooksWrapper>
+  
+  
   );
 };
 

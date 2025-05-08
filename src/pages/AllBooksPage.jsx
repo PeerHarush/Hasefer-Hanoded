@@ -10,13 +10,16 @@ import {
   GalleryContainer,
   Wrapper,
 } from '../styles/AllBooksPage.styles';
-import API_BASE_URL from '../config'; // כדי לשלוף את הספרים
+import API_BASE_URL from '../config'; 
 
 function AllBooksPage() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [sortBy, setSortBy] = useState('');
-  const [searchTerm, setSearchTerm] = useState(''); // משתנה לחיפוש
-  const [books, setBooks] = useState([]); // רשימת הספרים
+  const [searchTerm, setSearchTerm] = useState(''); 
+  const [books, setBooks] = useState([]); 
+  const selectedGenreName = selectedCategory
+  ? genresList.find((genre) => genre.id === selectedCategory)?.name
+  : null;
 
   // פונקציה לשליפת הספרים
   useEffect(() => {
@@ -42,7 +45,7 @@ function AllBooksPage() {
     }, 300);
 
     return () => clearTimeout(delayDebounce);
-  }, [searchTerm]); // כל פעם שהחיפוש משתנה, תטען את הספרים מחדש
+  }, [searchTerm]); 
 
   return (
     <PageContainer>
@@ -53,7 +56,7 @@ function AllBooksPage() {
           <select onChange={(e) => setSortBy(e.target.value)} defaultValue="">
             <option value="">מיין לפי</option>
             <option value="az">א-ב</option>
-            <option value="za">ב-א</option>
+            <option value="za">ת-א</option>
           </select>
 
           <CategoryList>
@@ -76,7 +79,7 @@ function AllBooksPage() {
         </Sidebar>
 
         <GalleryContainer>
-          <h1>כל הספרים</h1>
+        <h1>{selectedGenreName ? `ספרים בז'אנר: ${selectedGenreName}` : 'כל הספרים'}</h1>
           
           {/* תיבת חיפוש */}
           <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
