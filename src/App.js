@@ -14,7 +14,7 @@ import AddBook from "./pages/AddBookPage.jsx";
 import MessagesPage from "./pages/MessagesPage.jsx";
 import  AllBooksPage from "./pages/AllBooksPage.jsx";
 import BookDetailsPage from './pages/BookDetailsPage.jsx';
-
+import AboutUsPage from './pages/aboutUsPage.jsx';
 function App() {
   return (
     <div>
@@ -30,6 +30,7 @@ function App() {
         <Route path="/MessagesPage" element={<MessagesPage/>} />
         <Route path="/AllBooks" element={<AllBooksPage />} />
         <Route path="/book/:bookTitle" element={<BookDetailsPage />} />
+        <Route path="/about" element={<AboutUsPage />} />
         
 
 
