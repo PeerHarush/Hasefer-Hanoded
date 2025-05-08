@@ -113,10 +113,11 @@ function UserProfile() {
       <h1>הפרופיל שלי</h1>
 
       <div>
-        <ProfileImage
+      <ProfileImage
           src={previewImage || '/default-profile.png'}
           alt="Profile"
         />
+
         <br />
         <EditButton onClick={handleUploadClick}>✏️ ערוך תמונה</EditButton>
         <input
