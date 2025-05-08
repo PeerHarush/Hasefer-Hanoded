@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Wrapper,
   ProfileImage,
-  UploadButton,
   InputContainer,
   Label,
   GenreList,
