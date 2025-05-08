@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BookGallery from '../components/BookGallery';
-import { pageWrapper, buttonStyle } from '../styles/Home.styles';
+import { PageWrapper , buttonStyle, BooksCapsule } from '../styles/Home.styles';
 import API_BASE_URL from '../config';
 import SearchBar from '../components/SearchBar'; // ייבוא קומפוננטת החיפוש
 
@@ -61,15 +61,14 @@ function Home() {
 
 
   return (
-    <div style={pageWrapper}>
-      <h1>{userName ? `שלום, ${userName}!` : 'שלום אורח!'} 🌸</h1>
+      <PageWrapper>
+        <h1>{userName ? `שלום, ${userName}!` : 'שלום אורח!'} 🌸</h1>
 
-      {/* תיבת חיפוש דינמית */}
-      <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-
-      {/* גלריית הספרים */}
-      <BookGallery books={books} />
-    </div>
+        <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <BooksCapsule>
+        <BookGallery books={books} />
+        </BooksCapsule>
+      </PageWrapper>
   );
 }
 
