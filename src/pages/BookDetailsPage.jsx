@@ -168,12 +168,15 @@ const BookDetails = () => {
             )}
           </StickyTextContainer>
 
-          <ButtonsContainer>
-            <Button onClick={handleAddToWishlist}>הוסף לרשימת המשאלות💖</Button>
-            <StyledLinkButton to="/wishlist">
-              <Button>מעבר לרשימת המשאלות📜</Button>
-            </StyledLinkButton>
-          </ButtonsContainer>
+          {isLoggedIn && (
+            <ButtonsContainer>
+              <Button onClick={handleAddToWishlist}>הוסף לרשימת המשאלות💖</Button>
+              <StyledLinkButton to="/wishlist">
+                <Button>מעבר לרשימת המשאלות📜</Button>
+              </StyledLinkButton>
+            </ButtonsContainer>
+          )}
+
         </Sidebar>
       </Wrapper>
     </PageContainer>
