@@ -67,8 +67,14 @@ export const FavoriteButton = styled.button`
   background: transparent;
   border: none;
   font-size: 1.6rem;
-  color: ${({ isFavorite }) => (isFavorite ? 'red' : '#ccc')};
-  cursor: pointer;
+
+  svg {
+    color: ${props => props.$isFavorite ? 'red' : 'gray'};
+    transition: color 0.2s ease;
+  }
+
+  &:hover svg {
+    color: ${props => props.$isFavorite ? 'darkred' : '#555'};
+  }  cursor: pointer;
   z-index: 2;
 `;
-

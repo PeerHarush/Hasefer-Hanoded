@@ -33,13 +33,16 @@ export const TableWrapper = styled.div`
    align: center;
     }
   }
+    
 
   
 `;
 
 
+export const StockStatus = styled.td`
+  color: ${props => (props.$inStock ? '#28a745': 'red')} !important;
+`;
 
- 
 
  
 

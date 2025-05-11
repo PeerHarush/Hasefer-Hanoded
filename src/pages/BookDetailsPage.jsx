@@ -18,9 +18,16 @@ import {
   Button,
 } from '../styles/BookDetailsPage.styles';
 
-
-
 const BookDetails = () => {
+  const { bookTitle } = useParams();
+  const [book, setBook] = useState(null);
+  const [favorites, setFavorites] = useState(new Set());
+  const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+
+  const titleRef = useRef(null);
+  const [showStickyTitle, setShowStickyTitle] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation(); 
 
   const goBack = () => {
     if (location.state?.from) {
@@ -29,20 +36,10 @@ const BookDetails = () => {
       navigate(-1);
     }
   };
-  
-  const { bookTitle } = useParams();
-  const [book, setBook] = useState(null);
-
-  const titleRef = useRef(null);
-  const [showStickyTitle, setShowStickyTitle] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation(); 
-
 
   useEffect(() => {
     const handleScroll = () => {
       if (!titleRef.current) return;
-
       const rect = titleRef.current.getBoundingClientRect();
       setShowStickyTitle(rect.top < 0);
     };
@@ -63,7 +60,6 @@ const BookDetails = () => {
         } else {
           console.warn("לא נמצא ספר עם השם הזה");
         }
-
       } catch (err) {
         console.error('שגיאה בטעינת הספר:', err);
       }
@@ -72,64 +68,98 @@ const BookDetails = () => {
     fetchBook();
   }, [bookTitle]);
 
-  if (!book) return <p>טוען פרטי ספר...</p>;
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
 
- 
+      try {
+        const res = await fetch(`${API_BASE_URL}/wishlist/books`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-  const handleAddToWishlist = () => {
-    const storedWishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-  
-    const alreadyExists = storedWishlist.find(item => item.id === book.id);
-  
-    if (!alreadyExists) {
-      const newBook = {
-        id: book.id || book.title,
-        title: book.title,
-        author: book.authors,
-        imageUrl: book.image_url,
-        inStock: true,
-      };
-  
-      const updatedWishlist = [...storedWishlist, newBook];
-      localStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
-      alert('📚 הספר נוסף לרשימת המשאלות!');
-    } else {
-      alert('🔁 הספר כבר ברשימת המשאלות.');
+        if (!res.ok) throw new Error('טעינת wishlist נכשלה');
+
+        const data = await res.json();
+        setFavorites(new Set(data.wishlist_book_ids));
+      } catch (err) {
+        console.error('שגיאה בטעינת wishlist:', err.message);
+      }
+    };
+
+    if (isLoggedIn) fetchWishlist();
+  }, [isLoggedIn]);
+
+  const handleAddToWishlist = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      alert('יש להתחבר תחילה');
+      return;
+    }
+
+    const bookId = book.id;
+
+    if (favorites.has(bookId)) {
+      alert('📌 הספר כבר קיים ברשימת המשאלות שלך');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/wishlist/${bookId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'הוספה נכשלה');
+      }
+
+      setFavorites(prev => new Set(prev).add(bookId));
+      alert('📚 הספר נוסף בהצלחה לרשימת המשאלות!');
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
     }
   };
 
-  
+  if (!book) {
+    return (
+      <PageContainer>
+        <Wrapper>
+          <BookInfo>
+            <h1>טוען פרטי ספר...</h1>
+          </BookInfo>
+        </Wrapper>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer>
-     <BackButton onClick={goBack}> אחורה</BackButton>
+      <BackButton onClick={goBack}> אחורה</BackButton>
 
       <Wrapper>
-        
         <BookInfo>
           <h1 ref={titleRef}>{book.title}</h1>
           <h3>{book.authors}</h3>
           <BookImageMobile src={book.image_url} alt={book.title} />
           <BookDescription>{book.book_description || book.description}</BookDescription>
-          <BookDescription>{book.book_description || book.description}</BookDescription>
-          <BookDescription>{book.book_description || book.description}</BookDescription>
-          <BookDescription>{book.book_description || book.description}</BookDescription>
 
-          <MobileButtonsContainer>
-            <Button  onClick={handleAddToWishlist}>הוסף לרשימת המשאלות💖 </Button>
-            <StyledLinkButton  to="/wishlist">
-              <Button>מעבר לרשימת המשאלות📜</Button>
-            </StyledLinkButton>
-          </MobileButtonsContainer>
-
-
+          {isLoggedIn && (
+            <MobileButtonsContainer>
+              <Button onClick={handleAddToWishlist}>הוסף לרשימת המשאלות💖</Button>
+              <StyledLinkButton to="/wishlist">
+                <Button>מעבר לרשימת המשאלות📜</Button>
+              </StyledLinkButton>
+            </MobileButtonsContainer>
+          )}
         </BookInfo>
-        
 
         <Sidebar>
-       <BookImage src={book.image_url} alt={book.title} />
+          <BookImage src={book.image_url} alt={book.title} />
 
-
-       <StickyTextContainer>
+          <StickyTextContainer>
             {showStickyTitle && (
               <>
                 <h2>{book.title}</h2>
@@ -139,16 +169,12 @@ const BookDetails = () => {
           </StickyTextContainer>
 
           <ButtonsContainer>
-            <Button  onClick={handleAddToWishlist}>הוסף לרשימת המשאלות💖 </Button>
-            <StyledLinkButton  to="/wishlist">
+            <Button onClick={handleAddToWishlist}>הוסף לרשימת המשאלות💖</Button>
+            <StyledLinkButton to="/wishlist">
               <Button>מעבר לרשימת המשאלות📜</Button>
             </StyledLinkButton>
           </ButtonsContainer>
-
-
-      </Sidebar>
-
-
+        </Sidebar>
       </Wrapper>
     </PageContainer>
   );
