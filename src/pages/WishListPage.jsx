@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Table from 'react-bootstrap/Table';
-import { TableWrapper, Wrapper } from '../styles/WishList.styles';
+import { TableWrapper, Wrapper, StockStatus } from '../styles/WishList.styles';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../config';
 
@@ -42,19 +42,20 @@ function WishList() {
   }, []);
 
   useEffect(() => {
-    const fetchCopies = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/book-listings`);
-        const data = await res.json();
-        setCopies(data);
+  const fetchCopies = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/book-listings`);
+      const data = await res.json();
+      console.log('📦 רשימת עותקים מהשרת:', data); // ← בדקי פה
+      setCopies(data);
+    } catch (err) {
+      console.error("שגיאה בטעינת העותקים:", err);
+    }
+  };
 
-      } catch (err) {
-        console.error("שגיאה בטעינת העותקים:", err);
-      }
-    };
+  fetchCopies();
+}, []);
 
-    fetchCopies();
-  }, []);
 
   const handleDelete = async (bookId) => {
     try {
@@ -73,11 +74,13 @@ function WishList() {
     }
   };
 
- const isInStock = (bookId) => {
+const isInStock = (bookId) => {
   if (!bookId) return false;
 
-  return copies.some(copy => copy.book_id === bookId);
+  return copies.some(copy => copy.book?.id === bookId);
 };
+
+
 
 
   return (
@@ -116,8 +119,11 @@ function WishList() {
 
                 </td>
                 <td>{book.title}</td>
-                <td>{book.authors}</td>
-<td>{isInStock(book.id) ? 'במלאי' : 'לא במלאי'}</td>
+                 <td>{book.authors}</td>
+               <StockStatus $inStock={isInStock(book.id)}>
+                  {isInStock(book.id) ? 'במלאי' : 'לא במלאי'}
+                </StockStatus>
+
                 <td>
                   <Link to={`/book/${encodeURIComponent(book.title)}`}>לספר</Link>
                 </td>
