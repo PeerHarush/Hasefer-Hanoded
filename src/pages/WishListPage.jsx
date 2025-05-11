@@ -6,23 +6,48 @@ import API_BASE_URL from '../config';
 
 function WishList() {
   const [books, setBooks] = useState([]);
-  const [copies, setCopies] = useState([]); // כל העותקים הקיימים
-
-  // טען את רשימת הספרים מה-localStorage
+  const [copies, setCopies] = useState([]);
+  
   useEffect(() => {
-    const storedBooks = localStorage.getItem('wishlist');
-    if (storedBooks) {
-      setBooks(JSON.parse(storedBooks));
-    }
+    const fetchWishlistBooks = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          console.warn('אין טוקן - המשתמש לא מחובר');
+          return;
+        }
+
+        const resWishlist = await fetch(`${API_BASE_URL}/wishlist/books`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!resWishlist.ok) {
+          throw new Error(`שגיאה: ${resWishlist.status}`);
+        }
+
+        const data = await resWishlist.json();
+        const wishlistIds = Array.isArray(data.wishlist_book_ids) ? data.wishlist_book_ids : [];
+
+        const resBooks = await fetch(`${API_BASE_URL}/books`);
+        const allBooks = await resBooks.json();
+
+        const filteredBooks = allBooks.filter(book => wishlistIds.includes(book.id));
+        setBooks(filteredBooks);
+      } catch (err) {
+        console.error('שגיאה בטעינת ספרי Wishlist:', err.message);
+      }
+    };
+
+    fetchWishlistBooks();
   }, []);
 
-  // טען את כל העותקים מהשרת
   useEffect(() => {
     const fetchCopies = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/book-listings`);
         const data = await res.json();
         setCopies(data);
+
       } catch (err) {
         console.error("שגיאה בטעינת העותקים:", err);
       }
@@ -31,27 +56,33 @@ function WishList() {
     fetchCopies();
   }, []);
 
-  const handleDelete = (bookId) => {
-    const updatedBooks = books.filter(book => book.id !== bookId);
-    setBooks(updatedBooks);
-    localStorage.setItem('wishlist', JSON.stringify(updatedBooks));
+  const handleDelete = async (bookId) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_BASE_URL}/wishlist/${bookId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('מחיקה נכשלה');
+      setBooks(prev => prev.filter(book => book.id !== bookId));
+    } catch (err) {
+      console.error('שגיאה במחיקת ספר מהרשימה:', err.message);
+    }
   };
 
-  const isInStock = (title, author) => {
-    return copies.some(copy => {
-      const copyTitle = copy.title?.trim().toLowerCase();
-      const copyAuthor = copy.authors?.trim().toLowerCase();
-      return (
-        copyTitle === title.trim().toLowerCase() &&
-        copyAuthor === author.trim().toLowerCase()
-      );
-    });
-  };
-  
+ const isInStock = (bookId) => {
+  if (!bookId) return false;
+
+  return copies.some(copy => copy.book_id === bookId);
+};
+
+
   return (
     <Wrapper>
       <h1>רשימת המשאלות שלי</h1>
-
       <TableWrapper>
         <Table bordered hover>
           <thead>
@@ -68,7 +99,7 @@ function WishList() {
             {books.map((book) => (
               <tr key={book.id}>
                 <td>
-                  <button 
+                  <button
                     onClick={() => handleDelete(book.id)}
                     className="btn btn-outline-danger"
                   >
@@ -76,11 +107,17 @@ function WishList() {
                   </button>
                 </td>
                 <td>
-                  <img src={book.imageUrl} alt={book.title} width="50" />
+                 <img
+                    src={book.image_url}
+                    alt={book.title}
+                    width="60"
+                    onError={(e) => { e.target.src = '/images/default-book.png'; }}
+                  />
+
                 </td>
                 <td>{book.title}</td>
-                <td>{book.author}</td>
-                <td>{isInStock(book.title, book.author) ? 'במלאי' : 'לא במלאי'}</td>
+                <td>{book.authors}</td>
+<td>{isInStock(book.id) ? 'במלאי' : 'לא במלאי'}</td>
                 <td>
                   <Link to={`/book/${encodeURIComponent(book.title)}`}>לספר</Link>
                 </td>
