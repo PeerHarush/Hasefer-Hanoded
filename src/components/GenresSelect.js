@@ -3,23 +3,25 @@ import { FormGroup, GenresContainer } from '../styles/GenereSelect.styles';
 import { Label, Input } from '../styles/LoginRegisterPage.styles';
 
 const genresList = [
-  { id: "fantasy", name: "פנטזיה" },
-  { id: "thriller", name: "מתח" },
-  { id: "sci-fi", name: "מדע בדיוני" },
-  { id: "romance", name: "רומן" },
-  { id: "biography", name: "ביוגרפיה" },
-  { id: "children", name: "ילדים" },
-  { id: "youth", name: "נוער" },
-  { id: "action", name: "פעולה" },
-  { id: "education", name: "לימוד" },
-  { id: "romantic", name: "רומנטיקה" },
-  { id: "foreign-language", name: "שפה זרה" },
-  { id: "self-improvement", name: "התפתחות אישית" },
+  { id: "פסיכולוגיה ומודעות", name: "פסיכולוגיה ומודעות" },
+  { id: "פעוטות וילדים", name: "פעוטות וילדים" },
+  { id: "מדע בדיוני ופנטזיה", name: "מדע בדיוני ופנטזיה" },
+
+  { id: "רומנטיקה", name: "רומנטיקה" },
+  { id: "נוער", name: "נוער" },
+  { id: "מתח", name: "מתח" },
+  { id: "בישול ואפיה", name: "בישול ואפיה" },
+  { id: "טיולים", name: "טיולים" },
+  { id: "שירה", name: "שירה" },
+  { id: "ספרי לימוד", name: "ספרי לימוד" },
+  { id: "הורות", name: "הורות" },
+  { id: "כלכלה", name: "כלכלה" },
+
 ];
 
 const GenresSelect = ({ selectedGenres, onChange, labelText = "ז'אנרים" }) => {
-  console.log("labelText received:", labelText); // להבטחת קבלת הפרופס
-
+  console.log("labelText received:", labelText); 
+  
   return (
     <FormGroup>
       <Label>{labelText}</Label>
@@ -40,5 +42,5 @@ const GenresSelect = ({ selectedGenres, onChange, labelText = "ז'אנרים" })
     </FormGroup>
   );
 };
-
+export { genresList };
 export default GenresSelect;

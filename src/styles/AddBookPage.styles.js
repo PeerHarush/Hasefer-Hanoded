@@ -63,7 +63,6 @@ export const Input = styled.input`
 
 export const Button = styled.button`
   width: 100%;
-  background: rgb(195, 165, 128);
   color: white;
   border: none;
   padding: 0.75rem;
@@ -71,8 +70,9 @@ export const Button = styled.button`
   border-radius: 6px;
   cursor: pointer;
   margin-top:0.15rem;
+  background: rgb(215, 184, 146);
   &:hover {
-    background: #bfa78a;
+    background:rgb(241, 206, 162);
   }
 `;
 
@@ -98,3 +98,30 @@ export const PreviewImage = styled.img`
   object-fit: cover;
 `;
 
+
+
+export const EditAddressButton = styled.button`
+  background: none;
+  border: none;
+  color:rgb(5, 93, 186);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+  padding: 0;
+`;
+
+
+
+export const Select = styled.select`
+  padding: 1px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  color: #333;
+  width: 100%;
+  
+  &:focus {
+    outline: none;
+  }
+`;
