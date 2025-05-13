@@ -14,6 +14,9 @@ export const Wrapper = styled.div`
   justify-content: center;
   text-align: center;
   padding: 30px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
 
   h1 {
     color: #333;
@@ -45,40 +48,19 @@ export const ProfileImage = styled.img`
   margin-bottom: 10px;
 `;
 
-export const UploadButton = styled.button`
-  margin-top: 10px;
-  
-`;
-
 export const InputContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 15px;
+  width: 100%;
   max-width: 400px;
-  margin: 0 auto;
   margin-top: 20px;
-
-  label {
-    display: block;
-    margin-bottom: 5px;
-  }
-
-  input {
-    width: 100%;
-    padding: 6px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-  }
-
-  span {
-    display: inline-block;
-    margin-bottom: 5px;
-  }
+  align-items: center;
 `;
 
 export const EditButton = styled.button`
   margin-right: 10px;
-  background:rgb(245, 227, 195);
+  background: rgb(245, 227, 195);
   border-radius: 8px;
   border: none;
 `;
