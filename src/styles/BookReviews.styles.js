@@ -12,44 +12,46 @@ export const NoReviewsMessage = styled.p`
 
 export const StarsContainer = styled.div`
   display: flex;
-  gap: 0.3rem;
   font-size: 1.2rem;
   align-items: center;
   margin-left: 1rem;
+
 `;
 
-export const Star = styled.span`
-  color: #ddd; /* צבע כהה יותר */
+// כוכב סטטי — להציג את הביקורות הקיימות
+export const StaticStar = styled.span`
+  color: ${props => (props.active ? '#ffbb33' : '#ddd')};
+`;
+
+// כוכב אינטרקטיבי — עבור הוספת ביקורת עם ריחוף
+export const InteractiveStar = styled.span`
+  color: ${props => (props.active ? '#ffbb33' : '#ddd')};
   cursor: pointer;
-  &:hover {
-    color: #ffbb33; /* צהוב כהה */
-  }
-`;
+  transition: color 0.2s;
 
-export const StarActive = styled(Star)`
-  color: #ffbb33; /* צהוב כהה */
+  &:hover,
+  &:hover ~ & {
+    color: #ffbb33;
+  }
 `;
 
 export const Textarea = styled.textarea`
   width: 100%;
   height: 100px;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
   border-radius: 8px;
   border: 1px solid #ddd;
   resize: none;
+  
 `;
 
 export const SubmitButton = styled.button`
-  background-color:rgb(237, 182, 110);
+  background-color: rgb(237, 182, 110);
   color: white;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  
-  }
 `;
 
 export const ReviewText = styled.p`
@@ -76,9 +78,8 @@ export const ReviewDate = styled.span`
 export const ReviewUser = styled.span`
   font-weight: bold;
   font-size: 1rem;
-  margin-right: 1rem;
-  text-align: right; /* הצמדה לימין */
-  width: 100%; /* מבטיח שהשם יתפוס את כל הרוחב */
+  text-align: right;
+  width: 100%;
 `;
 
 export const ReviewHeaderContent = styled.div`
@@ -93,7 +94,7 @@ export const ReviewUserContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 1rem; 
+  gap: 1rem;
 `;
 
 export const ReviewDateContainer = styled.div`
@@ -105,4 +106,23 @@ export const ReviewDateContainer = styled.div`
 export const ReviewItem = styled.div`
   border-bottom: 1px solid #ddd;
   padding: 1rem 0;
+`;
+
+export const ReviewFormHeader = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 2rem 0 1rem;
+  gap: 0.5rem;
+`;
+
+export const ReviewFormTitle = styled.h2`
+  font-size: 1.4rem;
+`;
+
+export const CoinReward = styled.span`
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #ffbb33;
+  gap: 0.3rem;
 `;

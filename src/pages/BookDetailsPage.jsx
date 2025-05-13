@@ -202,7 +202,7 @@ const BookDetails = () => {
           )}
 
           {/* ✅ טבלת עותקים */}
-          <h3>עותקים זמינים:</h3>
+          <h3>עותקים זמינים</h3>
           {relevantCopies.length > 0 ? (
             <Table striped bordered hover responsive>
               <thead>
@@ -240,7 +240,7 @@ const BookDetails = () => {
           )}
 
           {/* הוספת ביקורות */}
-          <h3> :ביקורות </h3>
+          <h3> ביקורות </h3>
           <BookReviews bookId={book.id} />
         </BookInfo>
 

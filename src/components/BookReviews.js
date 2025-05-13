@@ -1,5 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { ReviewContainer, NoReviewsMessage, StarsContainer, Star, StarActive, Textarea, SubmitButton, ReviewText, ReviewHeader, ReviewDate, ReviewUser, ReviewHeaderContent, ReviewUserContainer, ReviewDateContainer, ReviewItem } from '../styles/BookReviews.styles';
+import {
+  ReviewContainer,
+  NoReviewsMessage,
+  StarsContainer,
+  StaticStar,
+  InteractiveStar,
+  Textarea,
+  SubmitButton,
+  ReviewText,
+  ReviewHeader,
+  ReviewDate,
+  ReviewUser,
+  ReviewHeaderContent,
+  ReviewUserContainer,
+  ReviewDateContainer,
+  ReviewItem,
+  ReviewFormHeader,
+  ReviewFormTitle,
+  CoinReward
+} from '../styles/BookReviews.styles';
 import API_BASE_URL from '../config';
 
 const BookReviews = ({ bookId, userId }) => {
@@ -7,6 +26,7 @@ const BookReviews = ({ bookId, userId }) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [hoverIndex, setHoverIndex] = useState(null);
 
   const fetchReviews = async () => {
     try {
@@ -16,7 +36,7 @@ const BookReviews = ({ bookId, userId }) => {
       setReviews(reviewsData);
     } catch (error) {
       setErrorMessage('לא הצלחנו לטעון את הביקורות');
-      console.error(error);  // להדפיס שגיאות בקונסול
+      console.error(error);
     }
   };
 
@@ -27,7 +47,6 @@ const BookReviews = ({ bookId, userId }) => {
   const postReview = async (event) => {
     event.preventDefault();
 
-    // בדיקות תקינות
     if (rating < 1 || rating > 5 || !comment.trim()) {
       alert('יש למלא את כל השדות בצורה תקינה');
       return;
@@ -47,7 +66,7 @@ const BookReviews = ({ bookId, userId }) => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('API error response:', errorData);  // להדפיס תגובת שגיאה מה-API
+        console.error('API error response:', errorData);
         throw new Error('לא הצלחנו לשלוח את הביקורת');
       }
 
@@ -56,7 +75,7 @@ const BookReviews = ({ bookId, userId }) => {
       setRating(0);
       setComment('');
     } catch (error) {
-      console.error('Error submitting review:', error);  // להדפיס שגיאות בקונסול
+      console.error('Error submitting review:', error);
       alert('לא הצלחנו לשלוח את הביקורת');
     }
   };
@@ -71,7 +90,7 @@ const BookReviews = ({ bookId, userId }) => {
                 <ReviewUser>{review.user_name || 'משתמש לא ידוע'}</ReviewUser>
                 <StarsContainer>
                   {[...Array(5)].map((_, i) => (
-                    i < review.rating ? <StarActive key={i}>★</StarActive> : <Star key={i}>★</Star>
+                    <StaticStar key={i} active={i < review.rating}>★</StaticStar>
                   ))}
                 </StarsContainer>
               </ReviewUserContainer>
@@ -85,17 +104,26 @@ const BookReviews = ({ bookId, userId }) => {
       ) : (
         <NoReviewsMessage>היה הראשון להוסיף ביקורת</NoReviewsMessage>
       )}
+      
+      <ReviewFormHeader>
+        <ReviewFormTitle>הוספת ביקורת</ReviewFormTitle>
+        <CoinReward>
+          🪙 30 מטבעות
+        </CoinReward>
+      </ReviewFormHeader>
 
       <form onSubmit={postReview}>
         <StarsContainer>
           {[...Array(5)].map((_, i) => (
-            <Star
+            <InteractiveStar
               key={i}
+              active={i < (hoverIndex !== null ? hoverIndex : rating)}
               onClick={() => setRating(i + 1)}
-              style={{ color: i < rating ? '#ffbb33' : '#ddd' }}
+              onMouseEnter={() => setHoverIndex(i + 1)}
+              onMouseLeave={() => setHoverIndex(null)}
             >
               ★
-            </Star>
+            </InteractiveStar>
           ))}
         </StarsContainer>
 
