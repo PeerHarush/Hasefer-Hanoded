@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ReviewContainer, NoReviewsMessage, StarsContainer, Star, StarActive, Textarea, SubmitButton, ReviewText } from '../styles/BookReviews.styles';
+import { ReviewContainer, NoReviewsMessage, StarsContainer, Star, StarActive, Textarea, SubmitButton, ReviewText, ReviewHeader, ReviewDate, ReviewUser, ReviewHeaderContent, ReviewUserContainer, ReviewDateContainer, ReviewItem } from '../styles/BookReviews.styles';
 import API_BASE_URL from '../config';
+
 const BookReviews = ({ bookId, userId }) => {
   const [reviews, setReviews] = useState([]);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  // פונקציה למשיכת הביקורות מה-API
   const fetchReviews = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/books/${bookId}/comments`);
@@ -16,6 +16,7 @@ const BookReviews = ({ bookId, userId }) => {
       setReviews(reviewsData);
     } catch (error) {
       setErrorMessage('לא הצלחנו לטעון את הביקורות');
+      console.error(error);  // להדפיס שגיאות בקונסול
     }
   };
 
@@ -23,38 +24,39 @@ const BookReviews = ({ bookId, userId }) => {
     fetchReviews();
   }, [bookId]);
 
-  // פונקציה לשליחת ביקורת חדשה
   const postReview = async (event) => {
     event.preventDefault();
 
-    if (rating === 0 || !comment) {
-      alert('יש למלא את כל השדות');
+    // בדיקות תקינות
+    if (rating < 1 || rating > 5 || !comment.trim()) {
+      alert('יש למלא את כל השדות בצורה תקינה');
       return;
     }
 
     try {
-      const response = await fetch(`API_BASE_URL/book_comments`, {
+      const response = await fetch(`${API_BASE_URL}/book_comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          book_id: bookId,      // book_id של הספר
-          user_id: userId,      // user_id של המשתמש
-          rating,               // דירוג
-          comment_text: comment, // טקסט הביקורת
+          book_id: bookId,
+          user_id: userId,
+          rating,
+          comment_text: comment,
         }),
       });
 
-      if (!response.ok) throw new Error('לא הצלחנו לשלוח את הביקורת');
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API error response:', errorData);  // להדפיס תגובת שגיאה מה-API
+        throw new Error('לא הצלחנו לשלוח את הביקורת');
+      }
 
       const newReview = await response.json();
-      setReviews(prevReviews => [
-        ...prevReviews,
-        newReview,
-      ]);
-
+      setReviews(prevReviews => [...prevReviews, newReview]);
       setRating(0);
       setComment('');
     } catch (error) {
+      console.error('Error submitting review:', error);  // להדפיס שגיאות בקונסול
       alert('לא הצלחנו לשלוח את הביקורת');
     }
   };
@@ -63,14 +65,22 @@ const BookReviews = ({ bookId, userId }) => {
     <ReviewContainer>
       {reviews.length > 0 ? (
         reviews.map((review, index) => (
-          <div key={index} style={{ borderBottom: '1px solid #ddd', padding: '1rem 0' }}>
-            <StarsContainer>
-              {[...Array(5)].map((_, i) => (
-                i < review.rating ? <StarActive key={i}>★</StarActive> : <Star key={i}>★</Star>
-              ))}
-            </StarsContainer>
+          <ReviewItem key={index}>
+            <ReviewHeader>
+              <ReviewUserContainer>
+                <ReviewUser>{review.user_name || 'משתמש לא ידוע'}</ReviewUser>
+                <StarsContainer>
+                  {[...Array(5)].map((_, i) => (
+                    i < review.rating ? <StarActive key={i}>★</StarActive> : <Star key={i}>★</Star>
+                  ))}
+                </StarsContainer>
+              </ReviewUserContainer>
+              <ReviewDateContainer>
+                <ReviewDate>{new Date(review.created_at).toLocaleDateString()}</ReviewDate>
+              </ReviewDateContainer>
+            </ReviewHeader>
             <ReviewText>{review.comment_text}</ReviewText>
-          </div>
+          </ReviewItem>
         ))
       ) : (
         <NoReviewsMessage>היה הראשון להוסיף ביקורת</NoReviewsMessage>
