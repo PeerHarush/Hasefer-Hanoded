@@ -126,3 +126,11 @@ export const CoinReward = styled.span`
   color: #ffbb33;
   gap: 0.3rem;
 `;
+
+export const AverageRating = styled.div`
+  font-size: 18px;
+  font-weight: bold;
+  margin: 10px 0;
+  text-align: right;
+  color: #ff9900;
+`;

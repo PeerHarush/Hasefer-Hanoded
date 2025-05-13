@@ -17,7 +17,8 @@ import {
   ReviewItem,
   ReviewFormHeader,
   ReviewFormTitle,
-  CoinReward
+  CoinReward,
+  AverageRating
 } from '../styles/BookReviews.styles';
 import API_BASE_URL from '../config';
 
@@ -27,7 +28,9 @@ const BookReviews = ({ bookId, userId }) => {
   const [comment, setComment] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [hoverIndex, setHoverIndex] = useState(null);
-
+const averageRating = reviews.length
+  ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+  : 0;
   const fetchReviews = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/books/${bookId}/comments`);
@@ -82,6 +85,11 @@ const BookReviews = ({ bookId, userId }) => {
 
   return (
     <ReviewContainer>
+       {reviews.length > 0 && (
+    <AverageRating>
+      דירוג ממוצע: {averageRating.toFixed(1)} ★
+    </AverageRating>
+  )}
       {reviews.length > 0 ? (
         reviews.map((review, index) => (
           <ReviewItem key={index}>
