@@ -182,6 +182,7 @@ export const MobileButtonsContainer = styled.div`
     justify-content: center;
     flex-wrap: wrap;
     gap: 10px;
+    margin-bottom: 30px;
   }
 `;
 
@@ -197,13 +198,14 @@ export const StyledLinkButton = styled(Link)`
 export const TableWrapper = styled.div`
   width: 100%;
   max-width: 600px;
-  margin: 0 auto 40px auto;
+  margin: 0 auto 10px auto;
   
   padding: 16px;
 
   @media (max-width: 768px) {
+    margin: 0 auto 5px auto;
+
     max-width: 100%;
-    padding: 10px;
   }
 `;
 
@@ -213,6 +215,9 @@ border-radius: 0px;
   overflow: hidden; 
   @media (max-width: 768px) {
     min-width: 80%
+    
     font-size: 0.85rem;
   }
 `;
+
+
