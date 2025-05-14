@@ -162,11 +162,17 @@ export const BackButton = styled.button`
   }
 
   @media (max-width: 768px) {
-  
+    position: relative;
+    top: unset;
+    right: unset;
+    align-self: flex-start;
+    margin-bottom: 10px;
     font-size: 0.8rem;
     padding: 6px 12px;
   }
 `;
+
+
 
 export const MobileButtonsContainer = styled.div`
   display: none;
@@ -175,8 +181,10 @@ export const MobileButtonsContainer = styled.div`
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
+    gap: 10px;
   }
 `;
+
 
 export const StyledLinkButton = styled(Link)`
   text-decoration: none;
