@@ -173,7 +173,7 @@ export const MobileButtonsContainer = styled.div`
 
   @media (max-width: 768px) {
     display: flex;
-    justify-content: center
+    justify-content: center;
     flex-wrap: wrap;
   }
 `;
