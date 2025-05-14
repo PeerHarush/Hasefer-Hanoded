@@ -17,9 +17,10 @@ export const Wrapper = styled.div`
   h1 {
     color: #333;
     padding: 20px;
+     font-size: 1.8rem;
+     text-align: right;
   }
 `;
-
 export const ProfileCard = styled.div`
   background-color: #fff;
   border-radius: 10px;
@@ -29,16 +30,18 @@ export const ProfileCard = styled.div`
   max-width: 400px;
   margin: 20px;
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 `;
 
 export const ProfileImage = styled.img`
-  width: 140px;
-  height: 140px;
+  width: 120px;
+  height: 120px;
   object-fit: cover;
   border-radius: 50%;
   border: 2px solid #aaa;
   margin-bottom: 10px;
-  margin-top:-60px;
 `;
 
 export const InputContainer = styled.div`
@@ -46,11 +49,8 @@ export const InputContainer = styled.div`
   flex-direction: column;
   gap: 15px;
   max-width: 400px;
-  
-  margin-top: 20px;
+  margin-top: 10px;
   text-align: right;
-  
-
   label {
     display: block;
     margin-bottom: 5px;
@@ -69,41 +69,44 @@ export const InputContainer = styled.div`
   }
 `;
 
-export const EditButton = styled.button`
-  
-  background: none;
-  border-radius: 2px;
-  border: none;
-`;
 
 export const GenreList = styled.div`
-  margin-top: 30px;
+  margin-top: 5px;
 `;
 
 export const PointsText = styled.p`
-  margin-top: 20px;
+ 
   font-weight: bold;
   font-size: 1.4rem;
 `;
 
 export const SaveButton = styled.button`
-  margin-top: -40px;
+ 
   background: rgb(195, 165, 128);
   color: white;
   border: none;
   border-radius: 4px;
   padding: 8px 16px;
   cursor: pointer;
-  
-  align-self: center;  /* ממקם את כפתור השמירה במרכז */
+  align-self: center;
 
   &:hover {
     background: rgb(225, 194, 147);
   }
 `;
 
+export const EditButton = styled.button`
+  background: none;
+  border-radius: 2px;
+  border: none;
+  vertical-align: middle;  
+  margin-top: -5px;
+`;
+
+
 export const InputRow = styled.div`
   display: flex;
   gap: 10px;
   justify-content: flex-start;
+  align-items: center;  
 `;
