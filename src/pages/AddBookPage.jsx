@@ -1,3 +1,4 @@
+// AddBookPage.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import API_BASE_URL from '../config';
 import {
@@ -9,7 +10,6 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// תיקון אייקון של leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
@@ -54,11 +54,25 @@ const AddBookPage = () => {
         alert('לא ניתן לטעון את הפרופיל.');
       });
 
-    // בקשת מיקום נוכחי
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         pos => {
-          setCurrentPosition([pos.coords.latitude, pos.coords.longitude]);
+          const coords = [pos.coords.latitude, pos.coords.longitude];
+          setCurrentPosition(coords);
+
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords[0]}&lon=${coords[1]}&accept-language=he`)
+            .then(res => res.json())
+            .then(data => {
+              if (data && data.address) {
+                const { road, house_number, city, town, village } = data.address;
+                const cityName = city || town || village || '';
+                const locationText = [road, house_number, cityName].filter(Boolean).join(' ');
+                setForm(prev => ({ ...prev, location: locationText }));
+              }
+            })
+            .catch(err => {
+              console.error('שגיאה בהמרת מיקום לכתובת:', err);
+            });
         },
         err => {
           console.error('שגיאה באחזור מיקום:', err.message);
@@ -125,13 +139,10 @@ const AddBookPage = () => {
     }
   };
 
-  const handleUploadClick = () => {
-    fileInputRef.current.click();
-  };
+  const handleUploadClick = () => fileInputRef.current.click();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const token = localStorage.getItem('access_token');
     if (!token) {
       alert('יש להתחבר כדי להעלות ספר');
@@ -159,14 +170,11 @@ const AddBookPage = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/book-listings`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: fd,
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         const message = Array.isArray(data.detail)
           ? data.detail.map(e => e.msg).join(', ')
@@ -292,7 +300,6 @@ const AddBookPage = () => {
             )}
           </FormGroup>
 
-          {/* מפת מיקום נוכחי */}
           {currentPosition && (
             <div style={{ height: '300px', margin: '1rem 0 2rem', borderRadius: '8px', overflow: 'hidden' }}>
               <MapContainer center={currentPosition} zoom={13} style={{ height: '100%', width: '100%' }}>
@@ -305,7 +312,7 @@ const AddBookPage = () => {
             </div>
           )}
 
-          <Button type="submit">הוסף ספר</Button>
+          <Button type="submit" style={{ marginTop: '1rem' }}>הוסף ספר</Button>
         </form>
       </Card>
     </Wrapper>
