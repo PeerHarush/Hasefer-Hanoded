@@ -7,6 +7,13 @@ import {
 } from "../styles/LoginRegisterPage.styles";
 import GenresSelect from "../components/GenresSelect";
 
+// ולידציות בסיסיות
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const isValidPhoneNumber = (phone) => /^05\d{8}$/.test(phone); // מספר ישראלי תקין
+const isValidAddress = (address) => {
+  return /^[\u0590-\u05FF\s]+\d+$/.test(address); 
+};
+
 const LoginRegisterPage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('login');
@@ -19,11 +26,13 @@ const LoginRegisterPage = () => {
     address: '',
     profile_image: null,
   });
+  const [errors, setErrors] = useState({});
   const [previewImage, setPreviewImage] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleChange = e => {
     const { name, value, type, checked } = e.target;
+
     if (type === 'checkbox') {
       setForm(prev => {
         const genres = prev.genres || [];
@@ -33,6 +42,20 @@ const LoginRegisterPage = () => {
       });
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
+
+      if (activeTab === 'register') {
+        let errorMessage = '';
+
+        if (name === 'email' && !isValidEmail(value)) {
+          errorMessage = 'כתובת אימייל לא תקינה';
+        } else if (name === 'phonenum' && !isValidPhoneNumber(value)) {
+          errorMessage = 'מספר טלפון לא תקין (חייב להתחיל ב־05 ולהכיל 10 ספרות)';
+        } else if (name === 'address' && !isValidAddress(value)) {
+          errorMessage = 'כתובת צריכה לכלול שם רחוב ומספר (למשל: הרצל 12)';
+        }
+
+        setErrors(prev => ({ ...prev, [name]: errorMessage }));
+      }
     }
   };
 
@@ -51,6 +74,18 @@ const LoginRegisterPage = () => {
     e.preventDefault();
 
     if (activeTab === 'register') {
+      // ולידציה נוספת לפני שליחה
+      const newErrors = {};
+
+      if (!isValidEmail(form.email)) newErrors.email = 'כתובת אימייל לא תקינה';
+      if (!isValidPhoneNumber(form.phonenum)) newErrors.phonenum = 'מספר טלפון לא תקין (חייב להתחיל ב־05 ולהכיל 10 ספרות)';
+      if (!isValidAddress(form.address)) newErrors.address = 'כתובת לא תקינה - פורמט לדוגמה: דיזנגוף 100 תל אביב';
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        return;
+      }
+
       const fd = new FormData();
       fd.append('email', form.email);
       fd.append('password', form.password);
@@ -74,7 +109,6 @@ const LoginRegisterPage = () => {
       } catch (err) {
         alert(err.message);
       }
-
     } else {
       // login
       try {
@@ -88,8 +122,7 @@ const LoginRegisterPage = () => {
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.detail || 'Login failed');
-        
-        // ✅ שמירת מידע התחברות
+
         localStorage.setItem('access_token', json.access_token);
         localStorage.setItem('refresh_token', json.refresh_token);
         localStorage.setItem('userLoggedIn', 'true');
@@ -109,13 +142,14 @@ const LoginRegisterPage = () => {
           {activeTab === 'login' ? 'התחבר לחשבון שלך' : 'צור חשבון חדש'}
         </Subtitle>
         <Tabs>
-          <Tab active={activeTab==='login'} onClick={()=>setActiveTab('login')}>
+          <Tab active={activeTab === 'login'} onClick={() => setActiveTab('login')}>
             התחברות
           </Tab>
-          <Tab active={activeTab==='register'} onClick={()=>setActiveTab('register')}>
+          <Tab active={activeTab === 'register'} onClick={() => setActiveTab('register')}>
             הרשמה
           </Tab>
         </Tabs>
+
         <form onSubmit={handleSubmit}>
           {activeTab === 'register' && (
             <FormGroup>
@@ -129,6 +163,7 @@ const LoginRegisterPage = () => {
               />
             </FormGroup>
           )}
+
           <FormGroup>
             <Label>דוא״ל</Label>
             <Input
@@ -138,7 +173,9 @@ const LoginRegisterPage = () => {
               onChange={handleChange}
               required
             />
+            {errors.email && <div style={{ color: 'red', fontSize: '0.9em' }}>{errors.email}</div>}
           </FormGroup>
+
           <FormGroup>
             <Label>סיסמה</Label>
             <Input
@@ -149,6 +186,7 @@ const LoginRegisterPage = () => {
               required
             />
           </FormGroup>
+
           {activeTab === 'register' && (
             <>
               <FormGroup>
@@ -160,7 +198,9 @@ const LoginRegisterPage = () => {
                   onChange={handleChange}
                   required
                 />
+                {errors.phonenum && <div style={{ color: 'red', fontSize: '0.9em' }}>{errors.phonenum}</div>}
               </FormGroup>
+
               <FormGroup>
                 <Label>כתובת</Label>
                 <Input
@@ -169,8 +209,11 @@ const LoginRegisterPage = () => {
                   value={form.address}
                   onChange={handleChange}
                   required
+                  placeholder="לדוגמה: דיזנגוף 100 תל אביב"
                 />
+                {errors.address && <div style={{ color: 'red', fontSize: '0.9em' }}>{errors.address}</div>}
               </FormGroup>
+
               <FormGroup>
                 <Label>תמונה</Label>
                 <ImageUploadContainer onClick={handleUploadClick}>
@@ -189,6 +232,7 @@ const LoginRegisterPage = () => {
                   />
                 </ImageUploadContainer>
               </FormGroup>
+
               <GenresSelect
                 selectedGenres={form.genres}
                 onChange={handleChange}
@@ -196,6 +240,7 @@ const LoginRegisterPage = () => {
               />
             </>
           )}
+
           <Button type="submit">
             {activeTab === 'login' ? 'התחבר' : 'הרשמה'}
           </Button>

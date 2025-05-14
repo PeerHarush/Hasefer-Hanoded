@@ -1,5 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Wrapper, ProfileCard, ProfileImage, InputContainer, Label, GenreList, PointsText, SaveButton, EditButton, InputRow } from '../styles/UserProfile.styles';
+import {
+  Wrapper,
+  ProfileCard,
+  ProfileImage,
+  InputContainer,
+  Label,
+  GenreList,
+  PointsText,
+  SaveButton,
+  EditButton,
+  Title,
+  InputRow,
+  HeaderContainer,
+  FieldGroup,
+FieldValue,
+    ImageContainer,
+  GenresListItem,
+  GenreIcon,
+} from '../styles/UserProfile.styles';
 import API_BASE_URL from '../config';
 import GenresSelect from '../components/GenresSelect';
 
@@ -104,16 +122,16 @@ function UserProfile() {
   };
 
   return (
-    <Wrapper>
+   <Wrapper>
   <ProfileCard>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <h1 style={{ marginRight: '20px' }}>הפרופיל שלי</h1>
-      <div style={{ textAlign: 'center' }}>
+    <HeaderContainer>
+  <Title>הפרופיל שלי</Title>
+          <ImageContainer>
         <ProfileImage
           src={previewImage || '/default-profile.png'}
           alt="Profile"
         />
-        <EditButton onClick={handleUploadClick}>✏️ </EditButton>
+        <EditButton onClick={handleUploadClick}>✏️</EditButton>
         <input
           ref={fileInputRef}
           type="file"
@@ -121,46 +139,53 @@ function UserProfile() {
           style={{ display: 'none' }}
           onChange={handleImageChange}
         />
-      </div>
-    </div>
-
-    <InputContainer>
-      <InputRow>
-        <Label>שם מלא:</Label>
-        {editMode.full_name ? (
-          <input name="full_name" value={profile.full_name} onChange={handleChange} />
-        ) : (
-          <span>{profile.full_name}</span>
-        )}
-        <EditButton onClick={() => toggleEdit('full_name')}> ✏️</EditButton>
+      </ImageContainer>
+    </HeaderContainer>
+<InputContainer>
+     <InputRow>
+        <EditButton onClick={() => toggleEdit('full_name')}>✏️</EditButton>
+        <FieldGroup>
+          <Label>שם מלא:</Label>
+          {editMode.full_name ? (
+            <input name="full_name" value={profile.full_name} onChange={handleChange} />
+          ) : (
+            <FieldValue>{profile.full_name}</FieldValue>
+          )}
+        </FieldGroup>
       </InputRow>
+<InputRow>
+  <EditButton onClick={() => toggleEdit('phone_number')}>✏️</EditButton>
+  <FieldGroup>
+    <Label>טלפון:</Label>
+    {editMode.phone_number ? (
+      <input name="phone_number" value={profile.phone_number} onChange={handleChange} />
+    ) : (
+      <FieldValue>{profile.phone_number}</FieldValue>
+    )}
+  </FieldGroup>
+</InputRow>
 
-      <InputRow>
-        <Label>טלפון:</Label>
-        {editMode.phone_number ? (
-          <input name="phone_number" value={profile.phone_number} onChange={handleChange} />
-        ) : (
-          <span>{profile.phone_number}</span>
-        )}
-        <EditButton onClick={() => toggleEdit('phone_number')}>✏️</EditButton>
-      </InputRow>
-
-      <InputRow>
-        <Label>כתובת:</Label>
-        {editMode.address ? (
-          <input name="address" value={profile.address} onChange={handleChange} />
-        ) : (
-          <span>{profile.address}</span>
-        )}
-        <EditButton onClick={() => toggleEdit('address')}>✏️</EditButton>
-      </InputRow>
-    </InputContainer>
+<InputRow>
+  <EditButton onClick={() => toggleEdit('address')}>✏️</EditButton>
+  <FieldGroup>
+    <Label>כתובת:</Label>
+    {editMode.address ? (
+      <input name="address" value={profile.address} onChange={handleChange} />
+    ) : (
+      <FieldValue>{profile.address}</FieldValue>
+    )}
+  </FieldGroup>
+</InputRow>
+  </InputContainer>  
 
     <GenreList>
-      <InputRow style={{ alignItems: 'center' }}>
-        <Label>ז'אנרים אהובים:</Label>
-        <EditButton onClick={() => toggleEdit('favorite_genres')}>✏️</EditButton>
-      </InputRow>
+   <InputRow>
+  <EditButton onClick={() => toggleEdit('favorite_genres')}>✏️</EditButton>
+  <FieldGroup>
+    <Label>ז'אנרים אהובים:</Label>
+  </FieldGroup>
+</InputRow>
+
 
       {editMode.favorite_genres ? (
         <GenresSelect
@@ -176,11 +201,12 @@ function UserProfile() {
           }}
         />
       ) : profile.favorite_genres.length > 0 ? (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
+        <ul>
           {profile.favorite_genres.map((genre, i) => (
-            <li key={i} style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-              <span style={{ marginLeft: '6px' }}>📚</span> {genre}
-            </li>
+            <GenresListItem key={i}>
+              <GenreIcon>📚</GenreIcon>
+              {genre}
+            </GenresListItem>
           ))}
         </ul>
       ) : (
@@ -188,9 +214,7 @@ function UserProfile() {
       )}
     </GenreList>
 
-    <PointsText>
-      <p>🪙 נקודות: {profile.points}</p>
-    </PointsText>
+    <PointsText>🪙 נקודות: {profile.points}</PointsText>
 
     <SaveButton onClick={handleSave}>שמור פרופיל</SaveButton>
   </ProfileCard>

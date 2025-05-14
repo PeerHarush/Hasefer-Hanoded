@@ -1,113 +1,136 @@
 import styled from 'styled-components';
 
-export const Label = styled.label`
-  font-weight: bold;
-  margin-bottom: 5px;
-  display: block;
-  color: #444;
+export const Wrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  margin-top: 40px;
+  background-color: #fdfcf8;
 `;
 
-export const Wrapper = styled.div`
+export const ProfileCard = styled.div`
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 450px;
+  padding: 2rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-align: right;
+`;
+
+export const HeaderContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  text-align: right;
-  
-  h1 {
-    color: #333;
-    padding: 20px;
-     font-size: 1.8rem;
-     text-align: right;
-  }
+  text-align: center;
+  margin-bottom: 1.5rem;
 `;
-export const ProfileCard = styled.div`
-  background-color: #fff;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
-  margin: 20px;
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+
+export const Title = styled.h2`
+  text-align: center;
+  color:rgb(144, 83, 8);
+
+  margin-bottom: 0.25rem;
+`;
+
+export const ImageContainer = styled.div`
+  position: relative;
+  text-align: center;
 `;
 
 export const ProfileImage = styled.img`
-  width: 120px;
-  height: 120px;
+  width: 150px;
+  height: 150px;
   object-fit: cover;
   border-radius: 50%;
-  border: 2px solid #aaa;
+  border: 3px solid #ccc;
   margin-bottom: 10px;
 `;
 
 export const InputContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
   width: 100%;
-  max-width: 400px;
-  margin-top: 10px;
-  text-align: right;
-  label {
-    display: block;
-    margin-bottom: 5px;
-  }
 
-  input {
-    width: 100%;
-    padding: 6px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-  }
+`;
 
-  span {
-    display: inline-block;
-    margin-bottom: 5px;
-  }
+export const InputRow = styled.div`
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  gap: 10px;
 `;
 
 
-export const GenreList = styled.div`
-  margin-top: 5px;
-`;
-
-export const PointsText = styled.p`
- 
+export const Label = styled.label`
   font-weight: bold;
-  font-size: 1.4rem;
-`;
-
-export const SaveButton = styled.button`
- 
-  background: rgb(195, 165, 128);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 16px;
-  cursor: pointer;
-  align-self: center;
-
-  &:hover {
-    background: rgb(225, 194, 147);
-  }
+  color: #333;
+  font-size: 1rem;
 `;
 
 export const EditButton = styled.button`
   background: none;
-  border-radius: 2px;
   border: none;
-  vertical-align: middle;  
-  margin-top: -5px;
+  font-size: 1.1rem;
+  color: #444;
+  cursor: pointer;
+  align-self: flex-start;
 `;
 
+export const GenreList = styled.div`
+  margin-top: 15px;
+`;
 
-export const InputRow = styled.div`
+export const GenresListItem = styled.li`
   display: flex;
-  gap: 10px;
-  justify-content: flex-start;
-  align-items: center;  
+  align-items: center;
+  margin-bottom: 5px;
+  list-style: none;
 `;
+
+export const GenreIcon = styled.span`
+  margin-left: 6px;
+`;
+
+export const PointsText = styled.p`
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #222;
+  margin-top: 20px;
+  text-align: center;
+`;
+
+export const SaveButton = styled.button`
+  width: 100%;
+  background: rgb(215, 184, 146);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 10px;
+
+  &:hover {
+    background: rgb(241, 206, 162);
+  }
+`;
+
+export const FieldGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  flex: 1;
+`;
+
+export const FieldValue = styled.span`
+  font-size: 1rem;
+  color: #000;
+`;
+

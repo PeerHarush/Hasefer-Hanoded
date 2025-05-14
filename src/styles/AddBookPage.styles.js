@@ -29,7 +29,6 @@ export const Title = styled.h2`
   text-align: center;
   color:rgb(144, 83, 8);
 
-  //#8B1A1A אופציונלי 
   margin-bottom: 0.25rem;
 `;
 
