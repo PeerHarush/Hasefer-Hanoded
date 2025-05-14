@@ -18,8 +18,10 @@ import {
   ReviewFormHeader,
   ReviewFormTitle,
   CoinReward,
-  AverageRating
+  AverageRating,
+  AvatarImage
 } from '../styles/BookReviews.styles';
+
 import API_BASE_URL from '../config';
 
 const BookReviews = ({ bookId, userId }) => {
@@ -28,18 +30,20 @@ const BookReviews = ({ bookId, userId }) => {
   const [comment, setComment] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [hoverIndex, setHoverIndex] = useState(null);
-const averageRating = reviews.length
-  ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-  : 0;
+
+  const averageRating = reviews.length
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : 0;
+
   const fetchReviews = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/books/${bookId}/comments`);
       if (!response.ok) throw new Error('לא הצלחנו לטעון את הביקורות');
-      const reviewsData = await response.json();
-      setReviews(reviewsData);
+      const data = await response.json();
+      setReviews(data);
     } catch (error) {
-      setErrorMessage('לא הצלחנו לטעון את הביקורות');
       console.error(error);
+      setErrorMessage('לא הצלחנו לטעון את הביקורות');
     }
   };
 
@@ -47,55 +51,74 @@ const averageRating = reviews.length
     fetchReviews();
   }, [bookId]);
 
-  const postReview = async (event) => {
-    event.preventDefault();
+  const postReview = async (e) => {
+  e.preventDefault();
 
-    if (rating < 1 || rating > 5 || !comment.trim()) {
-      alert('יש למלא את כל השדות בצורה תקינה');
-      return;
-    }
+  // בדיקת תקינות של השדות
+  if (rating < 1 || rating > 5 || !comment.trim()) {
+    setErrorMessage('יש למלא את כל השדות בצורה תקינה');
+    return;
+  }
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/book_comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          book_id: bookId,
-          user_id: userId,
-          rating,
-          comment_text: comment,
-        }),
-      });
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    setErrorMessage('יש להתחבר כדי לשלוח ביקורת');
+    return;
+  }
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('API error response:', errorData);
-        throw new Error('לא הצלחנו לשלוח את הביקורת');
-      }
-
-      const newReview = await response.json();
-      setReviews(prevReviews => [...prevReviews, newReview]);
-      setRating(0);
-      setComment('');
-    } catch (error) {
-      console.error('Error submitting review:', error);
-      alert('לא הצלחנו לשלוח את הביקורת');
-    }
+  const reviewData = {
+    book_id: bookId,
+    user_id: userId,
+    rating,
+    comment_text: comment,
   };
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/books/${bookId}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(reviewData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('API error response:', errorData); // הצגת פרטי השגיאה
+      throw new Error(errorData.detail || 'לא הצלחנו לשלוח את הביקורת');
+    }
+
+    const newReview = await response.json();
+    setReviews(prev => [...prev, newReview]); // הוספת ביקורת חדשה לרשימה
+    setRating(0); // איפוס הדירוג
+    setComment(''); // איפוס התגובה
+    setErrorMessage(''); // איפוס הודעת השגיאה
+  } catch (error) {
+    console.error('Error submitting review:', error);
+    setErrorMessage(`לא הצלחנו לשלוח את הביקורת: ${error.message}`); // הצגת פרטי השגיאה למשתמש
+  }
+};
+
 
   return (
     <ReviewContainer>
-       {reviews.length > 0 && (
-    <AverageRating>
-      דירוג ממוצע: {averageRating.toFixed(1)} ★
-    </AverageRating>
-  )}
+      {reviews.length > 0 && (
+        <AverageRating>
+          דירוג ממוצע: {averageRating.toFixed(1)} ★
+        </AverageRating>
+      )}
+
       {reviews.length > 0 ? (
         reviews.map((review, index) => (
           <ReviewItem key={index}>
             <ReviewHeader>
               <ReviewUserContainer>
-                <ReviewUser>{review.user_name || 'משתמש לא ידוע'}</ReviewUser>
+                <AvatarImage
+                  src={review.user?.avatar_url}
+                  alt="avatar"
+                />
+                <ReviewUser>{review.user?.full_name || 'משתמש לא ידוע'}</ReviewUser>
                 <StarsContainer>
                   {[...Array(5)].map((_, i) => (
                     <StaticStar key={i} active={i < review.rating}>★</StaticStar>
@@ -110,14 +133,12 @@ const averageRating = reviews.length
           </ReviewItem>
         ))
       ) : (
-        <NoReviewsMessage>היה הראשון להוסיף ביקורת</NoReviewsMessage>
+        <NoReviewsMessage>{errorMessage || 'היה הראשון להוסיף ביקורת'}</NoReviewsMessage>
       )}
-      
+
       <ReviewFormHeader>
         <ReviewFormTitle>הוספת ביקורת</ReviewFormTitle>
-        <CoinReward>
-          🪙 30 מטבעות
-        </CoinReward>
+        <CoinReward>🪙 30 מטבעות</CoinReward>
       </ReviewFormHeader>
 
       <form onSubmit={postReview}>
@@ -140,6 +161,8 @@ const averageRating = reviews.length
           onChange={(e) => setComment(e.target.value)}
           placeholder="כתוב את הביקורת שלך..."
         />
+
+        {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
 
         <SubmitButton type="submit">שלח ביקורת</SubmitButton>
       </form>

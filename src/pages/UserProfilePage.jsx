@@ -1,14 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  Wrapper,
-  ProfileImage,
-  InputContainer,
-  Label,
-  GenreList,
-  PointsText,
-  SaveButton,
-  EditButton
-} from '../styles/UserProfile.styles';
+import { Wrapper, ProfileCard, ProfileImage, InputContainer, Label, GenreList, PointsText, SaveButton, EditButton, InputRow } from '../styles/UserProfile.styles';
 import API_BASE_URL from '../config';
 
 function UserProfile() {
@@ -111,72 +102,72 @@ function UserProfile() {
   return (
     <Wrapper>
       <h1>הפרופיל שלי</h1>
-
-      <div>
-      <ProfileImage
-          src={previewImage || '/default-profile.png'}
-          alt="Profile"
-        />
-
-        <br />
-        <EditButton onClick={handleUploadClick}>✏️ ערוך תמונה</EditButton>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          style={{ display: 'none' }}
-          onChange={handleImageChange}
-        />
-      </div>
-
-      <InputContainer>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Label>שם מלא:</Label>
-          {editMode.full_name ? (
-            <input name="full_name" value={profile.full_name} onChange={handleChange} />
-          ) : (
-            <span>{profile.full_name}</span>
-          )}
-          <EditButton onClick={() => toggleEdit('full_name')}> ✏️ערוך</EditButton>
+      <ProfileCard>
+        <div style={{ textAlign: 'center' }}>
+          <ProfileImage
+            src={previewImage || '/default-profile.png'}
+            alt="Profile"
+          />
+          <br />
+          <EditButton onClick={handleUploadClick}>✏️ </EditButton>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleImageChange}
+          />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Label>טלפון:</Label>
-          {editMode.phone_number ? (
-            <input name="phone_number" value={profile.phone_number} onChange={handleChange} />
+        <InputContainer>
+          <InputRow>
+            <Label>שם מלא:</Label>
+            {editMode.full_name ? (
+              <input name="full_name" value={profile.full_name} onChange={handleChange} />
+            ) : (
+              <span>{profile.full_name}</span>
+            )}
+            <EditButton onClick={() => toggleEdit('full_name')}> ✏️</EditButton>
+          </InputRow>
+
+          <InputRow>
+            <Label>טלפון:</Label>
+            {editMode.phone_number ? (
+              <input name="phone_number" value={profile.phone_number} onChange={handleChange} />
+            ) : (
+              <span>{profile.phone_number}</span>
+            )}
+            <EditButton onClick={() => toggleEdit('phone_number')}>✏️</EditButton>
+          </InputRow>
+
+          <InputRow>
+            <Label>כתובת:</Label>
+            {editMode.address ? (
+              <input name="address" value={profile.address} onChange={handleChange} />
+            ) : (
+              <span>{profile.address}</span>
+            )}
+            <EditButton onClick={() => toggleEdit('address')}>✏️</EditButton>
+          </InputRow>
+        </InputContainer>
+
+        <GenreList>
+          <p>ז'אנרים אהובים:</p>
+          {profile.favorite_genres.length > 0 ? (
+            <ul>
+              {profile.favorite_genres.map((genre, i) => (
+                <li key={i}>{genre}</li>
+              ))}
+            </ul>
           ) : (
-            <span>{profile.phone_number}</span>
+            <p>אין ז'אנרים אהובים</p>
           )}
-          <EditButton onClick={() => toggleEdit('phone_number')}>✏️ ערוך</EditButton>
-        </div>
+        </GenreList>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Label>כתובת:</Label>
-          {editMode.address ? (
-            <input name="address" value={profile.address} onChange={handleChange} />
-          ) : (
-            <span>{profile.address}</span>
-          )}
-          <EditButton onClick={() => toggleEdit('address')}>✏️ ערוך</EditButton>
-        </div>
-      </InputContainer>
-
-      <GenreList>
-        <p>ז'אנרים אהובים:</p>
-        {profile.favorite_genres.length > 0 ? (
-          <ul>
-            {profile.favorite_genres.map((genre, i) => (
-              <li key={i}>{genre}</li>
-            ))}
-          </ul>
-        ) : (
-          <p>אין ז'אנרים אהובים</p>
-        )}
-      </GenreList>
-
-      <PointsText>
-        <p><strong>🪙 נקודות:</strong> {profile.points}</p>
-      </PointsText>
+        <PointsText>
+          <p>🪙 נקודות: {profile.points}</p>
+        </PointsText>
+      </ProfileCard>
 
       <SaveButton onClick={handleSave}>שמור פרופיל</SaveButton>
     </Wrapper>

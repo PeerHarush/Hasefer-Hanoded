@@ -1,136 +1,140 @@
 import styled from 'styled-components';
 
 export const ReviewContainer = styled.div`
-  margin-top: 2rem;
+  margin-top: -10px;
+  padding: 20px;
+
 `;
 
 export const NoReviewsMessage = styled.p`
-  font-size: 1.2rem;
-  color: #888;
   text-align: center;
+  color: #777;
+  font-size: 16px;
 `;
 
 export const StarsContainer = styled.div`
   display: flex;
-  font-size: 1.2rem;
-  align-items: center;
-  margin-left: 1rem;
-
+  gap: 5px;
+  margin-top: 10px;
 `;
 
-// כוכב סטטי — להציג את הביקורות הקיימות
 export const StaticStar = styled.span`
-  color: ${props => (props.active ? '#ffbb33' : '#ddd')};
+  color: ${({ active }) => (active ? '#f5a623' : '#ccc')};
+  font-size: 20px;
 `;
 
-// כוכב אינטרקטיבי — עבור הוספת ביקורת עם ריחוף
 export const InteractiveStar = styled.span`
-  color: ${props => (props.active ? '#ffbb33' : '#ddd')};
   cursor: pointer;
+  font-size: 24px;
+  color: ${({ active }) => (active ? '#f5a623' : '#ccc')};
   transition: color 0.2s;
 
-  &:hover,
-  &:hover ~ & {
-    color: #ffbb33;
+  &:hover {
+    color: #f5a623;
   }
 `;
 
 export const Textarea = styled.textarea`
   width: 100%;
-  height: 100px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  resize: none;
-  
+  margin-top: 10px;  
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  background-color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s, box-shadow 0.2s;
 `;
 
 export const SubmitButton = styled.button`
-  background-color: rgb(237, 182, 110);
+  margin-top: 12px;
+  padding: 10px 20px;
+  background: rgb(215, 184, 146);
+  &:hover {
+    background:rgb(241, 206, 162);
+    }
   color: white;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 5px;
   cursor: pointer;
+  font-size: 15px;
 `;
 
 export const ReviewText = styled.p`
-  font-size: 1.1rem;
+  font-size: 15px;
   color: #333;
-  margin-top: 1rem;
-  word-wrap: break-word;
+  margin-top: 10px;
+  white-space: pre-line;
 `;
 
 export const ReviewHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: start;
-  margin-bottom: 1rem;
-  flex-direction: column;
-`;
-
-export const ReviewDate = styled.span`
-  font-size: 0.9rem;
-  color: #888;
-  margin-top: 0.2rem;
+  align-items: flex-start;
+  margin-bottom: 5px;
 `;
 
 export const ReviewUser = styled.span`
   font-weight: bold;
-  font-size: 1rem;
-  text-align: right;
-  width: 100%;
+  font-size: 16px;
+  margin-right: 10px;
 `;
 
-export const ReviewHeaderContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.2rem;
-  margin-right: 1rem;
+export const ReviewDate = styled.span`
+  font-size: 13px;
+  color: #888;
 `;
 
 export const ReviewUserContainer = styled.div`
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 1rem;
+  gap: 10px;
 `;
 
 export const ReviewDateContainer = styled.div`
   display: flex;
-  justify-content: flex-start;
-  margin-left: auto;
+  align-items: center;
 `;
 
 export const ReviewItem = styled.div`
-  border-bottom: 1px solid #ddd;
-  padding: 1rem 0;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  background-color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
 `;
+
 
 export const ReviewFormHeader = styled.div`
   display: flex;
-  align-items: center;
-  margin: 2rem 0 1rem;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: right;
+  margin-top: 30px;
 `;
 
-export const ReviewFormTitle = styled.h2`
-  font-size: 1.4rem;
+export const ReviewFormTitle = styled.h3`
+  font-size: 18px;
+  margin: 0;
+
 `;
 
 export const CoinReward = styled.span`
-  display: flex;
-  align-items: center;
-  font-size: 0.95rem;
-  color: #ffbb33;
-  gap: 0.3rem;
+  font-size: 14px;
+  color: #555;
 `;
 
 export const AverageRating = styled.div`
-  font-size: 18px;
+  font-size: 17px;
   font-weight: bold;
-  margin: 10px 0;
-  text-align: right;
-  color: #ff9900;
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
+  color: #f5a623;
 `;
+
+export const AvatarImage = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
