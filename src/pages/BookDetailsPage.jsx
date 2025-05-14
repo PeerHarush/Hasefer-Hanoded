@@ -183,10 +183,11 @@ const BookDetails = () => {
 
   return (
     <PageContainer>
-      <BackButton onClick={goBack}> אחורה</BackButton>
 
       <Wrapper>
         <BookInfo>
+                <BackButton onClick={goBack}> אחורה</BackButton>
+
           <h1 ref={titleRef}>{book.title}</h1>
           <h3>{book.authors}</h3>
           <BookImageMobile src={book.image_url} alt={book.title} />
