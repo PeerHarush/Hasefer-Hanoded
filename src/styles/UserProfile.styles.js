@@ -12,28 +12,27 @@ export const Wrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  padding: 30px;
-
+  text-align: right;
+  
   h1 {
     color: #333;
     padding: 20px;
+     font-size: 1.8rem;
+     text-align: right;
   }
-
-  p {
-    font-size: 1.3rem;
-    color: #333;
-  }
-
-  ul {
-    list-style: none;
-    padding: 0;
-  }
-
-  li {
-    padding: 4px 0;
-    font-weight: 500;
-  }
+`;
+export const ProfileCard = styled.div`
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  margin: 20px;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 `;
 
 export const ProfileImage = styled.img`
@@ -45,19 +44,14 @@ export const ProfileImage = styled.img`
   margin-bottom: 10px;
 `;
 
-export const UploadButton = styled.button`
-  margin-top: 10px;
-  
-`;
-
 export const InputContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 15px;
+  width: 100%;
   max-width: 400px;
-  margin: 0 auto;
-  margin-top: 20px;
-
+  margin-top: 10px;
+  text-align: right;
   label {
     display: block;
     margin-bottom: 5px;
@@ -76,33 +70,44 @@ export const InputContainer = styled.div`
   }
 `;
 
-export const EditButton = styled.button`
-  margin-right: 10px;
-  background:rgb(245, 227, 195);
-  border-radius: 8px;
-  border: none;
-`;
 
 export const GenreList = styled.div`
-  margin-top: 30px;
+  margin-top: 5px;
 `;
 
 export const PointsText = styled.p`
-  margin-top: 20px;
+ 
   font-weight: bold;
   font-size: 1.4rem;
 `;
 
 export const SaveButton = styled.button`
-  margin-top: 20px;
+ 
   background: rgb(195, 165, 128);
   color: white;
   border: none;
   border-radius: 4px;
   padding: 8px 16px;
   cursor: pointer;
+  align-self: center;
 
   &:hover {
     background: rgb(225, 194, 147);
   }
+`;
+
+export const EditButton = styled.button`
+  background: none;
+  border-radius: 2px;
+  border: none;
+  vertical-align: middle;  
+  margin-top: -5px;
+`;
+
+
+export const InputRow = styled.div`
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  align-items: center;  
 `;

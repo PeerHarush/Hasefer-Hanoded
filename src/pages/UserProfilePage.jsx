@@ -1,15 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  Wrapper,
-  ProfileImage,
-  InputContainer,
-  Label,
-  GenreList,
-  PointsText,
-  SaveButton,
-  EditButton
-} from '../styles/UserProfile.styles';
+import { Wrapper, ProfileCard, ProfileImage, InputContainer, Label, GenreList, PointsText, SaveButton, EditButton, InputRow } from '../styles/UserProfile.styles';
 import API_BASE_URL from '../config';
+import GenresSelect from '../components/GenresSelect';
 
 function UserProfile() {
   const [profile, setProfile] = useState({
@@ -26,6 +18,7 @@ function UserProfile() {
     full_name: false,
     phone_number: false,
     address: false,
+    favorite_genres: false,
   });
 
   const [previewImage, setPreviewImage] = useState(null);
@@ -87,6 +80,8 @@ function UserProfile() {
     fd.append('full_name', profile.full_name);
     fd.append('phone_number', profile.phone_number);
     fd.append('address', profile.address);
+    fd.append('favorite_genres', profile.favorite_genres.join(','));
+
     if (profile.avatar instanceof File) {
       fd.append('avatar', profile.avatar);
     }
@@ -110,16 +105,15 @@ function UserProfile() {
 
   return (
     <Wrapper>
-      <h1>הפרופיל שלי</h1>
-
-      <div>
-      <ProfileImage
+  <ProfileCard>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <h1 style={{ marginRight: '20px' }}>הפרופיל שלי</h1>
+      <div style={{ textAlign: 'center' }}>
+        <ProfileImage
           src={previewImage || '/default-profile.png'}
           alt="Profile"
         />
-
-        <br />
-        <EditButton onClick={handleUploadClick}>✏️ ערוך תמונה</EditButton>
+        <EditButton onClick={handleUploadClick}>✏️ </EditButton>
         <input
           ref={fileInputRef}
           type="file"
@@ -128,58 +122,80 @@ function UserProfile() {
           onChange={handleImageChange}
         />
       </div>
+    </div>
 
-      <InputContainer>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Label>שם מלא:</Label>
-          {editMode.full_name ? (
-            <input name="full_name" value={profile.full_name} onChange={handleChange} />
-          ) : (
-            <span>{profile.full_name}</span>
-          )}
-          <EditButton onClick={() => toggleEdit('full_name')}> ✏️ערוך</EditButton>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Label>טלפון:</Label>
-          {editMode.phone_number ? (
-            <input name="phone_number" value={profile.phone_number} onChange={handleChange} />
-          ) : (
-            <span>{profile.phone_number}</span>
-          )}
-          <EditButton onClick={() => toggleEdit('phone_number')}>✏️ ערוך</EditButton>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Label>כתובת:</Label>
-          {editMode.address ? (
-            <input name="address" value={profile.address} onChange={handleChange} />
-          ) : (
-            <span>{profile.address}</span>
-          )}
-          <EditButton onClick={() => toggleEdit('address')}>✏️ ערוך</EditButton>
-        </div>
-      </InputContainer>
-
-      <GenreList>
-        <p>ז'אנרים אהובים:</p>
-        {profile.favorite_genres.length > 0 ? (
-          <ul>
-            {profile.favorite_genres.map((genre, i) => (
-              <li key={i}>{genre}</li>
-            ))}
-          </ul>
+    <InputContainer>
+      <InputRow>
+        <Label>שם מלא:</Label>
+        {editMode.full_name ? (
+          <input name="full_name" value={profile.full_name} onChange={handleChange} />
         ) : (
-          <p>אין ז'אנרים אהובים</p>
+          <span>{profile.full_name}</span>
         )}
-      </GenreList>
+        <EditButton onClick={() => toggleEdit('full_name')}> ✏️</EditButton>
+      </InputRow>
 
-      <PointsText>
-        <p><strong>🪙 נקודות:</strong> {profile.points}</p>
-      </PointsText>
+      <InputRow>
+        <Label>טלפון:</Label>
+        {editMode.phone_number ? (
+          <input name="phone_number" value={profile.phone_number} onChange={handleChange} />
+        ) : (
+          <span>{profile.phone_number}</span>
+        )}
+        <EditButton onClick={() => toggleEdit('phone_number')}>✏️</EditButton>
+      </InputRow>
 
-      <SaveButton onClick={handleSave}>שמור פרופיל</SaveButton>
-    </Wrapper>
+      <InputRow>
+        <Label>כתובת:</Label>
+        {editMode.address ? (
+          <input name="address" value={profile.address} onChange={handleChange} />
+        ) : (
+          <span>{profile.address}</span>
+        )}
+        <EditButton onClick={() => toggleEdit('address')}>✏️</EditButton>
+      </InputRow>
+    </InputContainer>
+
+    <GenreList>
+      <InputRow style={{ alignItems: 'center' }}>
+        <Label>ז'אנרים אהובים:</Label>
+        <EditButton onClick={() => toggleEdit('favorite_genres')}>✏️</EditButton>
+      </InputRow>
+
+      {editMode.favorite_genres ? (
+        <GenresSelect
+          selectedGenres={profile.favorite_genres}
+          onChange={(e) => {
+            const { value, checked } = e.target;
+            setProfile((prev) => {
+              const updatedGenres = checked
+                ? [...prev.favorite_genres, value]
+                : prev.favorite_genres.filter((g) => g !== value);
+              return { ...prev, favorite_genres: updatedGenres };
+            });
+          }}
+        />
+      ) : profile.favorite_genres.length > 0 ? (
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          {profile.favorite_genres.map((genre, i) => (
+            <li key={i} style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+              <span style={{ marginLeft: '6px' }}>📚</span> {genre}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>אין ז'אנרים אהובים</p>
+      )}
+    </GenreList>
+
+    <PointsText>
+      <p>🪙 נקודות: {profile.points}</p>
+    </PointsText>
+
+    <SaveButton onClick={handleSave}>שמור פרופיל</SaveButton>
+  </ProfileCard>
+</Wrapper>
+
   );
 }
 
