@@ -1,30 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import Table from 'react-bootstrap/Table';
-import { TableWrapper, Wrapper, StockStatus } from '../styles/WishList.styles';
+import { Wrapper, CardsContainer, BookCard, StockTag, DeleteButton } from '../styles/WishList.styles';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../config';
 
 function WishList() {
   const [books, setBooks] = useState([]);
   const [copies, setCopies] = useState([]);
-  
+
   useEffect(() => {
     const fetchWishlistBooks = async () => {
       try {
         const token = localStorage.getItem('access_token');
-        if (!token) {
-          console.warn('אין טוקן - המשתמש לא מחובר');
-          return;
-        }
+        if (!token) return;
 
         const resWishlist = await fetch(`${API_BASE_URL}/wishlist/books`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!resWishlist.ok) {
-          throw new Error(`שגיאה: ${resWishlist.status}`);
-        }
-
+        if (!resWishlist.ok) throw new Error(`שגיאה: ${resWishlist.status}`);
         const data = await resWishlist.json();
         const wishlistIds = Array.isArray(data.wishlist_book_ids) ? data.wishlist_book_ids : [];
 
@@ -42,20 +35,18 @@ function WishList() {
   }, []);
 
   useEffect(() => {
-  const fetchCopies = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/book-listings`);
-      const data = await res.json();
-      console.log('📦 רשימת עותקים מהשרת:', data); // ← בדקי פה
-      setCopies(data);
-    } catch (err) {
-      console.error("שגיאה בטעינת העותקים:", err);
-    }
-  };
+    const fetchCopies = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/book-listings`);
+        const data = await res.json();
+        setCopies(data);
+      } catch (err) {
+        console.error("שגיאה בטעינת העותקים:", err);
+      }
+    };
 
-  fetchCopies();
-}, []);
-
+    fetchCopies();
+  }, []);
 
   const handleDelete = async (bookId) => {
     try {
@@ -74,64 +65,33 @@ function WishList() {
     }
   };
 
-const isInStock = (bookId) => {
-  if (!bookId) return false;
-
-  return copies.some(copy => copy.book?.id === bookId);
-};
-
-
-
+  const isInStock = (bookId) => {
+    return copies.some(copy => copy.book?.id === bookId);
+  };
 
   return (
     <Wrapper>
       <h1>רשימת המשאלות שלי</h1>
-      <TableWrapper>
-        <Table bordered hover>
-          <thead>
-            <tr>
-              <th>מחיקה</th>
-              <th>תמונה</th>
-              <th>שם הספר</th>
-              <th>שם המחבר</th>
-              <th>האם נמצא במלאי?</th>
-              <th>מעבר לספר</th>
-            </tr>
-          </thead>
-          <tbody>
-            {books.map((book) => (
-              <tr key={book.id}>
-                <td>
-                  <button
-                    onClick={() => handleDelete(book.id)}
-                    className="btn btn-outline-danger"
-                  >
-                    X
-                  </button>
-                </td>
-                <td>
-                 <img
-                    src={book.image_url}
-                    alt={book.title}
-                    width="60"
-                    onError={(e) => { e.target.src = '/images/default-book.png'; }}
-                  />
-
-                </td>
-                <td>{book.title}</td>
-                 <td>{book.authors}</td>
-               <StockStatus $inStock={isInStock(book.id)}>
-                  {isInStock(book.id) ? 'במלאי' : 'לא במלאי'}
-                </StockStatus>
-
-                <td>
-                  <Link to={`/book/${encodeURIComponent(book.title)}`}>לספר</Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </TableWrapper>
+      <CardsContainer>
+        {books.map((book) => (
+          <BookCard key={book.id}>
+            <DeleteButton onClick={() => handleDelete(book.id)}>🗑️</DeleteButton>
+            <img
+              src={book.image_url}
+              alt={book.title}
+              onError={(e) => { e.target.src = '/images/default-book.png'; }}
+            />
+            <h3>{book.title}</h3>
+            <p>{book.authors}</p>
+            <StockTag $inStock={isInStock(book.id)}>
+              {isInStock(book.id) ? 'במלאי' : 'לא במלאי'}
+            </StockTag>
+            <Link to={`/book/${encodeURIComponent(book.title)}`} className="view-link">
+              לפרטי הספר
+            </Link>
+          </BookCard>
+        ))}
+      </CardsContainer>
     </Wrapper>
   );
 }
