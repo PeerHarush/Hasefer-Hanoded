@@ -35,10 +35,6 @@ export const TableHeader = styled.th`
   color: #333;
 `;
 
-export const TableRow = styled.tr`
-  border-bottom: 1px solid #ddd;
-`;
-
 export const TableCell = styled.td`
   padding: 12px 15px;
   text-align: center;  /* מרכז את התוכן בתוך כל תא */
@@ -52,4 +48,28 @@ export const ChatLink = styled.a`
   &:hover {
     text-decoration: underline;
   }
+`;
+
+export const AvatarImage = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
+
+export const UnreadIndicator = styled.span`
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  border-radius: 50%;
+  display: inline-block;
+`;
+
+export const TableRow = styled.tr`
+  border-bottom: 1px solid #ddd;
+  background-color: ${({ isUnread }) => (isUnread ? '#fff6f6' : 'transparent')}; /* גוון אדמדם עדין */
 `;

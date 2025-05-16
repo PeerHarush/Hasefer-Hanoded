@@ -15,6 +15,7 @@ import MessagesPage from "./pages/MessagesPage.jsx";
 import  AllBooksPage from "./pages/AllBooksPage.jsx";
 import BookDetailsPage from './pages/BookDetailsPage.jsx';
 import AboutUsPage from './pages/aboutUsPage.jsx';
+import ChatPage from './pages/ChatPage';
 function App() {
   return (
     <div>
@@ -31,7 +32,7 @@ function App() {
         <Route path="/AllBooks" element={<AllBooksPage />} />
         <Route path="/book/:bookTitle" element={<BookDetailsPage />} />
         <Route path="/about" element={<AboutUsPage />} />
-        
+        <Route path="/chat/:chatRoomId" element={<ChatPage />} />
 
 
  </Routes>
