@@ -13,6 +13,14 @@ import {
   MessageTime,
 } from '../styles/ChatPage.styles';
 
+// סגנון נוסף ספציפי לעמוד הצ'אט
+const chatPageStyle = {
+  overflow: 'hidden',
+  padding: 0, 
+  margin: 0,
+  height: '100%'
+};
+
 const ChatPage = () => {
   const { chatRoomId } = useParams();
   const location = useLocation();
@@ -139,49 +147,66 @@ const ChatPage = () => {
     }
   };
 
+  // מניעת גלילה בדף כאשר הקומפוננטה נטענת
+  useEffect(() => {
+    // שומר את הסטייל המקורי של body
+    const originalStyle = window.getComputedStyle(document.body);
+    const originalOverflow = originalStyle.overflow;
+    
+    // מוסיף סגנון למניעת גלילה
+    document.body.style.overflow = 'hidden';
+    
+    // מחזיר את הסגנון המקורי כשהקומפוננטה נפרקת
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
   return (
-    <ChatContainer>
-      <Header>
-        {otherUser && (
-          <>
-            <Avatar src={otherUser.avatar_url} alt="avatar" />
-            <span>{otherUser.full_name}</span>
-            {bookTitle && <span className="book-title"> | {bookTitle}</span>}
-          </>
-        )}
-      </Header>
+    <div style={chatPageStyle}>
+      <ChatContainer>
+        <Header>
+          {otherUser && (
+            <>
+              <Avatar src={otherUser.avatar_url} alt="avatar" />
+              <span>{otherUser.full_name}</span>
+              {bookTitle && <span className="book-title"> | {bookTitle}</span>}
+            </>
+          )}
+        </Header>
 
-      <Messages>
-        {messages.map(msg => (
-          <Message key={msg.id} isMine={msg.is_from_user}>
-            <div>{msg.message}</div>
-            {msg.created_at && (
-              <MessageTime isMine={msg.is_from_user}>
-                {new Date(msg.created_at).toLocaleString('he-IL', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                })}
-              </MessageTime>
-            )}
-          </Message>
-        ))}
-        <div ref={messagesEndRef} />
-      </Messages>
+        <Messages>
+          {messages.map(msg => (
+            <Message key={msg.id} isMine={msg.is_from_user}>
+              <div>{msg.message}</div>
+              {msg.created_at && (
+                <MessageTime isMine={msg.is_from_user}>
+                  {new Date(msg.created_at).toLocaleString('he-IL', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                  })}
+                </MessageTime>
+              )}
+            </Message>
+          ))}
+          <div ref={messagesEndRef} />
+        </Messages>
 
-      <InputArea>
-        <Input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="כתוב הודעה..."
-          rows={3}
-        />
-        <SendButton onClick={handleSend}>שלח</SendButton>
-      </InputArea>
-    </ChatContainer>
+        <InputArea>
+          <Input
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="כתוב הודעה..."
+            rows={3}
+          />
+          <SendButton onClick={handleSend}>שלח</SendButton>
+        </InputArea>
+      </ChatContainer>
+    </div>
   );
 };
 
