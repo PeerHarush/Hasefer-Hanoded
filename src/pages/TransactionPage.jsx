@@ -46,7 +46,6 @@ const TransactionsPage = () => {
         });
         const data = await res.json();
         setChatRooms(data);
-        
         // 🐞 הדפסה לקונסול לבדיקת מבנה הצ׳אטים
         console.log("Loaded chatRooms:", data);
       } catch (err) {
@@ -127,21 +126,24 @@ const TransactionsPage = () => {
     return 0;
   });
 
-  // ✅ התאמת צ'אט לעסקה לפי listing_id + buyer/seller
-  const transactionsWithChat = sortedTransactions.map(tx => {
-    const matchingChat = chatRooms.find(chat =>
-      chat.listing?.id === tx.listing.id &&
-      (
-        (chat.buyer_id === tx.buyer.id && chat.seller_id === tx.seller.id) ||
-        (chat.buyer_id === tx.seller.id && chat.seller_id === tx.buyer.id)
-      )
-    );
+const transactionsWithChat = sortedTransactions.map(tx => {
+  const otherUserId = localStorage.getItem('user_id'); // או מאיפה שאת שומרת את היוזר הנוכחי
+  const participants = [tx.buyer.id, tx.seller.id];
 
-    return {
-      ...tx,
-      chat_room_id: matchingChat?.id || null
-    };
+  const matchingChat = chatRooms.find(chat => {
+    const otherId = chat.other_user?.id;
+    return otherId && participants.includes(otherId);
   });
+
+  return {
+    ...tx,
+    chat_room_id: matchingChat?.id || null
+  };
+});
+
+
+
+
 
   const goToChat = (chatRoomId) => {
     if (chatRoomId) {
@@ -211,15 +213,18 @@ const TransactionsPage = () => {
                       ✅ אשר שהעסקה הושלמה
                     </ConfirmButton>
                   )}
-                  {tx.chat_room_id ? (
-                    <ConfirmButton onClick={() => goToChat(tx.chat_room_id)}>
-                      💬 עבור לצ'אט
-                    </ConfirmButton>
-                  ) : (
-                    <span style={{ color: 'gray', fontSize: '0.9em' }}>
-                      אין צ'אט לעסקה זו
-                    </span>
-                  )}
+{tx.chat_room_id ? (
+  <ConfirmButton onClick={() => navigate(`/chat/${tx.chat_room_id}`)}>
+    💬 עבור לצ'אט
+  </ConfirmButton>
+) : (
+  <span style={{ color: 'gray', fontSize: '0.9em' }}>
+    אין צ'אט לעסקה זו
+  </span>
+)}
+
+
+
                 </ButtonRow>
               </InfoSection>
             </TransactionBox>
