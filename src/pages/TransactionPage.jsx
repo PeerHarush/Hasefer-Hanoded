@@ -213,15 +213,15 @@ const transactionsWithChat = sortedTransactions.map(tx => {
                       ✅ אשר שהעסקה הושלמה
                     </ConfirmButton>
                   )}
-{tx.chat_room_id ? (
-  <ConfirmButton onClick={() => navigate(`/chat/${tx.chat_room_id}`)}>
-    💬 עבור לצ'אט
-  </ConfirmButton>
-) : (
-  <span style={{ color: 'gray', fontSize: '0.9em' }}>
-    אין צ'אט לעסקה זו
-  </span>
-)}
+                {tx.chat_room_id ? (
+                  <ConfirmButton onClick={() => navigate(`/chat/${tx.chat_room_id}`)}>
+                    💬 עבור לצ'אט
+                  </ConfirmButton>
+                ) : (
+                  <span style={{ color: 'gray', fontSize: '0.9em' }}>
+                    אין צ'אט לעסקה זו
+                  </span>
+                )}
 
 
 
