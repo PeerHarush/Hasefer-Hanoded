@@ -18,11 +18,15 @@ const TransactionsPage = () => {
   const [transactions, setTransactions] = useState([]);
   const [chatRooms, setChatRooms] = useState([]);
   const [filter, setFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const userId = localStorage.getItem('user_id');
+  const token = localStorage.getItem('access_token');
+
+  // טען עסקאות
   useEffect(() => {
     const fetchTransactions = async () => {
-      const token = localStorage.getItem('access_token');
       try {
         const res = await fetch(`${API_BASE_URL}/transactions`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -30,34 +34,34 @@ const TransactionsPage = () => {
         const data = await res.json();
         setTransactions(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("שגיאה בטעינת עסקאות:", err);
+        console.error('שגיאה בטעינת עסקאות:', err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchTransactions();
-  }, []);
+    if (token) fetchTransactions();
+  }, [token]);
 
+  // טען צ'אטים
   useEffect(() => {
-    const fetchChatRooms = async () => {
-      const token = localStorage.getItem('access_token');
+    const fetchChats = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/chats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         setChatRooms(data);
-        // 🐞 הדפסה לקונסול לבדיקת מבנה הצ׳אטים
-        console.log("Loaded chatRooms:", data);
       } catch (err) {
-        console.error("שגיאה בטעינת צ׳אטים:", err);
+        console.error('שגיאה בטעינת צ׳אטים:', err);
       }
     };
 
-    fetchChatRooms();
-  }, []);
+    if (token) fetchChats();
+  }, [token]);
 
+  // אישור עסקה
   const confirmTransaction = async (transactionId) => {
-    const token = localStorage.getItem('access_token');
     try {
       const res = await fetch(`${API_BASE_URL}/transactions/${transactionId}`, {
         method: 'PUT',
@@ -78,6 +82,7 @@ const TransactionsPage = () => {
     }
   };
 
+  // קיבוץ עסקאות כפולות
   const groupedTransactions = transactions.reduce((acc, tx) => {
     const key = `${tx.seller.id}-${tx.buyer.id}-${tx.listing.book.title}`;
     if (!acc[key]) {
@@ -94,6 +99,7 @@ const TransactionsPage = () => {
   }, {});
   const groupedArray = Object.values(groupedTransactions);
 
+  // סינון
   const filteredTransactions = groupedArray.filter(tx => {
     switch (filter) {
       case 'seller':
@@ -110,6 +116,7 @@ const TransactionsPage = () => {
     }
   });
 
+  // מיון
   const sortedTransactions = filteredTransactions.sort((a, b) => {
     const statusOrder = {
       pending: 0,
@@ -126,37 +133,26 @@ const TransactionsPage = () => {
     return 0;
   });
 
-const transactionsWithChat = sortedTransactions.map(tx => {
-  const otherUserId = localStorage.getItem('user_id'); // או מאיפה שאת שומרת את היוזר הנוכחי
-  const participants = [tx.buyer.id, tx.seller.id];
+  // חיבור עסקאות לצ׳אטים
+  const transactionsWithChat = sortedTransactions.map(tx => {
+    const participants = [tx.buyer.id, tx.seller.id];
 
-  const matchingChat = chatRooms.find(chat => {
-    const otherId = chat.other_user?.id;
-    return otherId && participants.includes(otherId);
+    const matchingChat = chatRooms.find(chat => {
+      const otherId = chat.other_user?.id;
+      return otherId && participants.includes(otherId);
+    });
+
+    return {
+      ...tx,
+      chat_room_id: matchingChat?.id || null
+    };
   });
 
-  return {
-    ...tx,
-    chat_room_id: matchingChat?.id || null
-  };
-});
-
-
-
-
-
-  const goToChat = (chatRoomId) => {
-    if (chatRoomId) {
-      navigate(`/chat/${chatRoomId}`);
-    } else {
-      alert('לא קיים צ\'אט לעסקה זו');
-    }
-  };
-
+  // תרגום סטטוס
   const translateStatus = (status) => {
     switch (status) {
       case 'pending':
-        return 'ממתינה לאישור';
+        return 'ממתין לאישור';
       case 'completed':
         return 'הושלמה';
       case 'cancelled':
@@ -188,10 +184,7 @@ const transactionsWithChat = sortedTransactions.map(tx => {
         <TransactionsGrid>
           {transactionsWithChat.map(tx => (
             <TransactionBox key={tx.groupedIds.join('-')} status={tx.status}>
-              <BookImage
-                src={tx.listing.book.image_url}
-                alt={tx.listing.book.title}
-              />
+              <BookImage src={tx.listing.book.image_url} alt={tx.listing.book.title} />
               <InfoSection>
                 <Label><strong>סטטוס:</strong> {translateStatus(tx.status)}</Label>
                 <Label><strong>ספר:</strong> {tx.listing.book.title}</Label>
@@ -213,18 +206,16 @@ const transactionsWithChat = sortedTransactions.map(tx => {
                       ✅ אשר שהעסקה הושלמה
                     </ConfirmButton>
                   )}
-                {tx.chat_room_id ? (
-                  <ConfirmButton onClick={() => navigate(`/chat/${tx.chat_room_id}`)}>
-                    💬 עבור לצ'אט
-                  </ConfirmButton>
-                ) : (
-                  <span style={{ color: 'gray', fontSize: '0.9em' }}>
-                    אין צ'אט לעסקה זו
-                  </span>
-                )}
 
-
-
+                  {tx.chat_room_id ? (
+                    <ConfirmButton onClick={() => navigate(`/chat/${tx.chat_room_id}`)}>
+                      💬 עבור לצ'אט
+                    </ConfirmButton>
+                  ) : (
+                    <span style={{ color: 'gray', fontSize: '0.9em' }}>
+                      אין צ'אט לעסקה זו
+                    </span>
+                  )}
                 </ButtonRow>
               </InfoSection>
             </TransactionBox>
