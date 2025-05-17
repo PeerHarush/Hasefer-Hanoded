@@ -19,7 +19,8 @@ import {
   ReviewFormTitle,
   CoinReward,
   AverageRating,
-  AvatarImage
+  AvatarImage,
+  UserNameAndStars
 } from '../styles/BookReviews.styles';
 
 import API_BASE_URL from '../config';
@@ -52,54 +53,52 @@ const BookReviews = ({ bookId, userId }) => {
   }, [bookId]);
 
   const postReview = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // בדיקת תקינות של השדות
-  if (rating < 1 || rating > 5 || !comment.trim()) {
-    setErrorMessage('יש למלא את כל השדות בצורה תקינה');
-    return;
-  }
-
-  const token = localStorage.getItem('access_token');
-  if (!token) {
-    setErrorMessage('יש להתחבר כדי לשלוח ביקורת');
-    return;
-  }
-
-  const reviewData = {
-    book_id: bookId,
-    user_id: userId,
-    rating,
-    comment_text: comment,
-  };
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/books/${bookId}/comments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(reviewData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('API error response:', errorData); // הצגת פרטי השגיאה
-      throw new Error(errorData.detail || 'לא הצלחנו לשלוח את הביקורת');
+    if (rating < 1 || rating > 5 || !comment.trim()) {
+      setErrorMessage('יש למלא את כל השדות בצורה תקינה');
+      return;
     }
 
-    const newReview = await response.json();
-    setReviews(prev => [...prev, newReview]); // הוספת ביקורת חדשה לרשימה
-    setRating(0); // איפוס הדירוג
-    setComment(''); // איפוס התגובה
-    setErrorMessage(''); // איפוס הודעת השגיאה
-  } catch (error) {
-    console.error('Error submitting review:', error);
-    setErrorMessage(`לא הצלחנו לשלוח את הביקורת: ${error.message}`); // הצגת פרטי השגיאה למשתמש
-  }
-};
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setErrorMessage('יש להתחבר כדי לשלוח ביקורת');
+      return;
+    }
 
+    const reviewData = {
+      book_id: bookId,
+      user_id: userId,
+      rating,
+      comment_text: comment,
+    };
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/books/${bookId}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(reviewData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API error response:', errorData);
+        throw new Error(errorData.detail || 'לא הצלחנו לשלוח את הביקורת');
+      }
+
+      const newReview = await response.json();
+      setReviews(prev => [...prev, newReview]);
+      setRating(0);
+      setComment('');
+      setErrorMessage('');
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      setErrorMessage(`לא הצלחנו לשלוח את הביקורת: ${error.message}`);
+    }
+  };
 
   return (
     <ReviewContainer>
@@ -118,12 +117,14 @@ const BookReviews = ({ bookId, userId }) => {
                   src={review.user?.avatar_url}
                   alt="avatar"
                 />
-                <ReviewUser>{review.user?.full_name || 'משתמש לא ידוע'}</ReviewUser>
-                <StarsContainer>
-                  {[...Array(5)].map((_, i) => (
-                    <StaticStar key={i} active={i < review.rating}>★</StaticStar>
-                  ))}
-                </StarsContainer>
+                <UserNameAndStars>
+                  <ReviewUser>{review.user?.full_name || 'משתמש לא ידוע'}</ReviewUser>
+                  <StarsContainer>
+                    {[...Array(5)].map((_, i) => (
+                      <StaticStar key={i} active={i < review.rating}>★</StaticStar>
+                    ))}
+                  </StarsContainer>
+                </UserNameAndStars>
               </ReviewUserContainer>
               <ReviewDateContainer>
                 <ReviewDate>{new Date(review.created_at).toLocaleDateString()}</ReviewDate>
