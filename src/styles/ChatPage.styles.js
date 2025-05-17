@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+
+
 export const ChatContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -8,14 +10,12 @@ export const ChatContainer = styled.div`
   border-radius: 16px;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
   width: 95%;
-  height: 80vh;
-  margin: 10px auto;   /* המרכזת האמיתית */
-  overflow: hidden;
-  padding: 0;
+  height: 80vh;        
+  overflow: hidden;     
 
   @media (max-width: 768px) {
-    width: 95%;
-    height: 100vh;
+    max-width: 90%;
+    align-self: center;
     border-radius: 0;
     box-shadow: none;
   }
@@ -34,6 +34,7 @@ export const Header = styled.div`
   border-bottom: 1px solid #ddd;
 
   @media (max-width: 600px) {
+    padding: 12px 16px;
     font-size: 1rem;
   }
 `;
@@ -49,13 +50,16 @@ export const Avatar = styled.img`
     height: 40px;
   }
 `;
+
 export const ChatWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-  box-sizing: border-box;
+  padding: 16px;
+
+  @media (max-width: 768px) {
+    padding: 0;
+  }
 `;
 
 export const Messages = styled.div`
@@ -75,7 +79,6 @@ export const Messages = styled.div`
   &::-webkit-scrollbar-thumb {
     background-color: #ccc;
     border-radius: 4px;
-    
   }
 `;
 export const Message = styled.div`
@@ -95,7 +98,8 @@ export const Message = styled.div`
   @media (max-width: 600px) {
     max-width: 90%;
     font-size: 14px;
-    padding: 10px 12px;}
+    padding: 12px 14px;
+  }
 `;
 
 export const MessageTime = styled.div`
