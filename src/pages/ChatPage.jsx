@@ -6,6 +6,7 @@ import {
   ChatContainer,
   Header,
   Avatar,
+    ChatWrapper,   
   Messages,
   Message,
   MessageTime,
@@ -112,6 +113,7 @@ const ChatPage = () => {
   };
 
   return (
+  <ChatWrapper>
     <ChatContainer>
       <Header>
         {otherUser && (
@@ -154,7 +156,8 @@ const ChatPage = () => {
         <SendButton onClick={handleSend}>שלח</SendButton>
       </InputArea>
     </ChatContainer>
-  );
-};
+  </ChatWrapper>
+);
+}
 
 export default ChatPage;

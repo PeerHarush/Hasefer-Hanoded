@@ -7,15 +7,15 @@ export const ChatContainer = styled.div`
   border: 1px solid #ddd;
   border-radius: 16px;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
-  width: 100%;
-  max-width: 100%;
-  height: 80vh;         /* גובה לפי חלון */
-  margin:  10px auto;
-  overflow: hidden;     /* מונע גלילה חיצונית */
+  width: 95%;
+  height: 80vh;
+  margin: 10px auto;   /* המרכזת האמיתית */
+  overflow: hidden;
+  padding: 0;
 
   @media (max-width: 768px) {
-    max-width: 100%;
-    height: 100vh;      /* מלא גובה */
+    width: 95%;
+    height: 100vh;
     border-radius: 0;
     box-shadow: none;
   }
@@ -34,7 +34,6 @@ export const Header = styled.div`
   border-bottom: 1px solid #ddd;
 
   @media (max-width: 600px) {
-    padding: 12px 16px;
     font-size: 1rem;
   }
 `;
@@ -50,9 +49,16 @@ export const Avatar = styled.img`
     height: 40px;
   }
 `;
+export const ChatWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  box-sizing: border-box;
+`;
 
 export const Messages = styled.div`
-  flex-grow: 1;          /* תופס את כל המקום הזמין */
   padding: 20px;
   display: flex;
   flex-direction: column-reverse; /* הודעות מורות מלמטה למעלה */
@@ -69,6 +75,7 @@ export const Messages = styled.div`
   &::-webkit-scrollbar-thumb {
     background-color: #ccc;
     border-radius: 4px;
+    
   }
 `;
 export const Message = styled.div`
@@ -88,8 +95,7 @@ export const Message = styled.div`
   @media (max-width: 600px) {
     max-width: 90%;
     font-size: 14px;
-    padding: 12px 14px;
-  }
+    padding: 10px 12px;}
 `;
 
 export const MessageTime = styled.div`
