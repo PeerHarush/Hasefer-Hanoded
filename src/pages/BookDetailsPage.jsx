@@ -181,61 +181,46 @@ const BookDetails = () => {
   // סינון העותקים שקשורים רק לספר הזה
   const relevantCopies = copies.filter(copy => copy.book?.id === book.id);
 
-const handleReserveAndStartChat = async (copy) => {
-  const token = localStorage.getItem('access_token');
-  if (!token) {
-    alert('יש להתחבר תחילה');
-    return;
-  }
+  const handleReserveAndStartChat = async (copy) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      alert('יש להתחבר תחילה');
+      return;
+    }
 
-  try {
-    // שריון העותק ויצירת/קבלת צ'אט קיים
-    const res = await fetch(`${API_BASE_URL}/listings/${copy.id}/reserve`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!res.ok) throw new Error('לא ניתן היה לשריין את העותק');
-    const data = await res.json();
-    const chatRoomId = data.chat_room_id;
-
-    // סמן את העותק כמשוריין ב-UI
-    setReservedCopies(prev => new Set(prev).add(copy.id));
-
-    // שלב ב: בדוק אם זו ההודעה הראשונה בצ'אט
-    const messagesRes = await fetch(`${API_BASE_URL}/chats/${chatRoomId}/messages`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    const messages = await messagesRes.json();
-
-    if (messages.length === 0) {
-      // שלח הודעה בעברית רק אם הצ'אט ריק
-      const sellerName = copy.seller?.full_name || 'המוכר';
-      const bookTitle = copy.book?.title || book.title || 'הספר';
-      const firstMessage = `היי ${sellerName}, אני מעוניין בספר שלך "${bookTitle}".\nמתי ניתן לתאם?`;
-
-      await fetch(`${API_BASE_URL}/chats/${chatRoomId}/messages`, {
+    try {
+      // שריון העותק ויצירת/קבלת צ'אט קיים
+      const res = await fetch(`${API_BASE_URL}/listings/${copy.id}/reserve`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: firstMessage }),
       });
+
+      if (!res.ok) throw new Error('לא ניתן היה לשריין את העותק');
+      const data = await res.json();
+      const chatRoomId = data.chat_room_id;
+
+      // סמן את העותק כמשוריין ב-UI
+      setReservedCopies(prev => new Set(prev).add(copy.id));
+
+      // קבל את השם של המוכר ושם הספר להעברה לדף הצ'אט
+      const sellerName = copy.seller?.full_name || 'המוכר';
+      const bookTitle = copy.book?.title || book.title || 'הספר';
+
+      // נווט לצ'אט עם מידע על הספר והמוכר
+      navigate(`/chat/${chatRoomId}`, {
+        state: {
+          sellerName: sellerName,
+          bookTitle: bookTitle
+        }
+      });
+    } catch (err) {
+      console.error('שגיאה בשריון/פתיחת צ׳אט:', err);
+      alert('אירעה שגיאה בעת פתיחת הצ׳אט');
     }
-
-    // נווט לצ'אט
-    navigate(`/chat/${chatRoomId}`);
-  } catch (err) {
-    console.error('שגיאה בשריון/פתיחת צ׳אט:', err);
-    alert('אירעה שגיאה בעת פתיחת הצ׳אט');
-  }
-};
-
+  };
 
 
   return (
@@ -279,7 +264,7 @@ const handleReserveAndStartChat = async (copy) => {
                       {reservedCopies.has(copy.id) ? (
                         <span style={{ textDecoration: 'underline' }}>נשמר 📌</span>
                       ) : (
-                       <span
+                        <span
                           onClick={() => handleReserveAndStartChat(copy)}
                           style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}
                         >
