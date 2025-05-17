@@ -3,16 +3,24 @@ import styled from 'styled-components';
 export const ChatContainer = styled.div`
   display: flex;
   flex-direction: column;
-  /* גובה מדויק שיכנס בדיוק בין התפריטים */
-  height: calc(100vh - 140px); 
-  max-width: 1200px;
-  margin: 20px auto; /* מרווח שווה מלמעלה ולמטה */
   background-color: #fdfdfd;
   border: 1px solid #ddd;
   border-radius: 16px;
-  box-shadow: 0 0 12px rgba(0,0,0,0.05);
-  overflow: hidden; /* מונע גלילה בתוך הקונטיינר */
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 100%;
+  height: 80vh;         /* גובה לפי חלון */
+  margin:  10px auto;
+  overflow: hidden;     /* מונע גלילה חיצונית */
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    height: 100vh;      /* מלא גובה */
+    border-radius: 0;
+    box-shadow: none;
+  }
 `;
+
 
 export const Header = styled.div`
   display: flex;
@@ -24,6 +32,11 @@ export const Header = styled.div`
   font-size: 1.1rem;
   font-weight: bold;
   border-bottom: 1px solid #ddd;
+
+  @media (max-width: 600px) {
+    padding: 12px 16px;
+    font-size: 1rem;
+  }
 `;
 
 export const Avatar = styled.img`
@@ -31,19 +44,36 @@ export const Avatar = styled.img`
   height: 45px;
   border-radius: 50%;
   object-fit: cover;
+
+  @media (max-width: 600px) {
+    width: 40px;
+    height: 40px;
+  }
 `;
 
 export const Messages = styled.div`
-  flex: 1;
+  flex-grow: 1;          /* תופס את כל המקום הזמין */
   padding: 20px;
   display: flex;
-  flex-direction: column-reverse;
-  overflow-y: auto;
-`;
+  flex-direction: column-reverse; /* הודעות מורות מלמטה למעלה */
+  overflow-y: auto;      /* גלילה רק כאן */
+  min-height: 0;         /* חשוב כדי לגרום ל-flex-grow לעבוד טוב עם גלילה */
+  
+  /* סגנון לסרגל גלילה */
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
 
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+  }
+`;
 export const Message = styled.div`
   max-width: 60%;
-  margin: 10px 0;
+  margin: 5px 0;
   padding: 14px 18px;
   border-radius: 20px;
   align-self: ${props => (props.isMine ? 'flex-start' : 'flex-end')};
@@ -54,6 +84,12 @@ export const Message = styled.div`
   direction: rtl;
   white-space: pre-wrap;
   line-height: 1.5;
+
+  @media (max-width: 600px) {
+    max-width: 90%;
+    font-size: 14px;
+    padding: 12px 14px;
+  }
 `;
 
 export const MessageTime = styled.div`
@@ -61,6 +97,10 @@ export const MessageTime = styled.div`
   color: #888;
   margin-top: 6px;
   text-align: ${props => (props.isMine ? 'right' : 'left')};
+
+  @media (max-width: 600px) {
+    font-size: 0.7em;
+  }
 `;
 
 export const InputArea = styled.div`
@@ -69,8 +109,11 @@ export const InputArea = styled.div`
   background: #fff;
   border-top: 1px solid #ddd;
   align-items: center;
-`;
 
+  @media (max-width: 600px) {
+    padding: 12px 16px;
+  }
+`;
 export const Input = styled.textarea`
   flex: 1;
   padding: 12px 14px;
@@ -79,11 +122,17 @@ export const Input = styled.textarea`
   border-radius: 8px;
   resize: none;
   min-height: 48px;
-  max-height: 120px;
   font-family: inherit;
   outline: none;
+
   &:focus {
     border-color: rgb(207, 167, 117);
+  }
+
+  @media (max-width: 600px) {
+    font-size: 14px;
+    padding: 10px 12px;
+    min-height: 40px;
   }
 `;
 
@@ -97,7 +146,13 @@ export const SendButton = styled.button`
   cursor: pointer;
   transition: background 0.2s ease;
   background: rgb(215, 184, 146);
+
   &:hover {
     background: rgb(241, 206, 162);
+  }
+
+  @media (max-width: 600px) {
+    padding: 8px 12px;
+    font-size: 14px;
   }
 `;

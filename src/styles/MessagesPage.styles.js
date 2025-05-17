@@ -22,54 +22,60 @@ export const Title = styled.h1`
   text-align: center;
 `;
 
-export const MessageTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-`;
-
-export const TableHeader = styled.th`
-  padding: 12px 15px;
-  text-align: center;  /* הוספת סגנון למרכז את הכותרת */
-  background-color: #f2f2f2;
-  color: #333;
-`;
-
-export const TableCell = styled.td`
-  padding: 12px 15px;
-  text-align: center;  /* מרכז את התוכן בתוך כל תא */
-`;
-
-export const ChatLink = styled.a`
-  color: #0066cc;
-  text-decoration: none;
-  font-weight: bold;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
 export const AvatarImage = styled.img`
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   object-fit: cover;
 `;
 
-
-export const UnreadIndicator = styled.span`
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  width: 10px;
-  height: 10px;
-  background-color: red;
-  border-radius: 50%;
-  display: inline-block;
+export const ChatCard = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: ${({ isUnread }) => (isUnread ? '#fdecea' : '#f4f4f4')};  /* לא נקרא - ורוד בהיר | נקרא - אפור בהיר */
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: background-color 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: ${({ isUnread }) => (isUnread ? '#ffe9e9' : '#dcdcdc')}; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
 `;
 
-export const TableRow = styled.tr`
-  border-bottom: 1px solid #ddd;
-  background-color: ${({ isUnread }) => (isUnread ? '#fff6f6' : 'transparent')}; /* גוון אדמדם עדין */
+
+
+export const ChatContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 `;
+
+export const ChatHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+export const UserName = styled.div`
+  font-weight: bold;
+  font-size: 18px;
+  color: #333;
+`;
+
+export const ChatDate = styled.div`
+  font-size: 14px;
+  color: #777;
+`;
+
+export const BookTitle = styled.div`
+  font-size: 16px;
+  color: #555;
+`;
+
+

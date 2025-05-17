@@ -74,22 +74,36 @@ function WishList() {
       <h1>רשימת המשאלות שלי</h1>
       <CardsContainer>
         {books.map((book) => (
-          <BookCard key={book.id}>
-            <DeleteButton onClick={() => handleDelete(book.id)}>🗑️</DeleteButton>
-            <img
-              src={book.image_url}
-              alt={book.title}
-              onError={(e) => { e.target.src = '/images/default-book.png'; }}
-            />
-            <h3>{book.title}</h3>
-            <p>{book.authors}</p>
-            <StockTag $inStock={isInStock(book.id)}>
-              {isInStock(book.id) ? 'במלאי' : 'לא במלאי'}
-            </StockTag>
-            <Link to={`/book/${encodeURIComponent(book.title)}`} className="view-link">
-              לפרטי הספר
-            </Link>
-          </BookCard>
+<Link 
+  to={`/book/${encodeURIComponent(book.title)}`} 
+  style={{ textDecoration: 'none', color: 'inherit' }}
+  key={book.id}
+>
+  <BookCard>
+    <DeleteButton onClick={(e) => {
+      e.preventDefault(); // כדי שהמחיקה לא תעביר לדף הפרטים
+      handleDelete(book.id);
+    }}>
+      🗑️
+    </DeleteButton>
+    <img
+      src={book.image_url}
+      alt={book.title}
+      onError={(e) => { e.target.src = '/images/default-book.png'; }}
+    />
+    <div className="book-details">
+      <h3>{book.title}</h3>
+      <p>{book.authors}</p>
+      <StockTag $inStock={isInStock(book.id)}>
+        {isInStock(book.id) ? 'במלאי' : 'לא במלאי'}
+      </StockTag>
+      {/* את זה אפשר למחוק או להשאיר */}
+      {/* <div className="view-link">לפרטי הספר</div> */}
+    </div>
+  </BookCard>
+</Link>
+
+
         ))}
       </CardsContainer>
     </Wrapper>

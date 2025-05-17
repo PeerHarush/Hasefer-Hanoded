@@ -1,25 +1,18 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import API_BASE_URL from '../config';
+
 import {
   ChatContainer,
   Header,
   Avatar,
   Messages,
   Message,
+  MessageTime,
   InputArea,
   Input,
   SendButton,
-  MessageTime,
 } from '../styles/ChatPage.styles';
-
-// סגנון נוסף ספציפי לעמוד הצ'אט
-const chatPageStyle = {
-  overflow: 'hidden',
-  padding: 0, 
-  margin: 0,
-  height: '100%'
-};
 
 const ChatPage = () => {
   const { chatRoomId } = useParams();
@@ -29,19 +22,18 @@ const ChatPage = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [otherUser, setOtherUser] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
   const [bookTitle, setBookTitle] = useState('');
 
   const messagesEndRef = useRef(null);
 
-  // גלילה אוטומטית לתחתית ההודעות
+  // גלילה אוטומטית לתחתית
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(scrollToBottom, [messages]);
 
-  // הודעת ברירת מחדל אם מגיעים מדף הספר
+  // טען הודעה ראשונית אם הגענו מהמסך עם מידע על הספר והמוכר
   useEffect(() => {
     if (location.state?.sellerName && location.state?.bookTitle) {
       const defaultMessage = `היי ${location.state.sellerName}, אני מעוניין בספר שלך "${location.state.bookTitle}".\nמתי ניתן לתאם?`;
@@ -49,74 +41,41 @@ const ChatPage = () => {
     }
   }, [location.state]);
 
-  // טען פרטי משתמש נוכחי
+  // טען הודעות והגדר פרטי משתמש שני וכותרת הספר
   useEffect(() => {
     if (!token) return;
 
-    const fetchCurrentUser = async () => {
+    async function fetchData() {
       try {
-        const res = await fetch(`${API_BASE_URL}/users`, {
+        // הודעות הצ'אט
+        const messagesRes = await fetch(`${API_BASE_URL}/chats/${chatRoomId}/messages`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error('Failed to fetch current user');
-        const data = await res.json();
-        setCurrentUser(data);
-      } catch (err) {
-        console.error('שגיאה בהבאת פרטי משתמש נוכחי', err);
-      }
-    };
+        if (!messagesRes.ok) throw new Error('Failed to fetch messages');
+        const messagesData = await messagesRes.json();
+        setMessages(messagesData);
 
-    fetchCurrentUser();
-  }, [token]);
-
-  // טען הודעות ופרטי חדר צ'אט
-  useEffect(() => {
-    if (!token) return;
-
-    const fetchMessages = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/chats/${chatRoomId}/messages`, {
+        // פרטי חדר הצ'אט - משתמש שני, כותרת ספר
+        const chatsRes = await fetch(`${API_BASE_URL}/chats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error('Failed to fetch messages');
-        const data = await res.json();
-        setMessages(data);
-      } catch (err) {
-        console.error('שגיאה בהבאת הודעות', err);
-      }
-    };
-
-    const fetchChatRoom = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/chats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error('Failed to fetch chat rooms');
-        const rooms = await res.json();
-        const room = rooms.find(r => r.id === chatRoomId);
+        if (!chatsRes.ok) throw new Error('Failed to fetch chats');
+        const chatsData = await chatsRes.json();
+        const room = chatsData.find(r => r.id === chatRoomId);
         if (room) {
           setOtherUser(room.other_user);
           setBookTitle(room.book_title || '');
         }
       } catch (err) {
-        console.error('שגיאה בהבאת פרטי משתמש', err);
+        console.error(err);
       }
-    };
-
-    fetchMessages();
-    fetchChatRoom();
+    }
+    fetchData();
   }, [chatRoomId, token]);
 
   // שליחת הודעה
   const handleSend = useCallback(async () => {
     if (!input.trim()) return;
-
-    const newMessage = {
-      id: Date.now(),
-      message: input,
-      is_from_user: true,
-      created_at: new Date().toISOString(),
-    };
 
     try {
       const res = await fetch(`${API_BASE_URL}/chats/${chatRoomId}/messages`, {
@@ -130,16 +89,21 @@ const ChatPage = () => {
 
       if (!res.ok) throw new Error('Failed to send message');
 
-      // הוספת ההודעה לסטייט מידית
+      // הוספת ההודעה למצב ההודעות בצד הלקוח (הנחה שהשרת ישלח לנו גם הודעות חדשות בהמשך)
+      const newMessage = {
+        id: Date.now(),
+        message: input,
+        is_from_user: true,
+        created_at: new Date().toISOString(),
+      };
       setMessages(prev => [newMessage, ...prev]);
       setInput('');
     } catch (err) {
       console.error('שגיאה בשליחת הודעה', err);
-      // אפשר להוסיף התראה למשתמש כאן אם רוצים
     }
   }, [input, chatRoomId, token]);
 
-  // שליחת הודעה בלחיצה על Enter (בלי שיפט)
+  // שליחת הודעה בלחיצה על Enter בלי Shift
   const handleKeyPress = e => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -147,66 +111,49 @@ const ChatPage = () => {
     }
   };
 
-  // מניעת גלילה בדף כאשר הקומפוננטה נטענת
-  useEffect(() => {
-    // שומר את הסטייל המקורי של body
-    const originalStyle = window.getComputedStyle(document.body);
-    const originalOverflow = originalStyle.overflow;
-    
-    // מוסיף סגנון למניעת גלילה
-    document.body.style.overflow = 'hidden';
-    
-    // מחזיר את הסגנון המקורי כשהקומפוננטה נפרקת
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
-  }, []);
-
   return (
-    <div style={chatPageStyle}>
-      <ChatContainer>
-        <Header>
-          {otherUser && (
-            <>
-              <Avatar src={otherUser.avatar_url} alt="avatar" />
-              <span>{otherUser.full_name}</span>
-              {bookTitle && <span className="book-title"> | {bookTitle}</span>}
-            </>
-          )}
-        </Header>
+    <ChatContainer>
+      <Header>
+        {otherUser && (
+          <>
+            <Avatar src={otherUser.avatar_url} alt="avatar" />
+            <span>{otherUser.full_name}</span>
+            {bookTitle && <span> | {bookTitle}</span>}
+          </>
+        )}
+      </Header>
 
-        <Messages>
-          {messages.map(msg => (
-            <Message key={msg.id} isMine={msg.is_from_user}>
-              <div>{msg.message}</div>
-              {msg.created_at && (
-                <MessageTime isMine={msg.is_from_user}>
-                  {new Date(msg.created_at).toLocaleString('he-IL', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                  })}
-                </MessageTime>
-              )}
-            </Message>
-          ))}
-          <div ref={messagesEndRef} />
-        </Messages>
+      <Messages>
+        {messages.map(msg => (
+          <Message key={msg.id} isMine={msg.is_from_user}>
+            <div>{msg.message}</div>
+            {msg.created_at && (
+              <MessageTime isMine={msg.is_from_user}>
+                {new Date(msg.created_at).toLocaleString('he-IL', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                })}
+              </MessageTime>
+            )}
+          </Message>
+        ))}
+        <div ref={messagesEndRef} />
+      </Messages>
 
-        <InputArea>
-          <Input
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="כתוב הודעה..."
-            rows={3}
-          />
-          <SendButton onClick={handleSend}>שלח</SendButton>
-        </InputArea>
-      </ChatContainer>
-    </div>
+      <InputArea>
+        <Input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="כתוב הודעה..."
+          rows={2}
+        />
+        <SendButton onClick={handleSend}>שלח</SendButton>
+      </InputArea>
+    </ChatContainer>
   );
 };
 
