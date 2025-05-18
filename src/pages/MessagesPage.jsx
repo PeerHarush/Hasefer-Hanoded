@@ -50,6 +50,7 @@ const MessagesPage = () => {
 
     if (token) fetchChatRooms();
   }, [token]);
+  
 
   return (
   <Wrapper>

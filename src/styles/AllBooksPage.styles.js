@@ -124,7 +124,8 @@ export const Wrapper = styled.div`
   }
 
   @media (max-width: 768px) {
-    flex-direction: column; 
+    flex-direction: column;
+    align-items: stretch; 
   }
 `;
 
