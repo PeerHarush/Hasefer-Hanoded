@@ -17,7 +17,7 @@ import {
   Button,
 } from '../styles/BookDetailsPage.styles';
 
-import { TableWrapper, StyledTable } from '../styles/BookDetailsPage.styles';
+import Table from 'react-bootstrap/Table'; // טבלת bootstrap להצגת העותקים
 import BookReviews from '../components/BookReviews.js'; // ייבוא קומפוננטת הביקורות
 
 const BookDetails = () => {
@@ -181,13 +181,54 @@ const BookDetails = () => {
   // סינון העותקים שקשורים רק לספר הזה
   const relevantCopies = copies.filter(copy => copy.book?.id === book.id);
 
+  const handleReserveAndStartChat = async (copy) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      alert('יש להתחבר תחילה');
+      return;
+    }
+
+    try {
+      // שריון העותק ויצירת/קבלת צ'אט קיים
+      const res = await fetch(`${API_BASE_URL}/listings/${copy.id}/reserve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) throw new Error('לא ניתן היה לשריין את העותק');
+      const data = await res.json();
+      const chatRoomId = data.chat_room_id;
+
+      // סמן את העותק כמשוריין ב-UI
+      setReservedCopies(prev => new Set(prev).add(copy.id));
+
+      // קבל את השם של המוכר ושם הספר להעברה לדף הצ'אט
+      const sellerName = copy.seller?.full_name || 'המוכר';
+      const bookTitle = copy.book?.title || book.title || 'הספר';
+
+      // נווט לצ'אט עם מידע על הספר והמוכר
+      navigate(`/chat/${chatRoomId}`, {
+        state: {
+          sellerName: sellerName,
+          bookTitle: bookTitle
+        }
+      });
+    } catch (err) {
+      console.error('שגיאה בשריון/פתיחת צ׳אט:', err);
+      alert('אירעה שגיאה בעת פתיחת הצ׳אט');
+    }
+  };
+
+
   return (
     <PageContainer>
+      <BackButton onClick={goBack}> אחורה</BackButton>
 
       <Wrapper>
         <BookInfo>
-                <BackButton onClick={goBack}> אחורה</BackButton>
-
           <h1 ref={titleRef}>{book.title}</h1>
           <h3>{book.authors}</h3>
           <BookImageMobile src={book.image_url} alt={book.title} />
@@ -205,9 +246,8 @@ const BookDetails = () => {
           {/* ✅ טבלת עותקים */}
           <h3>עותקים זמינים</h3>
           {relevantCopies.length > 0 ? (
-      <TableWrapper>
-        <StyledTable striped bordered hover responsive>
-                  <thead>
+            <Table striped bordered hover responsive>
+              <thead>
                 <tr>
                   <th>מצב הספר</th>
                   <th>מחיר</th>
@@ -225,19 +265,20 @@ const BookDetails = () => {
                         <span style={{ textDecoration: 'underline' }}>נשמר 📌</span>
                       ) : (
                         <span
-                          onClick={() => handleReserve(copy.id)}
+                          onClick={() => handleReserveAndStartChat(copy)}
                           style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}
                         >
                           לשריון ✅
                         </span>
+
+
                       )}
                     </td>
                     <td>{copy.location || 'לא צוין'}</td>
                   </tr>
                 ))}
               </tbody>
-          </StyledTable>
-          </TableWrapper>
+            </Table>
           ) : (
             <p>אין עותקים זמינים כרגע.</p>
           )}
