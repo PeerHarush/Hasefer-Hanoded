@@ -1,9 +1,8 @@
-// AddBookPage.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import API_BASE_URL from '../config';
 import {
   Wrapper, Card, Title, Subtitle, FormGroup, Label, Input, Button,
-  ImageUploadContainer, PreviewImage, EditAddressButton, Select
+  ImageUploadContainer, PreviewImage, EditAddressButton, Select, SuggestionsList
 } from '../styles/AddBookPage.styles';
 import GenresSelect from "../components/GenresSelect";
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
@@ -29,12 +28,14 @@ const AddBookPage = () => {
     bookImage: null,
   });
 
+  const [bookSuggestions, setBookSuggestions] = useState([]);
+  const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [userAddress, setUserAddress] = useState('');
   const [previewImage, setPreviewImage] = useState(null);
-  const fileInputRef = useRef(null);
   const [showAutoFillButton, setShowAutoFillButton] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -139,6 +140,31 @@ const AddBookPage = () => {
     }
   };
 
+  const handleSelectSuggestion = (book) => {
+    const rawImage = book.coverImageUrl || book.image_url || book.cover_image;
+    const imageUrl = rawImage
+      ? (rawImage.startsWith('http') || rawImage.startsWith('data:image')
+        ? rawImage
+        : `${API_BASE_URL}/${rawImage}`)
+      : null;
+
+    setForm(prev => ({
+      ...prev,
+      bookTitle: book.title || '',
+      bookAuthor: Array.isArray(book.authors) ? book.authors.join(', ') : book.authors || '',
+      bookDescription: book.description || '',
+      genres: book.genres || [],
+      bookImage: imageUrl,
+      bookId: book.id || book.book_id,
+    }));
+
+    if (imageUrl) {
+      setPreviewImage(imageUrl);
+    }
+
+    setIsSuggestionsVisible(false);
+  };
+
   const handleUploadClick = () => fileInputRef.current.click();
 
   const handleSubmit = async (e) => {
@@ -203,16 +229,13 @@ const AddBookPage = () => {
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const { name, value, type, checked, files } = e.target;
 
     if (type === 'file') {
       const file = files[0];
       if (file) {
-        setForm(prev => ({
-          ...prev,
-          bookImage: file,
-        }));
+        setForm(prev => ({ ...prev, bookImage: file }));
         setPreviewImage(URL.createObjectURL(file));
       }
     } else if (name === 'genres') {
@@ -226,6 +249,22 @@ const AddBookPage = () => {
       const updatedForm = { ...form, [name]: value };
       setForm(updatedForm);
 
+      if (name === 'bookTitle' && value.trim().length >= 2) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/books?search=${encodeURIComponent(value)}`);
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setBookSuggestions(data);
+            setIsSuggestionsVisible(true);
+          }
+        } catch (err) {
+          console.error('שגיאה בשליפת הצעות:', err);
+        }
+      } else if (name === 'bookTitle') {
+        setBookSuggestions([]);
+        setIsSuggestionsVisible(false);
+      }
+
       if (updatedForm.bookTitle.trim() && updatedForm.bookAuthor.trim()) {
         setShowAutoFillButton(true);
       } else {
@@ -233,6 +272,23 @@ const AddBookPage = () => {
       }
     }
   };
+const handleAddressChange = async (e) => {
+  const address = e.target.value;
+  setForm(prev => ({ ...prev, location: address }));
+
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
+    const data = await res.json();
+
+    if (data.length > 0) {
+      const lat = parseFloat(data[0].lat);
+      const lon = parseFloat(data[0].lon);
+      setCurrentPosition([lat, lon]);
+    }
+  } catch (err) {
+    console.error('שגיאה בחיפוש כתובת:', err);
+  }
+};
 
   return (
     <Wrapper>
@@ -243,18 +299,31 @@ const AddBookPage = () => {
           <FormGroup>
             <Label>שם הספר</Label>
             <Input name="bookTitle" value={form.bookTitle} onChange={handleChange} required />
+            {isSuggestionsVisible && bookSuggestions.length > 0 && (
+              <SuggestionsList>
+                {bookSuggestions.map((book, idx) => (
+                  <li key={idx} onClick={() => handleSelectSuggestion(book)}>
+                    {book.title} {book.authors ? `— ${Array.isArray(book.authors) ? book.authors.join(', ') : book.authors}` : ''}
+                  </li>
+                ))}
+              </SuggestionsList>
+            )}
           </FormGroup>
+
           <FormGroup>
             <Label>מחבר</Label>
             <Input name="bookAuthor" value={form.bookAuthor} onChange={handleChange} required />
           </FormGroup>
+
           {showAutoFillButton && (
             <Button type="button" onClick={handleAutoFillBook}>מצא את הספר ומלא אוטומטית</Button>
           )}
+
           <FormGroup>
             <Label>תקציר</Label>
             <Input name="bookDescription" value={form.bookDescription} onChange={handleChange} required />
           </FormGroup>
+
           <FormGroup>
             <Label>תמונה</Label>
             <ImageUploadContainer onClick={handleUploadClick}>
@@ -273,11 +342,14 @@ const AddBookPage = () => {
               />
             </ImageUploadContainer>
           </FormGroup>
+
           <GenresSelect selectedGenres={form.genres} onChange={handleChange} labelText="ז'אנרים" />
+
           <FormGroup>
             <Label>מחיר</Label>
             <Input type="number" name="price" value={form.price} onChange={handleChange} min="0" required />
           </FormGroup>
+
           <FormGroup>
             <Label>מצב הספר</Label>
             <Select name="condition" value={form.condition} onChange={handleChange} required>
@@ -288,6 +360,7 @@ const AddBookPage = () => {
               <option value="Used - Poor">משומש</option>
             </Select>
           </FormGroup>
+
           <FormGroup>
             <Label>מיקום</Label>
             {!isEditingLocation ? (
@@ -296,7 +369,8 @@ const AddBookPage = () => {
                 <EditAddressButton type="button" onClick={() => setIsEditingLocation(true)}>שנה כתובת</EditAddressButton>
               </>
             ) : (
-              <Input name="location" value={form.location} onChange={handleChange} />
+              <Input name="location" value={form.location} onChange={handleAddressChange} />
+
             )}
           </FormGroup>
 
@@ -305,7 +379,7 @@ const AddBookPage = () => {
               <MapContainer center={currentPosition} zoom={13} style={{ height: '100%', width: '100%' }}>
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+                  attribution='&copy; OpenStreetMap contributors'
                 />
                 <Marker position={currentPosition} />
               </MapContainer>

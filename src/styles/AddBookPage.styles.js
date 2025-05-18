@@ -124,3 +124,26 @@ export const Select = styled.select`
     outline: none;
   }
 `;
+export const SuggestionsList = styled.ul`
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  direction: rtl;
+
+  li {
+    padding: 0.35rem 0.5rem;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+
+    &:hover {
+      background-color: #f0f0f0;
+    }
+  }
+`;

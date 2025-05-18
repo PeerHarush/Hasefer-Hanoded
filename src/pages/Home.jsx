@@ -9,6 +9,7 @@ import {
   TopBar,
   UserGreeting,
   NotificationIcon,
+  NotificationBadge,
   BannerText,
   Banner,
   SectionTitle,
@@ -27,75 +28,95 @@ function Home() {
   const [recycledCount, setRecycledCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [readNotificationIds, setReadNotificationIds] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) return;
+  const token = localStorage.getItem('access_token');
+  if (!token) return;
 
-    fetch(`${API_BASE_URL}/users`, {
-      headers: { Authorization: `Bearer ${token}` },
+  fetch(`${API_BASE_URL}/users`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then(async res => {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'בעיה בפרופיל');
+      setUserName(data.full_name);
     })
-      .then(async res => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'בעיה בפרופיל');
-        setUserName(data.full_name);
-      })
-      .catch(err => {
-        console.error('❌ שגיאה:', err.message);
-      });
-  }, []);
+    .catch(err => {
+      console.error('❌ שגיאה:', err.message);
+    });
+}, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) return;
 
-    const fetchNotifications = async () => {
-      try {
-        const headers = { Authorization: `Bearer ${token}` };
+useEffect(() => {
+  const token = localStorage.getItem('access_token');
+  if (!token) return;
 
-        const [chatsRes, txRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/chats`, { headers }),
-          fetch(`${API_BASE_URL}/transactions`, { headers })
-        ]);
+  const storedReadIds = JSON.parse(localStorage.getItem('readNotificationIds')) || [];
+  setReadNotificationIds(storedReadIds);
 
-        const [chats, transactions] = await Promise.all([
-          chatsRes.json(),
-          txRes.json()
-        ]);
+  const fetchNotifications = async () => {
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
 
-        const unreadMessages = chats
-          .filter(chat => chat.unread_count > 0)
-          .map(chat => ({
-            message: `💬 ${chat.other_user.full_name} שלח/ה לך הודעה על "${chat.listing.book.title}"`,
-            link: `/chat/${chat.id}`
-          }));
+      const [chatsRes, txRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/chats`, { headers }),
+        fetch(`${API_BASE_URL}/transactions`, { headers })
+      ]);
 
-        setHasUnreadMessages(unreadMessages.length > 0);
+      const [chats, transactions] = await Promise.all([
+        chatsRes.json(),
+        txRes.json()
+      ]);
 
-        const completedTx = transactions
-          .filter(tx => tx.status === 'completed' && tx.is_user_buyer)
-          .map(tx => ({
-            message: `✅ "${tx.listing.book.title}" אושר על ידי ${tx.seller.full_name}`,
-            link: `/transaction`
-          }));
+      const unreadMessages = chats
+        .filter(chat => chat.unread_count > 0)
+        .map(chat => ({
+          id: `chat-${chat.id}`,
+          message: `${chat.other_user.full_name} שלח/ה לך הודעה על "${chat.listing.book.title}"`,
+          link: `/chat/${chat.id}`,
+          type: 'message',
+          isUnread: true,
+          timestamp: new Date().getTime()
+        }));
 
-        const reservedTx = transactions
-          .filter(tx => tx.status === 'pending' && !tx.is_user_buyer)
-          .map(tx => ({
-            message: `📦 מישהו ביקש את "${tx.listing.book.title}" – עסקה פתוחה`,
-            link: `/transaction`
-          }));
+      const completedTx = transactions
+        .filter(tx => tx.status === 'completed' && tx.is_user_buyer)
+        .map(tx => ({
+          id: `tx-complete-${tx.id}`,
+          message: `"${tx.listing.book.title}" אושר על ידי ${tx.seller.full_name}`,
+          link: '/transaction',
+          type: 'complete',
+          isUnread: !storedReadIds.includes(`tx-complete-${tx.id}`),
+          timestamp: new Date().getTime() - 1000 // קצת יותר ישן מההודעות
+        }));
 
-        const allNotifications = [...unreadMessages, ...completedTx, ...reservedTx];
-        setNotifications(allNotifications.slice(0, 6));
-      } catch (err) {
-        console.error('שגיאה בטעינת התראות:', err.message);
-      }
-    };
+      const reservedTx = transactions
+        .filter(tx => tx.status === 'pending' && !tx.is_user_buyer)
+        .map(tx => ({
+          id: `tx-pending-${tx.id}`,
+          message: `מישהו ביקש את "${tx.listing.book.title}" – עסקה פתוחה`,
+          link: '/transaction',
+          type: 'pending',
+          isUnread: !storedReadIds.includes(`tx-pending-${tx.id}`),
+          timestamp: new Date().getTime() - 2000 // קצת יותר ישן מהקודמים
+        }));
 
-    fetchNotifications();
-  }, []);
+      const allNotifications = [...unreadMessages, ...completedTx, ...reservedTx]
+        .sort((a, b) => b.timestamp - a.timestamp) // מיון לפי זמן - החדש ביותר קודם
+        .slice(0, 5); // רק 5 התראות אחרונות
+
+      setNotifications(allNotifications);
+      setUnreadNotifications(allNotifications.filter(note => note.isUnread).length);
+    } catch (err) {
+      console.error('שגיאה בטעינת התראות:', err.message);
+    }
+  };
+
+  fetchNotifications();
+}, []);
+
 
   useEffect(() => {
     const fetchCompletedTransactions = async () => {
@@ -123,17 +144,42 @@ function Home() {
     fetchCompletedTransactions();
   }, []);
 
+  // פונקציה לסימון התראה כנקראה
+  const markAsRead = (notificationId) => {
+    // עדכון מערך ההתראות עם הסטטוס החדש
+    const updatedNotifications = notifications.map(note => 
+      note.id === notificationId ? { ...note, isUnread: false } : note
+    );
+    
+    setNotifications(updatedNotifications);
+    
+    // עדכון מספר ההתראות שלא נקראו
+    setUnreadNotifications(updatedNotifications.filter(note => note.isUnread).length);
+    
+    // שמירת מזהה ההתראה במערך ההתראות שנקראו
+    const updatedReadIds = [...readNotificationIds, notificationId];
+    setReadNotificationIds(updatedReadIds);
+    
+    // שמירה ב-localStorage
+    localStorage.setItem('readNotificationIds', JSON.stringify(updatedReadIds));
+  };
+
   return (
     <PageWrapper>
       <TopBar>
         <UserGreeting>
-          {userName ? `שלום, ${userName}!` : 'שלום אורח 🌸'}
+          {userName ? `שלום, ${userName}! 🌸` : 'שלום אורח 🌸'}
         </UserGreeting>
 
         {userName && (
           <NotificationsWrapper>
             <NotificationIcon onClick={() => setShowNotifications(prev => !prev)}>
               🔔
+              {unreadNotifications > 0 && (
+                <NotificationBadge>
+                  {unreadNotifications}
+                </NotificationBadge>
+              )}
             </NotificationIcon>
 
             {showNotifications && (
@@ -143,8 +189,18 @@ function Home() {
                   {notifications.length === 0 ? (
                     <NotificationItem>אין התראות כרגע</NotificationItem>
                   ) : (
-                    notifications.map((note, i) => (
-                      <NotificationItem key={i} onClick={() => navigate(note.link)}>
+                    notifications.map((note) => (
+                      <NotificationItem 
+                        key={note.id} 
+                        $isUnread={note.isUnread}
+                        $type={note.type}
+                        onClick={() => {
+                          if (note.isUnread) {
+                            markAsRead(note.id);
+                          }
+                          navigate(note.link);
+                        }}
+                      >
                         {note.message}
                       </NotificationItem>
                     ))
