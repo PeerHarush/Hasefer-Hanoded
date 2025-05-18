@@ -94,7 +94,7 @@ export const ReviewSection = styled.div`
   padding: 0.6rem;
   text-align: center;
   transition: transform 0.2s ease;
-
+  
   &:hover {
     transform: translateY(-5px);
   }
@@ -109,6 +109,7 @@ export const ReviewSection = styled.div`
   }
 `;
 
+
 export const HomeBookCard = styled.div`
   background: #fff;
   border-radius: 12px;
@@ -116,8 +117,7 @@ export const HomeBookCard = styled.div`
   padding: 1rem;
   text-align: center;
   position: relative;
-  width: 100%;
-  max-width: 240px;
+  width: 220px; /* 🔧 רוחב קבוע */
   min-height: 380px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 
@@ -127,17 +127,17 @@ export const HomeBookCard = styled.div`
   }
 
   @media (max-width: 1024px) {
-    max-width: 200px;
+    width: 200px;
     min-height: 340px;
   }
 
   @media (max-width: 768px) {
-    max-width: 180px; /* ⬅️ היה 160 */
+    width: 180px;
     min-height: 300px;
   }
 
   @media (max-width: 480px) {
-    max-width: 160px; /* ⬅️ היה 130 */
+    width: 160px;
     min-height: 260px;
   }
 `;
@@ -163,19 +163,25 @@ export const HomeBookImage = styled.img`
 
 export const BookListWrapper = styled.div`
   display: grid;
-  grid-template-columns: repeat(6, 1fr); /* 🖥️ מחשב - 6 ספרים בשורה */
+  grid-template-columns: repeat(auto-fit, 220px); /* 🔧 אותו רוחב כמו הקלף */
   gap: 1rem;
-  justify-items: center;
+  justify-content: center;
   padding: 1rem;
 
   @media (max-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr); /* טאבלט - 3 טורים */
+    grid-template-columns: repeat(auto-fit, 200px);
   }
 
   @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr); /* מובייל - 2 טורים */
+    grid-template-columns: repeat(auto-fit, 180px);
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: repeat(auto-fit, 160px);
   }
 `;
+
+
 
 
 

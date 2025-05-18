@@ -13,14 +13,8 @@ import {
   SectionTitle,
   BookSection,
   ReviewSection,
- HomeBookCard,
-  HomeBookImage,
-  HomeBookTitle,
-  HomeBookAuthor,
-  BookListWrapper,
 } from '../styles/Home.styles';
 import HomeBookGallery from '../components/HomeBookGallery';
-
 
 function Home() {
   const navigate = useNavigate();
@@ -28,7 +22,7 @@ function Home() {
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [recycledCount, setRecycledCount] = useState(0);
-  const [randomBooks, setRandomBooks] = useState([]);
+  const token = localStorage.getItem('access_token');
 
   // שליפת שם משתמש
   useEffect(() => {
@@ -49,38 +43,35 @@ function Home() {
       });
   }, []);
 
-  // חיפוש ספרים
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const url = searchTerm.trim()
-          ? `${API_BASE_URL}/books?search=${encodeURIComponent(searchTerm)}`
-          : `${API_BASE_URL}/books`;
+  
+  // שליפת כמות עסקאות שהושלמו מכלל המשתמשים
+useEffect(() => {
+  const fetchCompletedTransactions = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
 
-        const res = await fetch(url);
-        const data = await res.json();
-        if (res.ok) {
-          setBooks(data);
-        } else {
-          throw new Error('שגיאה בקבלת הספרים');
-        }
-      } catch (err) {
-        console.error("שגיאה בטעינת ספרים:", err);
-      }
-    };
+    try {
+      const res = await fetch(`${API_BASE_URL}/transactions`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    const delayDebounce = setTimeout(() => fetchBooks(), 300);
-    return () => clearTimeout(delayDebounce);
-  }, [searchTerm]);
+      const data = await res.json();
 
+      const completed = Array.isArray(data)
+        ? data.filter(tx => tx.status === 'completed')
+        : [];
 
-  // בחירת ספרים רנדומליים מה-Books שכבר נטענו
-  useEffect(() => {
-    if (books.length > 0) {
-      const shuffled = [...books].sort(() => 0.5 - Math.random());
-      setRandomBooks(shuffled.slice(0, 4));
+      setRecycledCount(completed.length);
+    } catch (err) {
+      console.error('שגיאה בטעינת כמות עסקאות שהושלמו:', err);
     }
-  }, [books]);
+  };
+
+  fetchCompletedTransactions();
+}, []);
+
 
   return (
     <PageWrapper>
@@ -95,26 +86,15 @@ function Home() {
 
       <Banner>
         <BannerText>
-          📚 בזכותכם מיחזרנו כבר {recycledCount} ספרים! תודה לכל מי שתרם והעביר הלאה 💛
+          עד כה הצלחנו להעביר הלאה {recycledCount}   ספרים! תודה שאתם חלק מהקהילה 💛
         </BannerText>
       </Banner>
 
       <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-   
-<BookSection>
-  <SectionTitle>📖 ספרים חדשים</SectionTitle>
-  <HomeBookGallery books={books.slice(0, 6)} />
-</BookSection>
-
-{randomBooks.length > 0 && (
-  <BookSection>
-    <SectionTitle>📚 אולי תאהבי גם את...</SectionTitle>
-    <HomeBookGallery books={randomBooks} />
-  </BookSection>
-)}
-
-
+      <BookSection>
+        <HomeBookGallery />
+      </BookSection>
 
       <ReviewSection>
         <SectionTitle>📝 ביקורות אחרונות</SectionTitle>
