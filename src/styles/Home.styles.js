@@ -256,3 +256,24 @@ export const NotificationTitle = styled.div`
   color: #7a4a16;
   margin-bottom: 0.5rem;
 `;
+
+
+export const FavoriteButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  z-index: 2;
+
+  svg {
+    color: ${props => props.$isFavorite ? 'red' : 'gray'};
+    transition: color 0.2s ease;
+  }
+
+  &:hover svg {
+    color: ${props => props.$isFavorite ? 'darkred' : '#555'};
+  }
+`;
