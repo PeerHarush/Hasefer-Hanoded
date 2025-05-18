@@ -197,3 +197,62 @@ export const HomeBookAuthor = styled.p`
   margin: 4px 0 0;
 `;
 
+
+export const NotificationsWrapper = styled.div`
+  position: relative;
+`;
+
+export const NotificationsBox = styled.div`
+  position: absolute;
+  top: 2.2rem;
+  left: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8%;
+  width: 240px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  padding: 0.8rem 1rem;
+  z-index: 9990;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 14px; 
+      border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent #ddd transparent;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: -9px;
+    left: 14px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent #fff transparent;
+  }
+`;
+
+export const NotificationItem = styled.li`
+  list-style: none;
+  font-size: 0.95rem;
+  color: #444;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #eee;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &::before {
+    content: '🔔 ';
+  }
+`;
+
+export const NotificationTitle = styled.div`
+  font-weight: bold;
+  color: #7a4a16;
+  margin-bottom: 0.5rem;
+`;

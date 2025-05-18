@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BookGallery from '../components/BookGallery';
 import SearchBar from '../components/SearchBar';
+import HomeBookGallery from '../components/HomeBookGallery';
 import API_BASE_URL from '../config';
 import {
   PageWrapper,
@@ -13,18 +14,21 @@ import {
   SectionTitle,
   BookSection,
   ReviewSection,
+  NotificationsWrapper,
+  NotificationsBox,
+  NotificationItem,
+  NotificationTitle
 } from '../styles/Home.styles';
-import HomeBookGallery from '../components/HomeBookGallery';
 
 function Home() {
   const navigate = useNavigate();
   const [userName, setUserName] = useState(null);
-  const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [recycledCount, setRecycledCount] = useState(0);
-  const token = localStorage.getItem('access_token');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
 
-  // שליפת שם משתמש
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) return;
@@ -39,39 +43,85 @@ function Home() {
       })
       .catch(err => {
         console.error('❌ שגיאה:', err.message);
-        alert('לא ניתן לטעון את הפרופיל.');
       });
   }, []);
 
-  
-  // שליפת כמות עסקאות שהושלמו מכלל המשתמשים
-useEffect(() => {
-  const fetchCompletedTransactions = async () => {
+  useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) return;
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/transactions`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    const fetchNotifications = async () => {
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
 
-      const data = await res.json();
+        const [chatsRes, txRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/chats`, { headers }),
+          fetch(`${API_BASE_URL}/transactions`, { headers })
+        ]);
 
-      const completed = Array.isArray(data)
-        ? data.filter(tx => tx.status === 'completed')
-        : [];
+        const [chats, transactions] = await Promise.all([
+          chatsRes.json(),
+          txRes.json()
+        ]);
 
-      setRecycledCount(completed.length);
-    } catch (err) {
-      console.error('שגיאה בטעינת כמות עסקאות שהושלמו:', err);
-    }
-  };
+        const unreadMessages = chats
+          .filter(chat => chat.unread_count > 0)
+          .map(chat => ({
+            message: `💬 ${chat.other_user.full_name} שלח/ה לך הודעה על "${chat.listing.book.title}"`,
+            link: `/chat/${chat.id}`
+          }));
 
-  fetchCompletedTransactions();
-}, []);
+        setHasUnreadMessages(unreadMessages.length > 0);
 
+        const completedTx = transactions
+          .filter(tx => tx.status === 'completed' && tx.is_user_buyer)
+          .map(tx => ({
+            message: `✅ "${tx.listing.book.title}" אושר על ידי ${tx.seller.full_name}`,
+            link: `/transaction`
+          }));
+
+        const reservedTx = transactions
+          .filter(tx => tx.status === 'pending' && !tx.is_user_buyer)
+          .map(tx => ({
+            message: `📦 מישהו ביקש את "${tx.listing.book.title}" – עסקה פתוחה`,
+            link: `/transaction`
+          }));
+
+        const allNotifications = [...unreadMessages, ...completedTx, ...reservedTx];
+        setNotifications(allNotifications.slice(0, 6));
+      } catch (err) {
+        console.error('שגיאה בטעינת התראות:', err.message);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
+  useEffect(() => {
+    const fetchCompletedTransactions = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/transactions`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+        const completed = Array.isArray(data)
+          ? data.filter(tx => tx.status === 'completed')
+          : [];
+
+        setRecycledCount(completed.length);
+      } catch (err) {
+        console.error('שגיאה בטעינת עסקאות:', err);
+      }
+    };
+
+    fetchCompletedTransactions();
+  }, []);
 
   return (
     <PageWrapper>
@@ -79,14 +129,36 @@ useEffect(() => {
         <UserGreeting>
           {userName ? `שלום, ${userName}!` : 'שלום אורח 🌸'}
         </UserGreeting>
-        <NotificationIcon onClick={() => navigate('/notifications')}>
-          🔔
-        </NotificationIcon>
+
+        {userName && (
+          <NotificationsWrapper>
+            <NotificationIcon onClick={() => setShowNotifications(prev => !prev)}>
+              🔔
+            </NotificationIcon>
+
+            {showNotifications && (
+              <NotificationsBox>
+                <NotificationTitle>📬 ההתראות שלך:</NotificationTitle>
+                <ul style={{ margin: 0, padding: 0 }}>
+                  {notifications.length === 0 ? (
+                    <NotificationItem>אין התראות כרגע</NotificationItem>
+                  ) : (
+                    notifications.map((note, i) => (
+                      <NotificationItem key={i} onClick={() => navigate(note.link)}>
+                        {note.message}
+                      </NotificationItem>
+                    ))
+                  )}
+                </ul>
+              </NotificationsBox>
+            )}
+          </NotificationsWrapper>
+        )}
       </TopBar>
 
       <Banner>
         <BannerText>
-          עד כה הצלחנו להעביר הלאה {recycledCount}   ספרים! תודה שאתם חלק מהקהילה 💛
+          עד כה הצלחנו להעביר הלאה {recycledCount} ספרים! תודה שאתם חלק מהקהילה 💛
         </BannerText>
       </Banner>
 
@@ -98,7 +170,7 @@ useEffect(() => {
 
       <ReviewSection>
         <SectionTitle>📝 ביקורות אחרונות</SectionTitle>
-        {/* קומפוננטה שמציגה ביקורות אחרונות */}
+        {/* קומפוננטת ביקורות */}
       </ReviewSection>
     </PageWrapper>
   );
