@@ -95,3 +95,9 @@ export const DeleteButton = styled.button`
     color: #e74c3c;
   }
 `;
+
+export const Title = styled.h2`
+  text-align: center;
+  color: rgb(144, 83, 8);
+  margin: 60px 0 1rem;
+`;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wrapper, CardsContainer, BookCard, StockTag, DeleteButton } from '../styles/WishList.styles';
+import { Wrapper, CardsContainer, BookCard, StockTag, DeleteButton, Title } from '../styles/WishList.styles';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../config';
 
@@ -71,8 +71,9 @@ function WishList() {
 
   return (
     <Wrapper>
-      <h1>רשימת המשאלות שלי</h1>
-      <CardsContainer>
+  <Title>רשימת המשאלות שלי</Title>
+  <CardsContainer>
+
         {books.map((book) => (
 <Link 
   to={`/book/${encodeURIComponent(book.title)}`} 

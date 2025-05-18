@@ -26,15 +26,21 @@ grid-template-columns: repeat(5, 1fr);
 }
 `;
 
-
 export const BookCard = styled.div`
-background: #fff;
-border-radius: 12px;
-box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-width: 100%;
-padding: 1rem;
-text-align: center;
-position: relative;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  padding: 1rem;
+  text-align: center;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  }
 `;
 
 

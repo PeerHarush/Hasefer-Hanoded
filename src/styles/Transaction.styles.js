@@ -2,7 +2,7 @@
 import styled from 'styled-components';
 
 export const PageContainer = styled.div`
-  padding: 2rem;
+  margin: 10px;
 `;
 
 
@@ -34,10 +34,12 @@ export const TransactionsGrid = styled.div`
 
 export const BookImage = styled.img`
   width: 100px;
-  height: auto;
+  height: 150px;
+  object-fit: cover;
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 `;
+
 
 export const InfoSection = styled.div`
   flex: 1;
@@ -57,7 +59,7 @@ export const Label = styled.p`
 export const Title = styled.h2`
   text-align: center;
   color: rgb(144, 83, 8);
-  margin-bottom: 0.25rem;
+  margin: 60px 0 1rem;
 `;
 
 

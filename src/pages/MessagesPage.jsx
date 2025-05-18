@@ -32,7 +32,7 @@ const MessagesPage = () => {
           } else {
             const existingRoom = uniqueChatsMap.get(key);
             const newerRoom =
-              new Date(existingRoom.created_at) > new Date(room.created_at)
+              new Date(existingRoom.created_at) < new Date(room.created_at)
                 ? room
                 : existingRoom;
             uniqueChatsMap.set(key, newerRoom);
@@ -40,7 +40,7 @@ const MessagesPage = () => {
         });
 
         const uniqueChats = Array.from(uniqueChatsMap.values());
-        uniqueChats.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        uniqueChats.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
         setChatRooms(uniqueChats);
       } catch (err) {
@@ -50,33 +50,44 @@ const MessagesPage = () => {
 
     if (token) fetchChatRooms();
   }, [token]);
+  
 
   return (
-    <Wrapper>
-      <Card>
-        <Title> הודעות</Title>
-        {chatRooms.map((room) => (
-          <ChatCard
-            key={room.id}
-            isUnread={room.unread_count > 0}
-            onClick={() => navigate(`/chat/${room.id}`)}
-          >
-            <AvatarImage src={room.other_user.avatar_url} alt="avatar" />
-            <ChatContent>
-              <ChatHeader>
-                <UserName>{room.other_user.full_name}</UserName>
-                <ChatDate>
-                  <small>תאריך התחלה:</small> {new Date(room.created_at).toLocaleDateString('he-IL')}
-                </ChatDate>
-              </ChatHeader>
-              <BookTitle>{room.listing.book?.title || '---'}</BookTitle>
-            </ChatContent>
-          </ChatCard>
-        ))}
+  <Wrapper>
+    <Card>
+      <Title>הודעות</Title>
 
-      </Card>
-    </Wrapper>
-  );
+      {chatRooms.map((room) => (
+        <ChatCard
+          key={room.id}
+          $isUnread={room.unread_count > 0}
+          onClick={() => navigate(`/chat/${room.id}`)}
+        >
+          <AvatarImage src={room.other_user.avatar_url} alt="avatar" />
+          <ChatContent>
+            <ChatHeader>
+              <UserName>{room.other_user.full_name}</UserName>
+              <ChatDate>
+                <small>הודעה אחרונה:</small>{' '}
+                {room.last_message?.created_at
+                  ? new Date(room.last_message.created_at).toLocaleDateString('he-IL', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
+                  : '---'}
+              </ChatDate>
+            </ChatHeader>
+            <BookTitle>{room.listing.book?.title || '---'}</BookTitle>
+          </ChatContent>
+        </ChatCard>
+      ))}
+    </Card>
+  </Wrapper>
+);
+
 };
 
 export default MessagesPage;
