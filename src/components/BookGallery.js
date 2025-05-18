@@ -56,45 +56,45 @@ const BookGallery = ({ books: externalBooks, selectedCategory: propCategory, sor
 
     if (isLoggedIn) fetchWishlist();
   }, [isLoggedIn]);
+const toggleFavorite = async (book) => {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    alert('עליך להתחבר כדי להוסיף לרשימת המשאלות');
+    return;
+  }
 
-  const toggleFavorite = async (book) => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      alert('עליך להתחבר כדי להוסיף לרשימת המשאלות');
-      return;
+  const id = book._id; // ← שימוש עקבי
+
+  try {
+    if (favorites.has(id)) {
+      const res = await fetch(`${API_BASE_URL}/wishlist/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error('מחיקה נכשלה מהשרת');
+
+      setFavorites(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    } else {
+      const res = await fetch(`${API_BASE_URL}/wishlist/${id}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error('הוספה נכשלה לשרת');
+
+      setFavorites(prev => new Set(prev).add(id));
     }
+  } catch (err) {
+    console.error('שגיאה בניהול wishlist:', err.message);
+    alert(err.message);
+  }
+};
 
-    const id = book.id;
-
-    try {
-      if (favorites.has(id)) {
-        const res = await fetch(`${API_BASE_URL}/wishlist/${id}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) throw new Error('מחיקה נכשלה מהשרת');
-
-        setFavorites(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(id);
-          return newSet;
-        });
-      } else {
-        const res = await fetch(`${API_BASE_URL}/wishlist/${id}`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) throw new Error('הוספה נכשלה לשרת');
-
-        setFavorites(prev => new Set(prev).add(id));
-      }
-    } catch (err) {
-      console.error('שגיאה בניהול wishlist:', err.message);
-      alert(err.message);
-    }
-  };
 
   const displayedBooks = externalBooks || books;
 
