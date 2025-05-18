@@ -11,8 +11,11 @@ import GenresSelect from "../components/GenresSelect";
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const isValidPhoneNumber = (phone) => /^05\d{8}$/.test(phone); // מספר ישראלי תקין
 const isValidAddress = (address) => {
-  return /^[\u0590-\u05FF\s]+\d+$/.test(address); 
+  // דוגמה: הרצל 12 תל אביב
+  const regex = /^[\u0590-\u05FF\s]+ \d+ [\u0590-\u05FF\s]+$/;
+  return regex.test(address.trim());
 };
+
 
 const LoginRegisterPage = () => {
   const navigate = useNavigate();
@@ -50,8 +53,9 @@ const LoginRegisterPage = () => {
           errorMessage = 'כתובת אימייל לא תקינה';
         } else if (name === 'phonenum' && !isValidPhoneNumber(value)) {
           errorMessage = 'מספר טלפון לא תקין (חייב להתחיל ב־05 ולהכיל 10 ספרות)';
-        } else if (name === 'address' && !isValidAddress(value)) {
-          errorMessage = 'כתובת צריכה לכלול שם רחוב ומספר (למשל: הרצל 12)';
+        } else if (name === 'address' && !isValidAddress(value) ) {
+          errorMessage = 'כתובת צריכה לכלול שם רחוב, מספר ועיר (למשל: הרצל 12 תל אביב )';
+        
         }
 
         setErrors(prev => ({ ...prev, [name]: errorMessage }));
