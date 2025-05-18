@@ -113,31 +113,37 @@ const BookGallery = ({ books: externalBooks, selectedCategory: propCategory, sor
   return (
     <BooksWrapper>
       {sortedBooks.map(book => (
-        <BookCard key={book._id}>
-          {isLoggedIn && (
-            <FavoriteButton
-              $isFavorite={favorites.has(book.id)}
-              onClick={(e) => {
-                e.preventDefault();
-                toggleFavorite(book);
-              }}
-            >
-              {favorites.has(book.id) ? <FaHeart /> : <FaRegHeart />}
-            </FavoriteButton>
-          )}
-          <Link
-            to={`/book/${encodeURIComponent(book.title)}`}
-            state={{ from: location.pathname + location.search }}
-            style={{ textDecoration: 'none', color: 'inherit' }}
-          >
-            <BookImage
-              src={book.image_url?.startsWith('http') ? book.image_url : `${API_BASE_URL}/${book.image_url}`}
-              alt={book.title}
-            />
-            <BookTitle>{book.title}</BookTitle>
-            <BookAuthor>{book.authors}</BookAuthor>
-          </Link>
-        </BookCard>
+     <BookCard
+  key={book._id}
+  as={Link}
+  to={`/book/${encodeURIComponent(book.title)}`}
+  state={{ from: location.pathname + location.search }}
+  style={{ textDecoration: 'none', color: 'inherit' }}
+>
+  {isLoggedIn && (
+    <FavoriteButton
+      $isFavorite={favorites.has(book.id)}
+      onClick={(e) => {
+        e.preventDefault(); // מונע מהכפתור לשבור את הניווט
+        toggleFavorite(book);
+      }}
+    >
+      {favorites.has(book.id) ? <FaHeart /> : <FaRegHeart />}
+    </FavoriteButton>
+  )}
+
+  <BookImage
+    src={
+      book.image_url?.startsWith('http')
+        ? book.image_url
+        : `${API_BASE_URL}/${book.image_url}`
+    }
+    alt={book.title}
+  />
+  <BookTitle>{book.title}</BookTitle>
+  <BookAuthor>{book.authors}</BookAuthor>
+</BookCard>
+
       ))}
     </BooksWrapper>
   );
