@@ -1,20 +1,57 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import API_BASE_URL from '../config';
 import {
   Wrapper, Card, Title, Subtitle, FormGroup, Label, Input, Button,
-  ImageUploadContainer, PreviewImage, EditAddressButton, Select, SuggestionsList
+  ImageUploadContainer, PreviewImage, EditAddressButton, Select, SuggestionsList,
+  MapHelpText, MapContainer, ActionButton
 } from '../styles/AddBookPage.styles';
 import GenresSelect from "../components/GenresSelect";
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { MapContainer as LeafletMapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
+// Fix Leaflet icon issue
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
+
+// Interactive marker component
+const LocationMarker = ({ position, setPosition, updateAddress }) => {
+  const map = useMapEvents({
+    click(e) {
+      const newPosition = [e.latlng.lat, e.latlng.lng];
+      setPosition(newPosition);
+      map.flyTo(newPosition, map.getZoom());
+      
+      // Convert the clicked point to an address
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${newPosition[0]}&lon=${newPosition[1]}&accept-language=he`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.address) {
+            const { road, house_number, city, town, village } = data.address;
+            const cityName = city || town || village || '';
+            const locationText = [road, house_number, cityName].filter(Boolean).join(' ');
+            updateAddress(locationText);
+          }
+        })
+        .catch(err => {
+          console.error('שגיאה בהמרת מיקום לכתובת:', err);
+        });
+    },
+  });
+
+  // Update map position when position changes from outside
+  useEffect(() => {
+    if (position && map) {
+      map.flyTo(position, 15);
+    }
+  }, [position, map]);
+
+  return position ? <Marker position={position} /> : null;
+};
 
 const AddBookPage = () => {
   const [form, setForm] = useState({
@@ -35,7 +72,21 @@ const AddBookPage = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [showAutoFillButton, setShowAutoFillButton] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(null);
+  const [map, setMap] = useState(null);
   const fileInputRef = useRef(null);
+  const addressInputRef = useRef(null);
+  const addressTimeoutRef = useRef(null);
+
+  // Debounced geocoding function - waits 500ms after user stops typing
+  const debouncedGeocodeAddress = useCallback((address) => {
+    if (addressTimeoutRef.current) {
+      clearTimeout(addressTimeoutRef.current);
+    }
+    
+    addressTimeoutRef.current = setTimeout(() => {
+      geocodeAddress(address);
+    }, 500);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -49,6 +100,11 @@ const AddBookPage = () => {
         if (!res.ok) throw new Error(data.detail || 'בעיה בפרופיל');
         setUserAddress(data.address);
         setForm(prev => ({ ...prev, location: data.address }));
+
+        // Try to geocode the user's address to show on map
+        if (data.address) {
+          geocodeAddress(data.address);
+        }
       })
       .catch(err => {
         console.error('❌ שגיאה:', err.message);
@@ -77,10 +133,53 @@ const AddBookPage = () => {
         },
         err => {
           console.error('שגיאה באחזור מיקום:', err.message);
+          // Fallback to Tel Aviv coordinates if geolocation fails
+          setCurrentPosition([32.0853, 34.7818]);
         }
       );
+    } else {
+      // Fallback to Tel Aviv coordinates if geolocation not supported
+      setCurrentPosition([32.0853, 34.7818]);
     }
+
+    // Cleanup function to clear timeout
+    return () => {
+      if (addressTimeoutRef.current) {
+        clearTimeout(addressTimeoutRef.current);
+      }
+    };
   }, []);
+
+  // Function to convert address to coordinates
+  const geocodeAddress = (address) => {
+    if (!address || address.trim().length < 3) return;
+    
+    // Show loading indicator or feedback
+    console.log('מחפש את הכתובת...');
+    
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&accept-language=he`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.length > 0) {
+          const lat = parseFloat(data[0].lat);
+          const lon = parseFloat(data[0].lon);
+          const newPosition = [lat, lon];
+          setCurrentPosition(newPosition);
+          
+          // If map is available, fly to the new position
+          if (map) {
+            map.flyTo(newPosition, 15);
+          }
+          
+          console.log('נמצאה כתובת:', data[0].display_name);
+        } else {
+          console.log('לא נמצאה כתובת');
+        }
+      })
+      .catch(err => {
+        console.error('שגיאה בחיפוש כתובת:', err);
+      });
+  };
 
   const handleAutoFillBook = async () => {
     const title = form.bookTitle.trim();
@@ -272,24 +371,46 @@ const AddBookPage = () => {
       }
     }
   };
-const handleAddressChange = async (e) => {
-  const address = e.target.value;
-  setForm(prev => ({ ...prev, location: address }));
 
-  try {
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
-    const data = await res.json();
-
-    if (data.length > 0) {
-      const lat = parseFloat(data[0].lat);
-      const lon = parseFloat(data[0].lon);
-      setCurrentPosition([lat, lon]);
+  const handleAddressChange = (e) => {
+    const address = e.target.value;
+    setForm(prev => ({ ...prev, location: address }));
+    
+    // Use debounced geocoding for a better UX
+    if (address.trim().length > 3) {
+      debouncedGeocodeAddress(address);
     }
-  } catch (err) {
-    console.error('שגיאה בחיפוש כתובת:', err);
-  }
-};
+  };
 
+  // Handle address input key press - search on Enter
+  const handleAddressKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent form submission
+      geocodeAddress(form.location);
+    }
+  };
+
+  // Handle address input blur - search when focus leaves the field
+  const handleAddressBlur = () => {
+    if (form.location.trim().length > 3) {
+      geocodeAddress(form.location);
+    }
+  };
+
+  // Handle finishing address editing
+  const finishAddressEditing = () => {
+    setIsEditingLocation(false);
+    // Final geocode once editing is done
+    if (form.location.trim()) {
+      geocodeAddress(form.location);
+    }
+  };
+
+  // Update the address from map click
+  const updateAddressFromMap = (address) => {
+    setForm(prev => ({ ...prev, location: address }));
+  };
+  
   return (
     <Wrapper>
       <Card>
@@ -369,21 +490,43 @@ const handleAddressChange = async (e) => {
                 <EditAddressButton type="button" onClick={() => setIsEditingLocation(true)}>שנה כתובת</EditAddressButton>
               </>
             ) : (
-              <Input name="location" value={form.location} onChange={handleAddressChange} />
-
+              <>
+                <Input 
+                  name="location" 
+                  value={form.location} 
+                  onChange={handleAddressChange}
+                  onKeyDown={handleAddressKeyDown}
+                  onBlur={handleAddressBlur}
+                  ref={addressInputRef}
+                  placeholder="הקלד כתובת ולחץ אנטר או לחץ בחוץ לחיפוש"
+                />
+                <ActionButton type="button" onClick={finishAddressEditing}>אישור כתובת</ActionButton>
+              </>
             )}
           </FormGroup>
 
           {currentPosition && (
-            <div style={{ height: '300px', margin: '1rem 0 2rem', borderRadius: '8px', overflow: 'hidden' }}>
-              <MapContainer center={currentPosition} zoom={13} style={{ height: '100%', width: '100%' }}>
+            <MapContainer>
+              <LeafletMapContainer 
+                center={currentPosition} 
+                zoom={15} 
+                style={{ height: '100%', width: '100%' }}
+                whenCreated={setMap}
+              >
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; OpenStreetMap contributors'
                 />
-                <Marker position={currentPosition} />
-              </MapContainer>
-            </div>
+                <LocationMarker 
+                  position={currentPosition} 
+                  setPosition={setCurrentPosition}
+                  updateAddress={updateAddressFromMap}
+                />
+              </LeafletMapContainer>
+              <MapHelpText>
+                לחץ על המפה לעדכון המיקום או הקלד כתובת למעלה
+              </MapHelpText>
+            </MapContainer>
           )}
 
           <Button type="submit" style={{ marginTop: '1rem' }}>הוסף ספר</Button>
