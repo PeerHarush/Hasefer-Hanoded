@@ -13,7 +13,7 @@ import {
   InputArea,
   Input,
   SendButton,
-  CalendarButton, // חדש
+  CalendarButton, 
 } from '../styles/ChatPage.styles';
 
 const ChatPage = () => {
