@@ -24,17 +24,19 @@ const ChatPage = () => {
   const [input, setInput] = useState('');
   const [otherUser, setOtherUser] = useState(null);
   const [bookTitle, setBookTitle] = useState('');
+  const [lastDetectedTime, setLastDetectedTime] = useState(null); // 🧠 שעת פגישה שנמצאה בטקסט
 
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
 
+  // גלילה אוטומטית להתחלת השיחה
   useEffect(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop = 0;
     }
   }, [messages]);
 
-  // שלח הודעה ראשונית אם צריך
+  // שליחת הודעה אוטומטית לפי state שהועבר ב־navigate
   useEffect(() => {
     if (location.state?.sellerName && location.state?.bookTitle) {
       const defaultMessage = `היי ${location.state.sellerName}, אני מעוניין בספר שלך "${location.state.bookTitle}".\nמתי ניתן לתאם?`;
@@ -46,7 +48,7 @@ const ChatPage = () => {
     }
   }, [location.state]);
 
-  // שליחת ההודעה הראשונה אוטומטית
+  // שליחת ההודעה הראשונה
   const sendInitialMessage = async (message) => {
     if (!token || !chatRoomId || !message) return;
 
@@ -75,21 +77,36 @@ const ChatPage = () => {
     }
   };
 
-  // טען הודעות ופרטי צ׳אט
+  // טעינת הודעות ופרטי הצ'אט
   useEffect(() => {
     if (!token) return;
 
     async function fetchData() {
       try {
-        // טען הודעות
+        // טעינת הודעות
         const messagesRes = await fetch(`${API_BASE_URL}/chats/${chatRoomId}/messages`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+
         if (!messagesRes.ok) throw new Error('Failed to fetch messages');
         const messagesData = await messagesRes.json();
         setMessages(messagesData);
 
-        // טען פרטי צ'אט
+        // שמירה של ההודעה האחרונה ב־localStorage
+        if (messagesData.length > 0) {
+          const lastMessage = messagesData[0];
+          localStorage.setItem(
+            `last_message_${chatRoomId}`,
+            JSON.stringify({
+              message: lastMessage.message,
+              created_at: lastMessage.created_at
+            })
+          );
+
+          detectTimeInMessages(messagesData); // ניסיון לזהות שעה מתוך ההודעות
+        }
+
+        // טעינת פרטי חדר הצ׳אט
         const chatsRes = await fetch(`${API_BASE_URL}/chats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -107,38 +124,6 @@ const ChatPage = () => {
 
     fetchData();
   }, [chatRoomId, token]);
-
-  useEffect(() => {
-  if (!token) return;
-
-  async function fetchData() {
-    try {
-      const messagesRes = await fetch(`${API_BASE_URL}/chats/${chatRoomId}/messages`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!messagesRes.ok) throw new Error('Failed to fetch messages');
-      const messagesData = await messagesRes.json();
-      setMessages(messagesData);
-
-      // 🧠 שמירה של ההודעה האחרונה ב-localStorage
-      if (messagesData.length > 0) {
-        const lastMessage = messagesData[0];
-        localStorage.setItem(
-          `last_message_${chatRoomId}`,
-          JSON.stringify({
-            message: lastMessage.message,
-            created_at: lastMessage.created_at
-          })
-        );
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  fetchData();
-}, [chatRoomId, token]);
 
   // שליחת הודעה רגילה
   const handleSend = useCallback(async () => {
@@ -169,6 +154,49 @@ const ChatPage = () => {
     }
   }, [input, chatRoomId, token]);
 
+  // זיהוי אם קיימת שעה בטקסטים של ההודעות
+  const detectTimeInMessages = (messagesData) => {
+    if (!messagesData || messagesData.length === 0) {
+      setLastDetectedTime(null);
+      return;
+    }
+    const timeRegex = /(^|\s)([01]?\d|2[0-3])(:[0-5]\d)?(\s?(AM|PM))?(\s|$)/i;
+    for (const msg of messagesData) {
+      const match = msg.message.match(timeRegex);
+      if (match) {
+        setLastDetectedTime(match[2] + (match[3] || ':00'));
+        return;
+      }
+    }
+    setLastDetectedTime(null);
+  };
+
+  // פתיחת Google Calendar עם שעה שנמצאה בטקסט
+  const openGoogleCalendar = () => {
+    if (!lastDetectedTime) return;
+
+    const today = new Date();
+    const [hourStr, minuteStr] = lastDetectedTime.split(':');
+    const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hourStr), parseInt(minuteStr || '0'));
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // שעה אחת קדימה
+
+    const toISOStringNoSeconds = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, '');
+
+    const dates = `${toISOStringNoSeconds(startDate)}/${toISOStringNoSeconds(endDate)}`;
+
+    const title = `פגישה עם ${otherUser?.full_name || 'המשתמש'}`;
+
+    const url = new URL('https://calendar.google.com/calendar/render?action=TEMPLATE');
+    url.searchParams.set('text', title);
+    url.searchParams.set('dates', dates);
+    url.searchParams.set('details', 'תיאום פגישה דרך אפליקציית הצ׳אט');
+    url.searchParams.set('sf', 'true');
+    url.searchParams.set('output', 'xml');
+
+    window.open(url.toString(), '_blank');
+  };
+
+  // שליחה גם בלחיצה על אנטר
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -219,6 +247,13 @@ const ChatPage = () => {
           />
           <SendButton onClick={handleSend}>שלח</SendButton>
         </InputArea>
+
+        {/* כפתור תיאום ביומן אם נמצאה שעה בטקסט */}
+        {lastDetectedTime && (
+          <SendButton onClick={openGoogleCalendar} style={{ marginTop: '8px', backgroundColor: '#4285F4' }}>
+            תאם ביומן
+          </SendButton>
+        )}
       </ChatContainer>
     </ChatWrapper>
   );

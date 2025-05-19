@@ -11,9 +11,7 @@ import {
   ReviewHeader,
   ReviewDate,
   ReviewUser,
-  ReviewHeaderContent,
   ReviewUserContainer,
-  ReviewDateContainer,
   ReviewItem,
   ReviewFormHeader,
   ReviewFormTitle,
@@ -55,7 +53,6 @@ const BookReviews = ({ bookId, userId }) => {
   const postReview = async (e) => {
     e.preventDefault();
 
-    // בדיקת תקינות של השדות
     if (rating < 1 || rating > 5 || !comment.trim()) {
       setErrorMessage('יש למלא את כל השדות בצורה תקינה');
       return;
@@ -86,21 +83,19 @@ const BookReviews = ({ bookId, userId }) => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('API error response:', errorData); // הצגת פרטי השגיאה
         throw new Error(errorData.detail || 'לא הצלחנו לשלוח את הביקורת');
       }
 
       const newReview = await response.json();
-      setReviews(prev => [...prev, newReview]); // הוספת ביקורת חדשה לרשימה
-      setRating(0); // איפוס הדירוג
-      setComment(''); // איפוס התגובה
-      setErrorMessage(''); // איפוס הודעת השגיאה
+      setReviews(prev => [...prev, newReview]);
+      setRating(0);
+      setComment('');
+      setErrorMessage('');
     } catch (error) {
       console.error('Error submitting review:', error);
-      setErrorMessage(`לא הצלחנו לשלוח את הביקורת: ${error.message}`); // הצגת פרטי השגיאה למשתמש
+      setErrorMessage(`לא הצלחנו לשלוח את הביקורת: ${error.message}`);
     }
   };
-
 
   return (
     <ReviewContainer>
@@ -130,7 +125,6 @@ const BookReviews = ({ bookId, userId }) => {
               </ReviewUserContainer>
 
               <ReviewDate>{new Date(review.created_at).toLocaleDateString()}</ReviewDate>
-
             </ReviewHeader>
             <ReviewText>{review.comment_text}</ReviewText>
           </ReviewItem>
