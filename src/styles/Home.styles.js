@@ -27,6 +27,24 @@ export const NotificationIcon = styled.div`
   font-size: 1.5rem;
   cursor: pointer;
   color: #7a4a16;
+  position: relative; /* חשוב כדי למקם את העיגול האדום */
+`;
+
+/* עיגול אדום למספר התראות */
+export const NotificationBadge = styled.div`
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
 `;
 
 /* באנר עליון – רקע + מיקום מרכזי */
@@ -63,10 +81,10 @@ export const BannerText = styled.div`
 
   @keyframes scrollText {
     0% {
-      transform: translateX(0%);
+      transform: translateX(100%);
     }
     100% {
-      transform: translateX(100%);
+      transform: translateX(-100%);
     }
   }
 `;
@@ -86,8 +104,77 @@ export const SectionTitle = styled.h2`
 /* אזור ביקורות אחרונות */
 export const ReviewSection = styled.div`
   margin-top: 2rem;
+`;
 
-`;export const Card = styled.div`
+export const NotificationsWrapper = styled.div`
+  position: relative;
+`;
+
+export const NotificationsBox = styled.div`
+  position: absolute;
+  top: 2.2rem;
+  left: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8%;
+  width: 240px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  padding: 0.8rem 1rem;
+  z-index: 9990;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 14px; 
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent #ddd transparent;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: -9px;
+    left: 14px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent #fff transparent;
+  }
+`;
+
+export const NotificationItem = styled.li`
+  list-style: none;
+  font-size: 0.95rem;
+  color: ${props => props.$isUnread ? '#000' : '#666'};
+  background-color: ${props => props.$isUnread ? '#f5f0e6' : 'transparent'};
+  font-weight: ${props => props.$isUnread ? 'bold' : 'normal'};
+  padding: 0.6rem 0.4rem;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: ${props => props.$isUnread ? '#efe5d3' : '#f5f5f5'};
+  }
+
+  &::before {
+    content: '${props => props.$type === 'message' ? '💬 ' : props.$type === 'complete' ? '✅ ' : '📦 '}';
+  }
+`;
+
+export const NotificationTitle = styled.div`
+  font-weight: bold;
+  color: #7a4a16;
+  margin-bottom: 0.5rem;
+`;
+
+/* הסטיילים הנוספים שלך */
+export const Card = styled.div`
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -108,7 +195,6 @@ export const ReviewSection = styled.div`
     width: 160px;
   }
 `;
-
 
 export const HomeBookCard = styled.div`
   background: #fff;
@@ -181,10 +267,6 @@ export const BookListWrapper = styled.div`
   }
 `;
 
-
-
-
-
 export const HomeBookTitle = styled.h3`
   margin-top: 10px;
   color: rgb(144, 83, 8);
@@ -196,67 +278,6 @@ export const HomeBookAuthor = styled.p`
   font-size: 0.95rem;
   margin: 4px 0 0;
 `;
-
-
-export const NotificationsWrapper = styled.div`
-  position: relative;
-`;
-
-export const NotificationsBox = styled.div`
-  position: absolute;
-  top: 2.2rem;
-  left: 0;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8%;
-  width: 240px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-  padding: 0.8rem 1rem;
-  z-index: 9990;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -10px;
-    left: 14px; 
-      border-width: 6px;
-    border-style: solid;
-    border-color: transparent transparent #ddd transparent;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: -9px;
-    left: 14px;
-    border-width: 6px;
-    border-style: solid;
-    border-color: transparent transparent #fff transparent;
-  }
-`;
-
-export const NotificationItem = styled.li`
-  list-style: none;
-  font-size: 0.95rem;
-  color: #444;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid #eee;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &::before {
-    content: '🔔 ';
-  }
-`;
-
-export const NotificationTitle = styled.div`
-  font-weight: bold;
-  color: #7a4a16;
-  margin-bottom: 0.5rem;
-`;
-
 
 export const FavoriteButton = styled.button`
   position: absolute;

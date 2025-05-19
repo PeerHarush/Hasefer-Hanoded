@@ -22,13 +22,11 @@ export const Card = styled.div`
   overflow: hidden; 
   margin-bottom: 20px;
   margin-top: 40px;
-
 `;
 
 export const Title = styled.h2`
   text-align: center;
   color:rgb(144, 83, 8);
-
   margin-bottom: 0.25rem;
 `;
 
@@ -75,8 +73,6 @@ export const Button = styled.button`
   }
 `;
 
-
-
 export const ImageUploadContainer = styled.div`
   border: 2px dashed #ccc;
   border-radius: 8px;
@@ -97,8 +93,6 @@ export const PreviewImage = styled.img`
   object-fit: cover;
 `;
 
-
-
 export const EditAddressButton = styled.button`
   background: none;
   border: none;
@@ -109,8 +103,6 @@ export const EditAddressButton = styled.button`
   margin-top: 0.25rem;
   padding: 0;
 `;
-
-
 
 export const Select = styled.select`
   padding: 1px;
@@ -123,4 +115,46 @@ export const Select = styled.select`
   &:focus {
     outline: none;
   }
+`;
+
+export const SuggestionsList = styled.ul`
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  direction: rtl;
+
+  li {
+    padding: 0.35rem 0.5rem;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+
+    &:hover {
+      background-color: #f0f0f0;
+    }
+  }
+`;
+
+export const MapHelpText = styled.div`
+  text-align: center;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #666;
+`;
+
+export const MapContainer = styled.div`
+  height: 300px;
+  margin: 1rem 0 2rem;
+  border-radius: 8px;
+  overflow: hidden;
+`;
+
+export const ActionButton = styled(Button)`
+  margin-top: 0.5rem;
 `;
