@@ -32,91 +32,89 @@ function Home() {
   const [readNotificationIds, setReadNotificationIds] = useState([]);
 
   useEffect(() => {
-  const token = localStorage.getItem('access_token');
-  if (!token) return;
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
 
-  fetch(`${API_BASE_URL}/users`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-    .then(async res => {
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'בעיה בפרופיל');
-      setUserName(data.full_name);
+    fetch(`${API_BASE_URL}/users`, {
+      headers: { Authorization: `Bearer ${token}` },
     })
-    .catch(err => {
-      console.error('❌ שגיאה:', err.message);
-    });
-}, []);
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'בעיה בפרופיל');
+        setUserName(data.full_name);
+      })
+      .catch(err => {
+        console.error('❌ שגיאה:', err.message);
+      });
+  }, []);
 
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
 
-useEffect(() => {
-  const token = localStorage.getItem('access_token');
-  if (!token) return;
+    const storedReadIds = JSON.parse(localStorage.getItem('readNotificationIds')) || [];
+    setReadNotificationIds(storedReadIds);
 
-  const storedReadIds = JSON.parse(localStorage.getItem('readNotificationIds')) || [];
-  setReadNotificationIds(storedReadIds);
+    const fetchNotifications = async () => {
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
 
-  const fetchNotifications = async () => {
-    try {
-      const headers = { Authorization: `Bearer ${token}` };
+        const [chatsRes, txRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/chats`, { headers }),
+          fetch(`${API_BASE_URL}/transactions`, { headers })
+        ]);
 
-      const [chatsRes, txRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/chats`, { headers }),
-        fetch(`${API_BASE_URL}/transactions`, { headers })
-      ]);
+        const [chats, transactions] = await Promise.all([
+          chatsRes.json(),
+          txRes.json()
+        ]);
 
-      const [chats, transactions] = await Promise.all([
-        chatsRes.json(),
-        txRes.json()
-      ]);
+        const unreadMessages = chats
+          .filter(chat => chat.unread_count > 0)
+          .map(chat => ({
+            id: `chat-${chat.id}`,
+            message: `${chat.other_user.full_name} שלח/ה לך הודעה על "${chat.listing.book.title}"`,
+            link: `/chat/${chat.id}`,
+            type: 'message',
+            isUnread: true,
+            timestamp: new Date().getTime()
+          }));
 
-      const unreadMessages = chats
-        .filter(chat => chat.unread_count > 0)
-        .map(chat => ({
-          id: `chat-${chat.id}`,
-          message: `${chat.other_user.full_name} שלח/ה לך הודעה על "${chat.listing.book.title}"`,
-          link: `/chat/${chat.id}`,
-          type: 'message',
-          isUnread: true,
-          timestamp: new Date().getTime()
-        }));
+        const completedTx = transactions
+          .filter(tx => tx.status === 'completed' && tx.is_user_buyer)
+          .map(tx => ({
+            id: `tx-complete-${tx.id}`,
+            message: `"${tx.listing.book.title}" אושר על ידי ${tx.seller.full_name}`,
+            link: '/transaction',
+            type: 'complete',
+            isUnread: !storedReadIds.includes(`tx-complete-${tx.id}`),
+            timestamp: new Date().getTime() - 1000
+          }));
 
-      const completedTx = transactions
-        .filter(tx => tx.status === 'completed' && tx.is_user_buyer)
-        .map(tx => ({
-          id: `tx-complete-${tx.id}`,
-          message: `"${tx.listing.book.title}" אושר על ידי ${tx.seller.full_name}`,
-          link: '/transaction',
-          type: 'complete',
-          isUnread: !storedReadIds.includes(`tx-complete-${tx.id}`),
-          timestamp: new Date().getTime() - 1000 // קצת יותר ישן מההודעות
-        }));
+        const reservedTx = transactions
+          .filter(tx => tx.status === 'pending' && !tx.is_user_buyer)
+          .map(tx => ({
+            id: `tx-pending-${tx.id}`,
+            message: `מישהו ביקש את "${tx.listing.book.title}" – עסקה פתוחה`,
+            link: '/transaction',
+            type: 'pending',
+            isUnread: !storedReadIds.includes(`tx-pending-${tx.id}`),
+            timestamp: new Date().getTime() - 2000
+          }));
 
-      const reservedTx = transactions
-        .filter(tx => tx.status === 'pending' && !tx.is_user_buyer)
-        .map(tx => ({
-          id: `tx-pending-${tx.id}`,
-          message: `מישהו ביקש את "${tx.listing.book.title}" – עסקה פתוחה`,
-          link: '/transaction',
-          type: 'pending',
-          isUnread: !storedReadIds.includes(`tx-pending-${tx.id}`),
-          timestamp: new Date().getTime() - 2000 // קצת יותר ישן מהקודמים
-        }));
+        const allNotifications = [...unreadMessages, ...completedTx, ...reservedTx]
+          .sort((a, b) => b.timestamp - a.timestamp)
+          .slice(0, 5);
 
-      const allNotifications = [...unreadMessages, ...completedTx, ...reservedTx]
-        .sort((a, b) => b.timestamp - a.timestamp) // מיון לפי זמן - החדש ביותר קודם
-        .slice(0, 5); // רק 5 התראות אחרונות
+        setNotifications(allNotifications);
+        setUnreadNotifications(allNotifications.filter(note => note.isUnread).length);
+      } catch (err) {
+        console.error('שגיאה בטעינת התראות:', err.message);
+      }
+    };
 
-      setNotifications(allNotifications);
-      setUnreadNotifications(allNotifications.filter(note => note.isUnread).length);
-    } catch (err) {
-      console.error('שגיאה בטעינת התראות:', err.message);
-    }
-  };
-
-  fetchNotifications();
-}, []);
-
+    fetchNotifications();
+  }, []);
 
   useEffect(() => {
     const fetchCompletedTransactions = async () => {
@@ -125,9 +123,7 @@ useEffect(() => {
 
       try {
         const res = await fetch(`${API_BASE_URL}/transactions`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         const data = await res.json();
@@ -144,23 +140,16 @@ useEffect(() => {
     fetchCompletedTransactions();
   }, []);
 
-  // פונקציה לסימון התראה כנקראה
   const markAsRead = (notificationId) => {
-    // עדכון מערך ההתראות עם הסטטוס החדש
-    const updatedNotifications = notifications.map(note => 
+    const updatedNotifications = notifications.map(note =>
       note.id === notificationId ? { ...note, isUnread: false } : note
     );
-    
+
     setNotifications(updatedNotifications);
-    
-    // עדכון מספר ההתראות שלא נקראו
     setUnreadNotifications(updatedNotifications.filter(note => note.isUnread).length);
-    
-    // שמירת מזהה ההתראה במערך ההתראות שנקראו
+
     const updatedReadIds = [...readNotificationIds, notificationId];
     setReadNotificationIds(updatedReadIds);
-    
-    // שמירה ב-localStorage
     localStorage.setItem('readNotificationIds', JSON.stringify(updatedReadIds));
   };
 
@@ -176,9 +165,18 @@ useEffect(() => {
             <NotificationIcon onClick={() => setShowNotifications(prev => !prev)}>
               🔔
               {unreadNotifications > 0 && (
-                <NotificationBadge>
-                  {unreadNotifications}
-                </NotificationBadge>
+                <span
+                  style={{
+                    display: 'inline-block',
+                    background: '#ff3b30',
+                    borderRadius: '50%',
+                    width: '10px',
+                    height: '10px',
+                    position: 'absolute',
+                    top: '-2px',
+                    left: '-4px',
+                  }}
+                />
               )}
             </NotificationIcon>
 
@@ -190,14 +188,12 @@ useEffect(() => {
                     <NotificationItem>אין התראות כרגע</NotificationItem>
                   ) : (
                     notifications.map((note) => (
-                      <NotificationItem 
-                        key={note.id} 
+                      <NotificationItem
+                        key={note.id}
                         $isUnread={note.isUnread}
                         $type={note.type}
                         onClick={() => {
-                          if (note.isUnread) {
-                            markAsRead(note.id);
-                          }
+                          if (note.isUnread) markAsRead(note.id);
                           navigate(note.link);
                         }}
                       >
@@ -225,8 +221,7 @@ useEffect(() => {
       </BookSection>
 
       <ReviewSection>
-        <SectionTitle>📝 ביקורות אחרונות</SectionTitle>
-        {/* קומפוננטת ביקורות */}
+        <SectionTitle>📝 המלצות וביקורות ספרים</SectionTitle>
       </ReviewSection>
     </PageWrapper>
   );
