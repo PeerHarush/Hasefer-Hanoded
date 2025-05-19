@@ -498,9 +498,9 @@ const AddBookPage = () => {
                   onKeyDown={handleAddressKeyDown}
                   onBlur={handleAddressBlur}
                   ref={addressInputRef}
-                  placeholder="הקלד כתובת ולחץ אנטר או לחץ בחוץ לחיפוש"
+                  placeholder="הקלד כתובת או לחץ על נקודה במפה, ובסיום לחץ על אישור"
                 />
-                <ActionButton type="button" onClick={finishAddressEditing}>אישור כתובת</ActionButton>
+                <ActionButton type="button" onClick={finishAddressEditing}>עדכון ואישור הכתובת</ActionButton>
               </>
             )}
           </FormGroup>
