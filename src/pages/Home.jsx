@@ -37,6 +37,7 @@ function Home() {
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
+    
     if (!token) return;
 
     fetch(`${API_BASE_URL}/users`, {
@@ -45,7 +46,9 @@ function Home() {
       .then(async res => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || 'בעיה בפרופיל');
+        localStorage.setItem('user_id', data.id); 
         setUserName(data.full_name);
+
       })
       .catch(err => {
         console.error('❌ שגיאה:', err.message);
