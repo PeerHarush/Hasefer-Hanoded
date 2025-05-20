@@ -238,7 +238,7 @@ const ChatPage = () => {
             rows={2}
           />
           {lastDetectedTime && (
-            <CalendarButton onClick={openGoogleCalendar}>תאם</CalendarButton>
+            <CalendarButton onClick={openGoogleCalendar}>הוסף ליומן</CalendarButton>
           )}
           <SendButton onClick={handleSend}>שלח</SendButton>
         </InputArea>

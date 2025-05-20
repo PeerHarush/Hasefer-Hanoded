@@ -18,19 +18,15 @@ const UserActivityPage = () => {
       try {
         setLoading(true);
         setError(null);
-
-        const [transactionsRes, chatsRes, notificationsRes, listingsRes] = await Promise.all([
+        const [transactionsRes, listingsRes] = await Promise.all([
           fetch(`${API_BASE_URL}/transactions`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_BASE_URL}/chats`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_BASE_URL}/notifications`, { headers: { Authorization: `Bearer ${token}` } }),
           fetch(`${API_BASE_URL}/book-listings`, { headers: { Authorization: `Bearer ${token}` } }),
+
         ]);
 
-        const [transactions, chats, notifications, listings] = await Promise.all([
+        const [transactions, listings] = await Promise.all([
           transactionsRes.json(),
-          chatsRes.json(),
-          notificationsRes.json(),
-          listingsRes.json()
+          listingsRes.json(),
         ]);
 
         const activity = [];
@@ -60,6 +56,8 @@ const UserActivityPage = () => {
           }
         });
 
+    
+
         // ספרים שהוספת
         listings.forEach(listing => {
           if (String(listing.owner?.id) === userId) {
@@ -71,14 +69,7 @@ const UserActivityPage = () => {
           }
         });
 
-        // נוטיפיקציות
-        notifications.forEach(n => {
-          activity.push({
-            type: 'notification',
-            description: `🔔 ${n.message}`,
-            date: n.created_at
-          });
-        });
+       
 
     
 
