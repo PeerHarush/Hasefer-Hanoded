@@ -132,7 +132,6 @@ export const Input = styled.textarea`
   border-radius: 8px;
   resize: none;
   min-height: 48px;
-  font-family: inherit;
   outline: none;
 
   &:focus {

@@ -1,11 +1,13 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Link, useNavigate } from "react-router-dom";
-import { Wrapper, StyledNavbar, NavbarRight, NavbarLeft } from "../styles/Header.styles";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Wrapper, StyledNavbar, NavbarRight, NavbarLeft, NavItemLink } from "../styles/Header.styles";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
 function Header() {
   const navigate = useNavigate();
+const location = useLocation();
+const currentPath = location.pathname;
 
   const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
 
@@ -45,35 +47,57 @@ function Header() {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
-          <NavbarRight className="navbar-nav">
-            <li className="nav-item"><Link to="/AllBooks" className="nav-link">כל הספרים</Link></li>
-            <li className="nav-item"><Link to="/about" className="nav-link">אודות</Link></li>
+        <NavbarRight className="navbar-nav">
+  <li className="nav-item">
+    <NavItemLink to="/AllBooks" $active={currentPath === "/AllBooks"}>כל הספרים</NavItemLink>
+  </li>
+  <li className="nav-item">
+        <NavItemLink to="/about" $active={currentPath === "/about"}>אודות</NavItemLink>
+  </li>
 
-            {isLoggedIn && (
-              <>
-                <li className="nav-item"><Link to="/wishlist" className="nav-link">רשימת משאלות</Link></li>
-                <li className="nav-item"><Link to="/MessagesPage" className="nav-link">הודעות</Link></li>
-                <li className="nav-item"><Link to="/History" className="nav-link">היסטוריית פעולות</Link></li>
-                <li className="nav-item"><Link to="/Transaction" className="nav-link">עסקאות</Link></li>
-                <li className="nav-item"><Link to="/Profile" className="nav-link">לפרופיל שלי</Link></li>
-                <li className="nav-item"><Link to="/AddBook" className="nav-link">הוספת ספר</Link></li>
-              </>
-            )}
-          </NavbarRight>
+  {isLoggedIn && (
+    <>
+      <li className="nav-item">
+        <NavItemLink to="/wishlist" $active={currentPath === "/wishlist"}>רשימת משאלות</NavItemLink>
+      </li>
+      <li className="nav-item">
+        <NavItemLink to="/MessagesPage" $active={currentPath === "/MessagesPage"}>הודעות</NavItemLink>
+      </li>
+      <li className="nav-item">
+        <NavItemLink to="/History" $active={currentPath === "/History"}>היסטוריית פעולות</NavItemLink>
+      </li>
+      <li className="nav-item">
+        <NavItemLink to="/Transaction" $active={currentPath === "/Transaction"}>עסקאות</NavItemLink>
+      </li>
+      <li className="nav-item">
+        <NavItemLink to="/Profile" $active={currentPath === "/Profile"}>לפרופיל שלי</NavItemLink>
+      </li>
+      <li className="nav-item">
+        <NavItemLink to="/AddBook" $active={currentPath === "/AddBook"}>הוספת ספר</NavItemLink>
+      </li>
+      <li className="nav-item">
+  <NavItemLink to="/my-books" $active={currentPath === "/my-books"}>הספרים שלי</NavItemLink>
+</li>
 
-          <NavbarLeft className="navbar-nav ms-3">
-            {!isLoggedIn ? (
-              <li className="nav-item">
-                <Link to="/login" className="nav-link">התחברות / הרשמה</Link>
-              </li>
-            ) : (
-              <li className="nav-item">
-                <button className="btn btn-link nav-link" onClick={handleLogout} style={{ padding: 0 }}>
-                  התנתקות
-                </button>
-              </li>
-            )}
-          </NavbarLeft>
+    </>
+  )}
+</NavbarRight>
+
+
+       <NavbarLeft className="navbar-nav ms-3">
+  {!isLoggedIn ? (
+    <li className="nav-item">
+      <NavItemLink to="/login" $active={currentPath === "/login"}>התחברות / הרשמה</NavItemLink>
+    </li>
+  ) : (
+    <li className="nav-item">
+      <button className="btn btn-link nav-link" onClick={handleLogout} style={{ padding: 0 }}>
+        התנתקות
+      </button>
+    </li>
+  )}
+</NavbarLeft>
+
         </div>
       </StyledNavbar>
     </Wrapper>

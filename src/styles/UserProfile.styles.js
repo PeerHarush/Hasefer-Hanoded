@@ -10,6 +10,7 @@ export const Wrapper = styled.div`
   background-color: #fdfcf8;
 `;
 
+
 export const ProfileCard = styled.div`
   background: #fff;
   border-radius: 12px;

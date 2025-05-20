@@ -16,6 +16,7 @@ import  AllBooksPage from "./pages/AllBooksPage.jsx";
 import BookDetailsPage from './pages/BookDetailsPage.jsx';
 import AboutUsPage from './pages/aboutUsPage.jsx';
 import ChatPage from './pages/ChatPage';
+import MyAddedBooks from './pages/MyAddedBooks.jsx'
 function App() {
   return (
     <div>
@@ -33,6 +34,8 @@ function App() {
         <Route path="/book/:bookTitle" element={<BookDetailsPage />} />
         <Route path="/about" element={<AboutUsPage />} />
         <Route path="/chat/:chatRoomId" element={<ChatPage />} />
+        <Route path="/my-books" element={<MyAddedBooks />} />
+
 
 
  </Routes>
