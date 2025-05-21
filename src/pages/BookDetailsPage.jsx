@@ -330,39 +330,7 @@ const sortedCopies = [...relevantCopies].sort((a, b) => {
             </MobileButtonsContainer>
           )}
 
-          {/* כפתורים לחישוב מרחק */}
-          <div style={{ margin: '1rem 0', borderTop: '1px solid #eee', paddingTop: '1rem' }}>
-            <h4 style={{ marginBottom: '1rem' }}>מצא עותקים לפי מיקום 📍</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <Button onClick={getCurrentPosition}>השתמש במיקום הנוכחי</Button>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <input
-                  type="text"
-                  value={userAddress}
-                  onChange={(e) => setUserAddress(e.target.value)}
-                  placeholder="הזן כתובת"
-                  style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                />
-                <Button onClick={handleAddressSearch}>חפש</Button>
-              </div>
-              <Button onClick={() => setShowMap(!showMap)}>
-                {showMap ? 'הסתר מפה' : 'הצג מפה'}
-              </Button>
-            </div>
-
-            {showMap && (
-              <div style={{ marginTop: '1rem' }}>
-                <Map
-                  height="300px"
-                  position={userPosition}
-                  setPosition={setUserPosition}
-                  address={userAddress}
-                  updateAddress={setUserAddress}
-                  helpText="לחץ על המפה לבחירת מיקום"
-                />
-              </div>
-            )}
-          </div>
+         
 
         <h3>עותקים זמינים</h3>
         {relevantCopies.length > 0 ? (
@@ -403,7 +371,37 @@ const sortedCopies = [...relevantCopies].sort((a, b) => {
           ) : (
             <p>אין עותקים זמינים כרגע.</p>
           )}
+ {/* כפתורים לחישוב מרחק */}
+          <div style={{ margin: '1rem 0', borderTop: '1px solid #eee', paddingTop: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  value={userAddress}
+                  onChange={(e) => setUserAddress(e.target.value)}
+                  placeholder="הזן כתובת"
+                  style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                />
+                <Button onClick={handleAddressSearch}>חפש</Button>
+              </div>
+              <Button onClick={() => setShowMap(!showMap)}>
+                {showMap ? 'הסתר מפה' : 'הצג מפה'}
+              </Button>
+            </div>
 
+            {showMap && (
+              <div style={{ marginTop: '1rem' }}>
+                <Map
+                  height="300px"
+                  position={userPosition}
+                  setPosition={setUserPosition}
+                  address={userAddress}
+                  updateAddress={setUserAddress}
+                  helpText="לחץ על המפה לבחירת מיקום"
+                />
+              </div>
+            )}
+          </div>
 
           {/* הוספת ביקורות */}
           <h3> ביקורות </h3>
