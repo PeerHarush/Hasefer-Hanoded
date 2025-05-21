@@ -8,6 +8,10 @@ export const Wrapper = styled.div`
   h1 {
     color: #2c3e50;
     margin: 30px 0;
+
+    @media (max-width: 768px) {
+      margin-top: 10px;
+    }
   }
 `;
 
@@ -81,23 +85,50 @@ export const StockTag = styled.div`
   margin: 8px 0;
 `;
 
+
+
+export const FavoriteButton  = styled.button`
+    position: static; 
+    margin-top: 12px;
+    align-self: flex-end; 
+    order: 99;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+
+  svg {
+    color: ${props => (props.$isFadingOut ? '#aaa' : props.$isFavorite ? 'red' : 'gray')};
+    transition: color 0.5s ease;
+  }
+
+  &:hover svg {
+    color: ${props =>
+      props.$isFadingOut ? '#aaa' :
+      props.$isFavorite ? 'darkred' : '#555'};
+  }
+`;
+
+
+
 export const DeleteButton = styled.button`
-  position: absolute;
-  top: 8px;
-  left: 8px;
+    position: static; 
+    margin-top: 12px;
+    align-self: flex-end; 
+    order: 99;
   background: none;
   border: none;
   font-size: 18px;
   cursor: pointer;
-  color: #c0392b;
 
-  &:hover {
-    color: #e74c3c;
-  }
 `;
 
 export const Title = styled.h2`
   text-align: center;
   color: rgb(144, 83, 8);
   margin: 60px 0 1rem;
+
+  @media (max-width: 768px) {
+    margin-top: 20px;
+  }
 `;

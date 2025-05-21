@@ -19,7 +19,6 @@ import {
 import Table from 'react-bootstrap/Table'; // טבלת bootstrap להצגת העותקים
 import BookReviews from '../components/BookReviews.js'; // ייבוא קומפוננטת הביקורות
 import Map, { geocodeAddress, calculateDistance } from '../components/Map'; // ייבוא קומפוננטת המפה וחישוב מרחק
-import BackButton from '../components/BackButton.js'
 
 
 
@@ -276,7 +275,6 @@ const BookDetails = () => {
         <Wrapper>
           <BookInfo>
             <h1>{errorMessage}</h1>
-              <BackButton />
             </BookInfo>
         </Wrapper>
       </PageContainer>
@@ -300,7 +298,6 @@ const BookDetails = () => {
 
   return (
     <PageContainer>
-      <BackButton /> 
 
       <Wrapper>
         <BookInfo>

@@ -15,7 +15,6 @@ import {
   SendButton,
   CalendarButton, 
 } from '../styles/ChatPage.styles';
-import BackButton from '../components/BackButton.js'
 
 
 
@@ -201,7 +200,6 @@ const ChatPage = () => {
 
   return (
     <ChatWrapper>
-            <BackButton /> 
       
       <ChatContainer>
         <Header>

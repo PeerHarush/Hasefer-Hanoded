@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Wrapper, CardsContainer, BookCard, StockTag, DeleteButton, Title } from '../styles/WishList.styles';
+import { Wrapper, CardsContainer, BookCard, StockTag, FavoriteButton, Title } from '../styles/WishList.styles';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../config';
-import BackButton from '../components/BackButton.js'
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
 
 
 
@@ -74,7 +74,6 @@ function WishList() {
 
   return (
     <Wrapper>
-              <BackButton /> 
 
   <Title>רשימת המשאלות שלי</Title>
   <CardsContainer>
@@ -86,12 +85,17 @@ function WishList() {
   key={book.id}
 >
   <BookCard>
-    <DeleteButton onClick={(e) => {
-      e.preventDefault(); // כדי שהמחיקה לא תעביר לדף הפרטים
-      handleDelete(book.id);
-    }}>
-      🗑️
-    </DeleteButton>
+   <FavoriteButton
+  $isFavorite={true}
+  onClick={(e) => {
+    e.preventDefault(); 
+    handleDelete(book.id); 
+  }}
+  title="הספר הוסר מרשימת המשאלות"
+>
+  <FaHeart />
+</FavoriteButton>
+
     <img
       src={book.image_url}
       alt={book.title}

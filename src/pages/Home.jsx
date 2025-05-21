@@ -21,8 +21,7 @@ import {
   NotificationsBox,
   NotificationItem,
   NotificationTitle, 
- 
-  
+  NotificationsScroll, 
 } from '../styles/Home.styles';
 import BackButton from '../components/BackButton.js'
 
@@ -81,19 +80,19 @@ function Home() {
           txRes.json()
         ]);
 
-       const unreadMessages = chats
-  .filter(chat => chat.unread_count > 0)
-  .map(chat => {
-    const id = `chat-${chat.id}`;
-    return {
-      id,
-      message: `${chat.other_user.full_name} שלח/ה לך הודעה על "${chat.listing.book.title}"`,
-      link: `/chat/${chat.id}`,
-      type: 'message',
-      isUnread: !storedReadIds.includes(id), 
-      timestamp: new Date().getTime(),
-    };
-  });
+        const unreadMessages = chats
+          .filter(chat => chat.unread_count > 0)
+          .map(chat => {
+            const id = `chat-${chat.id}`;
+            return {
+              id,
+              message: `${chat.other_user.full_name} שלח/ה לך הודעה על "${chat.listing.book.title}"`,
+              link: `/chat/${chat.id}`,
+              type: 'message',
+              isUnread: !storedReadIds.includes(id), 
+              timestamp: new Date().getTime(),
+            };
+          });
 
 
         const completedTx = transactions
@@ -119,8 +118,8 @@ function Home() {
           }));
 
         const allNotifications = [...unreadMessages, ...completedTx, ...reservedTx]
-          .sort((a, b) => b.timestamp - a.timestamp)
-          .slice(0, 8); 
+          .sort((a, b) => b.timestamp - a.timestamp);
+          // הסרנו את ה-slice כדי לאפשר את כל ההתראות
 
         setNotifications(allNotifications);
         setUnreadNotifications(allNotifications.filter(note => note.isUnread).length);
@@ -158,29 +157,29 @@ function Home() {
   }, []);
   
   const markAsRead = (notificationId) => {
-  const updatedNotifications = notifications.map(note =>
-    note.id === notificationId ? { ...note, isUnread: false } : note
-  );
+    const updatedNotifications = notifications.map(note =>
+      note.id === notificationId ? { ...note, isUnread: false } : note
+    );
 
-  setNotifications(updatedNotifications);
+    setNotifications(updatedNotifications);
 
-  const newUnreadCount = updatedNotifications.filter(note => note.isUnread).length;
-  setUnreadNotifications(newUnreadCount);
+    const newUnreadCount = updatedNotifications.filter(note => note.isUnread).length;
+    setUnreadNotifications(newUnreadCount);
 
-  const updatedReadIds = [...readNotificationIds, notificationId];
-  setReadNotificationIds(updatedReadIds);
-  localStorage.setItem('readNotificationIds', JSON.stringify(updatedReadIds));
-};
+    const updatedReadIds = [...readNotificationIds, notificationId];
+    setReadNotificationIds(updatedReadIds);
+    localStorage.setItem('readNotificationIds', JSON.stringify(updatedReadIds));
+  };
 
 
-const markAllAsRead = () => {
-  const updatedNotifications = notifications.map(note => ({
-    ...note,
-    isUnread: false
-  }));
+  const markAllAsRead = () => {
+    const updatedNotifications = notifications.map(note => ({
+      ...note,
+      isUnread: false
+    }));
 
-  setNotifications(updatedNotifications);
-  setUnreadNotifications(0);
+    setNotifications(updatedNotifications);
+    setUnreadNotifications(0);
 
   const allIds = updatedNotifications.map(note => note.id);
   setReadNotificationIds(allIds);
@@ -188,77 +187,76 @@ const markAllAsRead = () => {
 };
 return (
   <PageWrapper>
-    
     <TopBar>
       <UserGreeting>
         {userName ? `שלום, ${userName}! 🌸` : 'שלום אורח 🌸'}
       </UserGreeting>
 
-      {userName && (
-        <NotificationsWrapper>
-          <NotificationIcon onClick={() => setShowNotifications(prev => !prev)}>
-            🔔
-            {unreadNotifications > 0 && (
-              <NotificationBadge>{unreadNotifications}</NotificationBadge>
-            )}
-          </NotificationIcon>
-
-          {showNotifications && (
-            <NotificationsBox>
-              <NotificationTitle>📬 ההתראות שלך:</NotificationTitle>
-              <ul style={{ margin: 0, padding: 0 }}>
-                {notifications.length === 0 ? (
-                  <NotificationItem>אין התראות כרגע</NotificationItem>
-                ) : (
-                  notifications.map((note) => (
-                    <NotificationItem
-                      key={note.id}
-                      $isUnread={note.isUnread}
-                      $type={note.type}
-                    >
-                      <div onClick={() => navigate(note.link)} style={{ flex: 1, cursor: 'pointer' }}>
-                        {note.message}
-                      </div>
-
-                      {note.isUnread && (
-                        <MarkAsReadIcon onClick={() => markAsRead(note.id)} title="סמן כהודעה שנקראה">
-                          ✔️
-                        </MarkAsReadIcon>
-                      )}
-                    </NotificationItem>
-                  ))
-                )}
-              </ul>
-
-              {unreadNotifications > 2 && (
-                <MarkAllAsReadButton onClick={markAllAsRead}>
-                  ✔️ סמן את כל ההתראות כנקראו
-                </MarkAllAsReadButton>
+        {userName && (
+          <NotificationsWrapper>
+            <NotificationIcon onClick={() => setShowNotifications(prev => !prev)}>
+              🔔
+              {unreadNotifications > 0 && (
+                <NotificationBadge>{unreadNotifications}</NotificationBadge>
               )}
-            </NotificationsBox>
-          )}
-        </NotificationsWrapper>
-      )}
-    </TopBar>
+            </NotificationIcon>
 
-    <Banner>
-      <BannerText>
-        עד כה הצלחנו להעביר הלאה {recycledCount} ספרים! תודה שאתם חלק מהקהילה 💛
-      </BannerText>
-    </Banner>
+            {showNotifications && (
+              <NotificationsBox>
+                <NotificationTitle>📬 ההתראות שלך:</NotificationTitle>
+                
+                <NotificationsScroll>
+                  {notifications.length === 0 ? (
+                    <NotificationItem>אין התראות כרגע</NotificationItem>
+                  ) : (
+                    notifications.map((note) => (
+                      <NotificationItem
+                        key={note.id}
+                        $isUnread={note.isUnread}
+                        $type={note.type}
+                      >
+                        <div onClick={() => navigate(note.link)} style={{ flex: 1, cursor: 'pointer' }}>
+                          {note.message}
+                        </div>
 
-    <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+                        {note.isUnread && (
+                          <MarkAsReadIcon onClick={() => markAsRead(note.id)} title="סמן כהודעה שנקראה">
+                            ✔️
+                          </MarkAsReadIcon>
+                        )}
+                      </NotificationItem>
+                    ))
+                  )}
+                </NotificationsScroll>
 
-    <BookSection>
-      <HomeBookGallery />
-    </BookSection>
+                {unreadNotifications > 2 && (
+                  <MarkAllAsReadButton onClick={markAllAsRead}>
+                    ✔️ סמן את כל ההתראות כנקראו
+                  </MarkAllAsReadButton>
+                )}
+              </NotificationsBox>
+            )}
+          </NotificationsWrapper>
+        )}
+      </TopBar>
 
-    <ReviewSection>
-      <SectionTitle>📝 המלצות וביקורות ספרים</SectionTitle>
-    </ReviewSection>
-  </PageWrapper>
-);
+      <Banner>
+        <BannerText>
+          עד כה הצלחנו להעביר הלאה {recycledCount} ספרים! תודה שאתם חלק מהקהילה 💛
+        </BannerText>
+      </Banner>
 
+      <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+
+      <BookSection>
+        <HomeBookGallery />
+      </BookSection>
+
+      <ReviewSection>
+        <SectionTitle>📝 המלצות וביקורות ספרים</SectionTitle>
+      </ReviewSection>
+    </PageWrapper>
+  );
 }
 
 export default Home;

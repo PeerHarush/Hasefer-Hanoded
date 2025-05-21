@@ -125,7 +125,10 @@ export const NotificationsBox = styled.div`
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
   padding: 0.8rem 1rem;
   z-index: 9990;
-  
+  max-height: 350px; /* הגבלת גובה מקסימלי */
+  overflow: hidden; /* הסתרת תוכן שחורג */
+  display: flex;
+  flex-direction: column;
 
   &::before {
     content: '';
@@ -176,6 +179,30 @@ export const NotificationItem = styled.li`
 
   &::before {
     content: '${props => props.$type === 'message' ? '💬 ' : props.$type === 'complete' ? '✅ ' : '📦 '}';
+  }
+`;
+export const NotificationsScroll = styled.div`
+  overflow-y: auto;
+  max-height: 280px; /* גובה מקסימלי למכולת הגלילה */
+  margin: 0.5rem 0;
+  
+  /* עיצוב סרגל הגלילה */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #ddc5aa;
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #c9a98b;
   }
 `;
 
@@ -285,8 +312,14 @@ export const BookListWrapper = styled.div`
     grid-template-columns: repeat(auto-fit, 180px);
   }
 
-  @media (max-width: 480px) {
-    grid-template-columns: repeat(auto-fit, 160px);
+  @media (max-width: 460px) {
+    grid-template-columns: repeat(2, 1fr); /* כאן השינוי החשוב */
+    gap: 0.8rem;
+  }
+      @media (max-width: 359px) {
+    grid-template-columns: repeat(1, 1fr); /* כאן השינוי החשוב */
+    gap: 0.8rem;
+justify-items: center;
   }
 `;
 
