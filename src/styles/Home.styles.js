@@ -256,6 +256,10 @@ export const HomeBookCard = styled.div`
   width: 220px; 
   min-height: 380px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+height: 100%;
+display: flex;
+flex-direction: column;
+justify-content: space-between;
 
   &:hover {
     transform: translateY(-4px);
