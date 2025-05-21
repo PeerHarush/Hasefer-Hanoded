@@ -313,11 +313,11 @@ export const BookListWrapper = styled.div`
   }
 
   @media (max-width: 460px) {
-    grid-template-columns: repeat(2, 1fr); /* כאן השינוי החשוב */
+    grid-template-columns: repeat(2, 1fr); 
     gap: 0.8rem;
   }
-      @media (max-width: 359px) {
-    grid-template-columns: repeat(1, 1fr); /* כאן השינוי החשוב */
+      @media (max-width: 340px) {
+    grid-template-columns: repeat(1, 1fr); 
     gap: 0.8rem;
 justify-items: center;
   }
