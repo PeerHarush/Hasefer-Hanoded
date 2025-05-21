@@ -1,21 +1,14 @@
-// AddBookPage.jsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import API_BASE_URL from '../config';
 import {
   Wrapper, Card, Title, Subtitle, FormGroup, Label, Input, Button,
-  ImageUploadContainer, PreviewImage, EditAddressButton, Select
+  ImageUploadContainer, PreviewImage, EditAddressButton, Select, SuggestionsList,
+  MapHelpText, MapContainer, ActionButton
 } from '../styles/AddBookPage.styles';
 import GenresSelect from "../components/GenresSelect";
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import Map, { geocodeAddress } from '../components/Map';
+import BackButton from '../components/BackButton.js'
 
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-  iconUrl: require('leaflet/dist/images/marker-icon.png'),
-  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
-});
 
 const AddBookPage = () => {
   const [form, setForm] = useState({
@@ -29,12 +22,37 @@ const AddBookPage = () => {
     bookImage: null,
   });
 
+  const [bookSuggestions, setBookSuggestions] = useState([]);
+  const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [userAddress, setUserAddress] = useState('');
   const [previewImage, setPreviewImage] = useState(null);
-  const fileInputRef = useRef(null);
   const [showAutoFillButton, setShowAutoFillButton] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(null);
+  const fileInputRef = useRef(null);
+  const addressInputRef = useRef(null);
+  const addressTimeoutRef = useRef(null);
+
+  // Debounced geocoding function - waits 500ms after user stops typing
+  const debouncedGeocodeAddress = useCallback((address) => {
+    if (addressTimeoutRef.current) {
+      clearTimeout(addressTimeoutRef.current);
+    }
+    
+    addressTimeoutRef.current = setTimeout(() => {
+      if (address && address.trim().length >= 3) {
+        geocodeAddress(address)
+          .then(newPosition => {
+            if (newPosition) {
+              setCurrentPosition(newPosition);
+            }
+          })
+          .catch(err => {
+            console.error('שגיאה בחיפוש כתובת:', err);
+          });
+      }
+    }, 500);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -48,6 +66,19 @@ const AddBookPage = () => {
         if (!res.ok) throw new Error(data.detail || 'בעיה בפרופיל');
         setUserAddress(data.address);
         setForm(prev => ({ ...prev, location: data.address }));
+
+        // Try to geocode the user's address to show on map
+        if (data.address) {
+          geocodeAddress(data.address)
+            .then(newPosition => {
+              if (newPosition) {
+                setCurrentPosition(newPosition);
+              }
+            })
+            .catch(err => {
+              console.error('שגיאה בחיפוש כתובת:', err);
+            });
+        }
       })
       .catch(err => {
         console.error('❌ שגיאה:', err.message);
@@ -59,26 +90,24 @@ const AddBookPage = () => {
         pos => {
           const coords = [pos.coords.latitude, pos.coords.longitude];
           setCurrentPosition(coords);
-
-          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords[0]}&lon=${coords[1]}&accept-language=he`)
-            .then(res => res.json())
-            .then(data => {
-              if (data && data.address) {
-                const { road, house_number, city, town, village } = data.address;
-                const cityName = city || town || village || '';
-                const locationText = [road, house_number, cityName].filter(Boolean).join(' ');
-                setForm(prev => ({ ...prev, location: locationText }));
-              }
-            })
-            .catch(err => {
-              console.error('שגיאה בהמרת מיקום לכתובת:', err);
-            });
         },
         err => {
           console.error('שגיאה באחזור מיקום:', err.message);
+          // Fallback to Tel Aviv coordinates if geolocation fails
+          setCurrentPosition([32.0853, 34.7818]);
         }
       );
+    } else {
+      // Fallback to Tel Aviv coordinates if geolocation not supported
+      setCurrentPosition([32.0853, 34.7818]);
     }
+
+    // Cleanup function to clear timeout
+    return () => {
+      if (addressTimeoutRef.current) {
+        clearTimeout(addressTimeoutRef.current);
+      }
+    };
   }, []);
 
   const handleAutoFillBook = async () => {
@@ -137,6 +166,31 @@ const AddBookPage = () => {
       console.error('שגיאה באיתור ספר:', err.message);
       alert('שגיאה באיתור ספר: ' + err.message);
     }
+  };
+
+  const handleSelectSuggestion = (book) => {
+    const rawImage = book.coverImageUrl || book.image_url || book.cover_image;
+    const imageUrl = rawImage
+      ? (rawImage.startsWith('http') || rawImage.startsWith('data:image')
+        ? rawImage
+        : `${API_BASE_URL}/${rawImage}`)
+      : null;
+
+    setForm(prev => ({
+      ...prev,
+      bookTitle: book.title || '',
+      bookAuthor: Array.isArray(book.authors) ? book.authors.join(', ') : book.authors || '',
+      bookDescription: book.description || '',
+      genres: book.genres || [],
+      bookImage: imageUrl,
+      bookId: book.id || book.book_id,
+    }));
+
+    if (imageUrl) {
+      setPreviewImage(imageUrl);
+    }
+
+    setIsSuggestionsVisible(false);
   };
 
   const handleUploadClick = () => fileInputRef.current.click();
@@ -203,16 +257,13 @@ const AddBookPage = () => {
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const { name, value, type, checked, files } = e.target;
 
     if (type === 'file') {
       const file = files[0];
       if (file) {
-        setForm(prev => ({
-          ...prev,
-          bookImage: file,
-        }));
+        setForm(prev => ({ ...prev, bookImage: file }));
         setPreviewImage(URL.createObjectURL(file));
       }
     } else if (name === 'genres') {
@@ -226,6 +277,22 @@ const AddBookPage = () => {
       const updatedForm = { ...form, [name]: value };
       setForm(updatedForm);
 
+      if (name === 'bookTitle' && value.trim().length >= 2) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/books?search=${encodeURIComponent(value)}`);
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setBookSuggestions(data);
+            setIsSuggestionsVisible(true);
+          }
+        } catch (err) {
+          console.error('שגיאה בשליפת הצעות:', err);
+        }
+      } else if (name === 'bookTitle') {
+        setBookSuggestions([]);
+        setIsSuggestionsVisible(false);
+      }
+
       if (updatedForm.bookTitle.trim() && updatedForm.bookAuthor.trim()) {
         setShowAutoFillButton(true);
       } else {
@@ -234,8 +301,59 @@ const AddBookPage = () => {
     }
   };
 
+  const handleAddressChange = (e) => {
+    const address = e.target.value;
+    setForm(prev => ({ ...prev, location: address }));
+    
+    // Use debounced geocoding for a better UX
+    if (address.trim().length > 3) {
+      debouncedGeocodeAddress(address);
+    }
+  };
+
+  // Handle address input key press - search on Enter
+  const handleAddressKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent form submission
+      geocodeAddress(form.location)
+        .then(newPosition => {
+          if (newPosition) {
+            setCurrentPosition(newPosition);
+          }
+        })
+        .catch(err => {
+          console.error('שגיאה בחיפוש כתובת:', err);
+        });
+    }
+  };
+
+  // Handle finishing address editing
+  const finishAddressEditing = () => {
+    setIsEditingLocation(false);
+    // Final geocode once editing is done
+    if (form.location.trim()) {
+      geocodeAddress(form.location)
+        .then(newPosition => {
+          if (newPosition) {
+            setCurrentPosition(newPosition);
+          }
+        })
+        .catch(err => {
+          console.error('שגיאה בחיפוש כתובת:', err);
+        });
+    }
+  };
+
+  // Update the address from map click
+  const updateAddressFromMap = (address) => {
+    setForm(prev => ({ ...prev, location: address }));
+  };
+  
   return (
     <Wrapper>
+
+      <BackButton /> 
+
       <Card>
         <Title>הוסף ספר</Title>
         <Subtitle>הזן את פרטי הספר שברצונך להוסיף</Subtitle>
@@ -243,18 +361,31 @@ const AddBookPage = () => {
           <FormGroup>
             <Label>שם הספר</Label>
             <Input name="bookTitle" value={form.bookTitle} onChange={handleChange} required />
+            {isSuggestionsVisible && bookSuggestions.length > 0 && (
+              <SuggestionsList>
+                {bookSuggestions.map((book, idx) => (
+                  <li key={idx} onClick={() => handleSelectSuggestion(book)}>
+                    {book.title} {book.authors ? `— ${Array.isArray(book.authors) ? book.authors.join(', ') : book.authors}` : ''}
+                  </li>
+                ))}
+              </SuggestionsList>
+            )}
           </FormGroup>
+
           <FormGroup>
             <Label>מחבר</Label>
             <Input name="bookAuthor" value={form.bookAuthor} onChange={handleChange} required />
           </FormGroup>
+
           {showAutoFillButton && (
             <Button type="button" onClick={handleAutoFillBook}>מצא את הספר ומלא אוטומטית</Button>
           )}
+
           <FormGroup>
             <Label>תקציר</Label>
             <Input name="bookDescription" value={form.bookDescription} onChange={handleChange} required />
           </FormGroup>
+
           <FormGroup>
             <Label>תמונה</Label>
             <ImageUploadContainer onClick={handleUploadClick}>
@@ -273,11 +404,14 @@ const AddBookPage = () => {
               />
             </ImageUploadContainer>
           </FormGroup>
+
           <GenresSelect selectedGenres={form.genres} onChange={handleChange} labelText="ז'אנרים" />
+
           <FormGroup>
             <Label>מחיר</Label>
             <Input type="number" name="price" value={form.price} onChange={handleChange} min="0" required />
           </FormGroup>
+
           <FormGroup>
             <Label>מצב הספר</Label>
             <Select name="condition" value={form.condition} onChange={handleChange} required>
@@ -288,6 +422,7 @@ const AddBookPage = () => {
               <option value="Used - Poor">משומש</option>
             </Select>
           </FormGroup>
+
           <FormGroup>
             <Label>מיקום</Label>
             {!isEditingLocation ? (
@@ -296,20 +431,30 @@ const AddBookPage = () => {
                 <EditAddressButton type="button" onClick={() => setIsEditingLocation(true)}>שנה כתובת</EditAddressButton>
               </>
             ) : (
-              <Input name="location" value={form.location} onChange={handleChange} />
+              <>
+                <Input 
+                  name="location" 
+                  value={form.location} 
+                  onChange={handleAddressChange}
+                  onKeyDown={handleAddressKeyDown}
+                  ref={addressInputRef}
+                  placeholder="הקלד כתובת או לחץ על נקודה במפה, ובסיום לחץ על אישור"
+                />
+                <ActionButton type="button" onClick={finishAddressEditing}>עדכון ואישור הכתובת</ActionButton>
+              </>
             )}
           </FormGroup>
 
           {currentPosition && (
-            <div style={{ height: '300px', margin: '1rem 0 2rem', borderRadius: '8px', overflow: 'hidden' }}>
-              <MapContainer center={currentPosition} zoom={13} style={{ height: '100%', width: '100%' }}>
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-                />
-                <Marker position={currentPosition} />
-              </MapContainer>
-            </div>
+            <MapContainer>
+              <Map
+                position={currentPosition}
+                setPosition={setCurrentPosition}
+                address={form.location}
+                updateAddress={updateAddressFromMap}
+                helpText="לחץ על המפה לעדכון המיקום או הקלד כתובת למעלה"
+              />
+            </MapContainer>
           )}
 
           <Button type="submit" style={{ marginTop: '1rem' }}>הוסף ספר</Button>

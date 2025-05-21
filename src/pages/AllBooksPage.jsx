@@ -13,6 +13,7 @@ import {
 } from '../styles/AllBooksPage.styles';
 import API_BASE_URL from '../config'; 
 import { useSearchParams } from 'react-router-dom';
+import BackButton from '../components/BackButton.js'
 
 
 function AllBooksPage() {
@@ -56,6 +57,8 @@ function AllBooksPage() {
   return (
     <PageContainer>
       <Wrapper>
+              <BackButton /> 
+
         <Sidebar>
         <FilterHeader>
           <h3>סינון לפי קטגוריה:</h3>

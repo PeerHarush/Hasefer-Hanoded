@@ -13,12 +13,15 @@ import {
   ButtonsContainer,
   MobileButtonsContainer,
   StyledLinkButton,
-  BackButton,
   Button,
 } from '../styles/BookDetailsPage.styles';
 
 import Table from 'react-bootstrap/Table'; // טבלת bootstrap להצגת העותקים
 import BookReviews from '../components/BookReviews.js'; // ייבוא קומפוננטת הביקורות
+import Map, { geocodeAddress, calculateDistance } from '../components/Map'; // ייבוא קומפוננטת המפה וחישוב מרחק
+import BackButton from '../components/BackButton.js'
+
+
 
 const BookDetails = () => {
   const { bookTitle } = useParams();
@@ -32,6 +35,12 @@ const BookDetails = () => {
   const [showStickyTitle, setShowStickyTitle] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // משתנים חדשים למיקום המשתמש וחישוב מרחקים
+  const [userPosition, setUserPosition] = useState(null);
+  const [userAddress, setUserAddress] = useState('');
+  const [showMap, setShowMap] = useState(false);
+  const [distanceMap, setDistanceMap] = useState({}); // מפה של מרחקים לפי מזהה עותק
 
   const goBack = () => {
     if (location.state?.from) {
@@ -116,6 +125,73 @@ const BookDetails = () => {
     fetchCopies();
   }, []);
 
+  // קבלת מיקום המשמש הנוכחי
+  const getCurrentPosition = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userPos = [position.coords.latitude, position.coords.longitude];
+          setUserPosition(userPos);
+          // המרת המיקום לכתובת
+          updateDistances(userPos);
+        },
+        (error) => {
+          console.error('שגיאה בקבלת מיקום:', error);
+          alert('לא הצלחנו לקבל את המיקום שלך. אנא הזן כתובת ידנית.');
+          setShowMap(true);
+        }
+      );
+    } else {
+      alert('הדפדפן שלך לא תומך באיתור מיקום. אנא הזן כתובת ידנית.');
+      setShowMap(true);
+    }
+  };
+
+  // המרת כתובת למיקום וחישוב מרחקים
+  const handleAddressSearch = async () => {
+    if (!userAddress || userAddress.trim().length < 3) {
+      alert('אנא הזן כתובת תקינה');
+      return;
+    }
+
+    try {
+      const position = await geocodeAddress(userAddress);
+      if (position) {
+        setUserPosition(position);
+        updateDistances(position);
+      } else {
+        alert('לא הצלחנו למצוא את הכתובת. אנא נסה שוב.');
+      }
+    } catch (err) {
+      console.error('שגיאה בחיפוש כתובת:', err);
+      alert('אירעה שגיאה בחיפוש הכתובת');
+    }
+  };
+
+  // חישוב מרחקים לכל העותקים
+  const updateDistances = async (userPos) => {
+    const relevantCopies = copies.filter(copy => copy.book?.id === book?.id);
+    const distances = {};
+
+    for (const copy of relevantCopies) {
+      if (copy.location && typeof copy.location === 'string') {
+        try {
+          // המרת כתובת העותק למיקום
+          const copyPosition = await geocodeAddress(copy.location);
+          if (copyPosition) {
+            // חישוב המרחק בין המיקומים
+            const distance = calculateDistance(userPos, copyPosition);
+            distances[copy.id] = distance ? distance.toFixed(1) : null;
+          }
+        } catch (err) {
+          console.error(`שגיאה בחישוב מרחק לעותק ${copy.id}:`, err);
+        }
+      }
+    }
+
+    setDistanceMap(distances);
+  };
+
   const handleAddToWishlist = async () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -152,34 +228,6 @@ const BookDetails = () => {
   const handleReserve = (copyId) => {
     setReservedCopies(prev => new Set(prev).add(copyId));
   };
-
-  if (errorMessage) {
-    return (
-      <PageContainer>
-        <Wrapper>
-          <BookInfo>
-            <h1>{errorMessage}</h1>
-            <BackButton onClick={goBack}>חזור</BackButton>
-          </BookInfo>
-        </Wrapper>
-      </PageContainer>
-    );
-  }
-
-  if (!book) {
-    return (
-      <PageContainer>
-        <Wrapper>
-          <BookInfo>
-            <h1>טוען פרטי ספר...</h1>
-          </BookInfo>
-        </Wrapper>
-      </PageContainer>
-    );
-  }
-
-  // סינון העותקים שקשורים רק לספר הזה
-  const relevantCopies = copies.filter(copy => copy.book?.id === book.id);
 
   const handleReserveAndStartChat = async (copy) => {
     const token = localStorage.getItem('access_token');
@@ -222,10 +270,37 @@ const BookDetails = () => {
     }
   };
 
+  if (errorMessage) {
+    return (
+      <PageContainer>
+        <Wrapper>
+          <BookInfo>
+            <h1>{errorMessage}</h1>
+              <BackButton />
+            </BookInfo>
+        </Wrapper>
+      </PageContainer>
+    );
+  }
+
+  if (!book) {
+    return (
+      <PageContainer>
+        <Wrapper>
+          <BookInfo>
+            <h1>טוען פרטי ספר...</h1>
+          </BookInfo>
+        </Wrapper>
+      </PageContainer>
+    );
+  }
+
+  // סינון העותקים שקשורים רק לספר הזה
+  const relevantCopies = copies.filter(copy => copy.book?.id === book.id);
 
   return (
     <PageContainer>
-      <BackButton onClick={goBack}> אחורה</BackButton>
+      <BackButton /> 
 
       <Wrapper>
         <BookInfo>
@@ -243,6 +318,40 @@ const BookDetails = () => {
             </MobileButtonsContainer>
           )}
 
+          {/* כפתורים לחישוב מרחק */}
+          <div style={{ margin: '1rem 0', borderTop: '1px solid #eee', paddingTop: '1rem' }}>
+            <h4 style={{ marginBottom: '1rem' }}>מצא עותקים לפי מיקום 📍</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <Button onClick={getCurrentPosition}>השתמש במיקום הנוכחי</Button>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  value={userAddress}
+                  onChange={(e) => setUserAddress(e.target.value)}
+                  placeholder="הזן כתובת"
+                  style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                />
+                <Button onClick={handleAddressSearch}>חפש</Button>
+              </div>
+              <Button onClick={() => setShowMap(!showMap)}>
+                {showMap ? 'הסתר מפה' : 'הצג מפה'}
+              </Button>
+            </div>
+
+            {showMap && (
+              <div style={{ marginTop: '1rem' }}>
+                <Map
+                  height="300px"
+                  position={userPosition}
+                  setPosition={setUserPosition}
+                  address={userAddress}
+                  updateAddress={setUserAddress}
+                  helpText="לחץ על המפה לבחירת מיקום"
+                />
+              </div>
+            )}
+          </div>
+
           {/* ✅ טבלת עותקים */}
           <h3>עותקים זמינים</h3>
           {relevantCopies.length > 0 ? (
@@ -251,8 +360,9 @@ const BookDetails = () => {
                 <tr>
                   <th>מצב הספר</th>
                   <th>מחיר</th>
-                  <th>שריון</th>
                   <th>מיקום</th>
+                  <th>מרחק</th>
+                  <th>שריון</th>
                 </tr>
               </thead>
               <tbody>
@@ -260,6 +370,18 @@ const BookDetails = () => {
                   <tr key={copy.id}>
                     <td>{conditionTranslations[copy.condition] || 'לא צוין'}</td>
                     <td>{copy.price ? `${copy.price} ₪` : 'לא צוין'}</td>
+                    <td>{copy.location || 'לא צוין'}</td>
+                    <td>
+                      {distanceMap[copy.id] ? 
+                        `${distanceMap[copy.id]} ק"מ` : 
+                        copy.location ? 
+                          <span style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }} 
+                                onClick={userPosition ? () => updateDistances(userPosition) : getCurrentPosition}>
+                            חשב מרחק
+                          </span> : 
+                          'אין מיקום'
+                      }
+                    </td>
                     <td>
                       {reservedCopies.has(copy.id) ? (
                         <span style={{ textDecoration: 'underline' }}>נשמר 📌</span>
@@ -270,17 +392,57 @@ const BookDetails = () => {
                         >
                           לשריון ✅
                         </span>
-
-
                       )}
                     </td>
-                    <td>{copy.location || 'לא צוין'}</td>
                   </tr>
                 ))}
               </tbody>
             </Table>
           ) : (
             <p>אין עותקים זמינים כרגע.</p>
+          )}
+
+          {/* מיון עותקים לפי מרחק אם יש מידע מרחק */}
+          {Object.keys(distanceMap).length > 0 && (
+            <>
+              <h3>עותקים ממויינים לפי מרחק</h3>
+              <Table striped bordered hover responsive>
+                <thead>
+                  <tr>
+                    <th>מצב הספר</th>
+                    <th>מחיר</th>
+                    <th>מיקום</th>
+                    <th>מרחק</th>
+                    <th>שריון</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {relevantCopies
+                    .filter(copy => distanceMap[copy.id] !== undefined)
+                    .sort((a, b) => parseFloat(distanceMap[a.id]) - parseFloat(distanceMap[b.id]))
+                    .map(copy => (
+                      <tr key={copy.id}>
+                        <td>{conditionTranslations[copy.condition] || 'לא צוין'}</td>
+                        <td>{copy.price ? `${copy.price} ₪` : 'לא צוין'}</td>
+                        <td>{copy.location || 'לא צוין'}</td>
+                        <td>{`${distanceMap[copy.id]} ק"מ`}</td>
+                        <td>
+                          {reservedCopies.has(copy.id) ? (
+                            <span style={{ textDecoration: 'underline' }}>נשמר 📌</span>
+                          ) : (
+                            <span
+                              onClick={() => handleReserveAndStartChat(copy)}
+                              style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}
+                            >
+                              לשריון ✅
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </Table>
+            </>
           )}
 
           {/* הוספת ביקורות */}

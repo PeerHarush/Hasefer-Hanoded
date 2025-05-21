@@ -3,7 +3,6 @@ import styled from 'styled-components';
 export const ReviewContainer = styled.div`
   margin-top: -10px;
   padding: 20px;
-
 `;
 
 export const NoReviewsMessage = styled.p`
@@ -15,7 +14,6 @@ export const NoReviewsMessage = styled.p`
 export const StarsContainer = styled.div`
   display: flex;
   gap: 5px;
-  margin-top: 10px;
 `;
 
 export const StaticStar = styled.span`
@@ -36,7 +34,7 @@ export const InteractiveStar = styled.span`
 
 export const Textarea = styled.textarea`
   width: 100%;
-  margin-top: 10px;  
+  margin-top: 10px;
   padding: 20px;
   border-radius: 16px;
   margin-bottom: 20px;
@@ -49,15 +47,16 @@ export const SubmitButton = styled.button`
   margin-top: 12px;
   padding: 10px 20px;
   background: rgb(215, 184, 146);
+
   &:hover {
-    background:rgb(241, 206, 162);
-    }
+    background: rgb(241, 206, 162);
+  }
+
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-      font-size: 0.95rem;
-
+  font-size: 0.95rem;
 `;
 
 export const ReviewText = styled.p`
@@ -70,19 +69,22 @@ export const ReviewText = styled.p`
 export const ReviewHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center; 
   margin-bottom: 5px;
+  margin-top:-10px;
 `;
+
 
 export const ReviewUser = styled.span`
   font-weight: bold;
   font-size: 16px;
-  margin-right: 10px;
 `;
 
 export const ReviewDate = styled.span`
   font-size: 13px;
   color: #888;
+  margin-left: 12px;
+  white-space: nowrap;
 `;
 
 export const ReviewUserContainer = styled.div`
@@ -91,9 +93,10 @@ export const ReviewUserContainer = styled.div`
   gap: 10px;
 `;
 
-export const ReviewDateContainer = styled.div`
+export const UserNameAndStars = styled.div`
   display: flex;
   align-items: center;
+  gap: 8px;
 `;
 
 export const ReviewItem = styled.div`
@@ -104,18 +107,16 @@ export const ReviewItem = styled.div`
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
 `;
 
-
 export const ReviewFormHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: right;
+  align-items: center;
   margin-top: 30px;
 `;
 
 export const ReviewFormTitle = styled.h3`
   font-size: 18px;
   margin: 0;
-
 `;
 
 export const CoinReward = styled.span`
@@ -127,9 +128,8 @@ export const AverageRating = styled.div`
   font-size: 17px;
   font-weight: bold;
   margin-bottom: 20px;
-  color: #333;
-  text-align: center;
   color: #f5a623;
+  text-align: center;
 `;
 
 export const AvatarImage = styled.img`

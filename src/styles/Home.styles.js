@@ -27,7 +27,28 @@ export const NotificationIcon = styled.div`
   font-size: 1.5rem;
   cursor: pointer;
   color: #7a4a16;
+  position: relative; /* חשוב כדי למקם את העיגול האדום */
 `;
+
+/* עיגול אדום למספר התראות */
+export const NotificationBadge = styled.div`
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: bold;
+  line-height: 1;
+`;
+
 
 /* באנר עליון – רקע + מיקום מרכזי */
 export const Banner = styled.div`
@@ -60,13 +81,14 @@ export const BannerText = styled.div`
   position: absolute;
   white-space: nowrap;
   animation: scrollText 25s linear infinite;
+  
 
   @keyframes scrollText {
     0% {
-      transform: translateX(0%);
+      transform: translateX(100%);
     }
     100% {
-      transform: translateX(100%);
+      transform: translateX(-100%);
     }
   }
 `;
@@ -86,8 +108,96 @@ export const SectionTitle = styled.h2`
 /* אזור ביקורות אחרונות */
 export const ReviewSection = styled.div`
   margin-top: 2rem;
+`;
 
-`;export const Card = styled.div`
+export const NotificationsWrapper = styled.div`
+  position: relative;
+`;
+
+export const NotificationsBox = styled.div`
+  position: absolute;
+  top: 2.5rem;
+  left: -10px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 30px;
+  width: 240px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  padding: 0.8rem 1rem;
+  z-index: 9990;
+  
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 20px; 
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent #ddd transparent;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: -9px;
+    left: 20px; 
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent #fff transparent;
+  }
+`;
+
+export const NotificationItem = styled.li`
+  list-style: none;
+  font-size: 0.9rem;
+  border-radius: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+
+  color: ${props => props.$isUnread ? '#000' : '#666'};
+  background-color: ${props => props.$isUnread ? '#f5f0e6' : 'transparent'};
+  font-weight: ${props => props.$isUnread ? 'bold' : 'normal'};
+  padding: 0.6rem 0.4rem;
+  border-bottom: 1px solid #eee;
+  margin: 0.2rem 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: ${props => props.$isUnread ? '#efe5d3' : '#f5f5f5'};
+  }
+
+  &::before {
+    content: '${props => props.$type === 'message' ? '💬 ' : props.$type === 'complete' ? '✅ ' : '📦 '}';
+  }
+`;
+
+export const MarkAsReadIcon = styled.span`
+  margin-right: 10px;
+  color: #28a745;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.2rem;
+
+  &:hover {
+    color: #218838;
+  }
+`;
+
+
+export const NotificationTitle = styled.div`
+  font-weight: bold;
+  color: #7a4a16;
+`;
+
+export const Card = styled.div`
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -109,7 +219,6 @@ export const ReviewSection = styled.div`
   }
 `;
 
-
 export const HomeBookCard = styled.div`
   background: #fff;
   border-radius: 12px;
@@ -117,7 +226,7 @@ export const HomeBookCard = styled.div`
   padding: 1rem;
   text-align: center;
   position: relative;
-  width: 220px; /* 🔧 רוחב קבוע */
+  width: 220px; 
   min-height: 380px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 
@@ -163,7 +272,7 @@ export const HomeBookImage = styled.img`
 
 export const BookListWrapper = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, 220px); /* 🔧 אותו רוחב כמו הקלף */
+  grid-template-columns: repeat(auto-fit, 220px);
   gap: 1rem;
   justify-content: center;
   padding: 1rem;
@@ -181,10 +290,6 @@ export const BookListWrapper = styled.div`
   }
 `;
 
-
-
-
-
 export const HomeBookTitle = styled.h3`
   margin-top: 10px;
   color: rgb(144, 83, 8);
@@ -196,67 +301,6 @@ export const HomeBookAuthor = styled.p`
   font-size: 0.95rem;
   margin: 4px 0 0;
 `;
-
-
-export const NotificationsWrapper = styled.div`
-  position: relative;
-`;
-
-export const NotificationsBox = styled.div`
-  position: absolute;
-  top: 2.2rem;
-  left: 0;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8%;
-  width: 240px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-  padding: 0.8rem 1rem;
-  z-index: 9990;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -10px;
-    left: 14px; 
-      border-width: 6px;
-    border-style: solid;
-    border-color: transparent transparent #ddd transparent;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: -9px;
-    left: 14px;
-    border-width: 6px;
-    border-style: solid;
-    border-color: transparent transparent #fff transparent;
-  }
-`;
-
-export const NotificationItem = styled.li`
-  list-style: none;
-  font-size: 0.95rem;
-  color: #444;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid #eee;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &::before {
-    content: '🔔 ';
-  }
-`;
-
-export const NotificationTitle = styled.div`
-  font-weight: bold;
-  color: #7a4a16;
-  margin-bottom: 0.5rem;
-`;
-
 
 export const FavoriteButton = styled.button`
   position: absolute;
@@ -277,3 +321,22 @@ export const FavoriteButton = styled.button`
     color: ${props => props.$isFavorite ? 'darkred' : '#555'};
   }
 `;
+
+export const MarkAllAsReadButton = styled.button`
+  margin-top: 5px;
+  background-color: #f4e6d8;
+  border: none;
+  border-radius: 15px;
+   padding: 6px ;
+  cursor: pointer;
+  font-size: 0.8rem;
+  width: 100%;
+  color:rgb(122, 78, 31);
+  font-weight: bold;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #ebdbc6;
+  }
+`;
+

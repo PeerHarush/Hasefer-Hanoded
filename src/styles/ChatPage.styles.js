@@ -132,7 +132,6 @@ export const Input = styled.textarea`
   border-radius: 8px;
   resize: none;
   min-height: 48px;
-  font-family: inherit;
   outline: none;
 
   &:focus {
@@ -164,5 +163,28 @@ export const SendButton = styled.button`
   @media (max-width: 600px) {
     padding: 8px 12px;
     font-size: 14px;
+  }
+`;
+
+export const CalendarButton = styled.button`
+   margin-right: 12px;
+  padding: 10px 16px;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  background-color:rgb(126, 155, 176); 
+
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color:  rgb(149, 189, 226);
+  }
+
+  @media (max-width: 600px) {
+    font-size: 13px;
+    padding: 7px 10px;
   }
 `;

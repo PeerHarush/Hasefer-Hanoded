@@ -63,7 +63,7 @@ const toggleFavorite = async (book) => {
     return;
   }
 
-  const id = book._id; // ← שימוש עקבי
+  const id = book.id;
 
   try {
     if (favorites.has(id)) {
@@ -114,12 +114,12 @@ const toggleFavorite = async (book) => {
     <BooksWrapper>
       {sortedBooks.map(book => (
      <BookCard
-  key={book._id}
-  as={Link}
-  to={`/book/${encodeURIComponent(book.title)}`}
-  state={{ from: location.pathname + location.search }}
-  style={{ textDecoration: 'none', color: 'inherit' }}
->
+        key={book._id}
+        as={Link}
+        to={`/book/${encodeURIComponent(book.title)}`}
+        state={{ from: location.pathname + location.search }}
+        style={{ textDecoration: 'none', color: 'inherit' }}
+      >
   {isLoggedIn && (
     <FavoriteButton
       $isFavorite={favorites.has(book.id)}
