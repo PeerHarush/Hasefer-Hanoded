@@ -34,7 +34,10 @@ const BookDetails = () => {
   const [showStickyTitle, setShowStickyTitle] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  
+const [sortBy, setSortBy] = useState('');
+const [sortDirection, setSortDirection] = useState('asc');
+
+
   // משתנים חדשים למיקום המשתמש וחישוב מרחקים
   const [userPosition, setUserPosition] = useState(null);
   const [userAddress, setUserAddress] = useState('');
@@ -55,6 +58,12 @@ const BookDetails = () => {
     'Used - Good': 'טוב',
     'Used - Poor': 'משומש',
   };
+  useEffect(() => {
+  if (book && copies.length > 0 && !userPosition) {
+    getCurrentPosition();
+  }
+}, [book, copies]);
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -295,7 +304,13 @@ const BookDetails = () => {
 
   // סינון העותקים שקשורים רק לספר הזה
   const relevantCopies = copies.filter(copy => copy.book?.id === book.id);
+const sortedCopies = [...relevantCopies].sort((a, b) => {
+  const distA = parseFloat(distanceMap[a.id]) || Infinity;
+  const distB = parseFloat(distanceMap[b.id]) || Infinity;
+  return distA - distB; // מהקרוב לרחוק
+});
 
+  
   return (
     <PageContainer>
 
@@ -349,11 +364,11 @@ const BookDetails = () => {
             )}
           </div>
 
-          {/* ✅ טבלת עותקים */}
-          <h3>עותקים זמינים</h3>
-          {relevantCopies.length > 0 ? (
-            <Table striped bordered hover responsive>
-              <thead>
+        <h3>עותקים זמינים</h3>
+        {relevantCopies.length > 0 ? (
+          <Table striped bordered hover responsive>
+            <thead>
+                
                 <tr>
                   <th>מצב הספר</th>
                   <th>מחיר</th>
@@ -363,22 +378,12 @@ const BookDetails = () => {
                 </tr>
               </thead>
               <tbody>
-                {relevantCopies.map(copy => (
+                {sortedCopies.map(copy => (
                   <tr key={copy.id}>
-                    <td>{conditionTranslations[copy.condition] || 'לא צוין'}</td>
-                    <td>{copy.price ? `${copy.price} ₪` : 'לא צוין'}</td>
-                    <td>{copy.location || 'לא צוין'}</td>
-                    <td>
-                      {distanceMap[copy.id] ? 
-                        `${distanceMap[copy.id]} ק"מ` : 
-                        copy.location ? 
-                          <span style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }} 
-                                onClick={userPosition ? () => updateDistances(userPosition) : getCurrentPosition}>
-                            חשב מרחק
-                          </span> : 
-                          'אין מיקום'
-                      }
-                    </td>
+                    <td>{conditionTranslations[copy.condition] }</td>
+                    <td>{copy.price ? `${copy.price} ₪` : 'חינם '}</td>
+                    <td>{copy.location }</td>
+                    <td>{`${distanceMap[copy.id]} ק"מ`}</td>
                     <td>
                       {reservedCopies.has(copy.id) ? (
                         <span style={{ textDecoration: 'underline' }}>נשמר 📌</span>
@@ -399,48 +404,6 @@ const BookDetails = () => {
             <p>אין עותקים זמינים כרגע.</p>
           )}
 
-          {/* מיון עותקים לפי מרחק אם יש מידע מרחק */}
-          {Object.keys(distanceMap).length > 0 && (
-            <>
-              <h3>עותקים ממויינים לפי מרחק</h3>
-              <Table striped bordered hover responsive>
-                <thead>
-                  <tr>
-                    <th>מצב הספר</th>
-                    <th>מחיר</th>
-                    <th>מיקום</th>
-                    <th>מרחק</th>
-                    <th>שריון</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {relevantCopies
-                    .filter(copy => distanceMap[copy.id] !== undefined)
-                    .sort((a, b) => parseFloat(distanceMap[a.id]) - parseFloat(distanceMap[b.id]))
-                    .map(copy => (
-                      <tr key={copy.id}>
-                        <td>{conditionTranslations[copy.condition] || 'לא צוין'}</td>
-                        <td>{copy.price ? `${copy.price} ₪` : 'לא צוין'}</td>
-                        <td>{copy.location || 'לא צוין'}</td>
-                        <td>{`${distanceMap[copy.id]} ק"מ`}</td>
-                        <td>
-                          {reservedCopies.has(copy.id) ? (
-                            <span style={{ textDecoration: 'underline' }}>נשמר 📌</span>
-                          ) : (
-                            <span
-                              onClick={() => handleReserveAndStartChat(copy)}
-                              style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}
-                            >
-                              לשריון ✅
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </Table>
-            </>
-          )}
 
           {/* הוספת ביקורות */}
           <h3> ביקורות </h3>
