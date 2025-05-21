@@ -20,7 +20,6 @@ FieldValue,
 } from '../styles/UserProfile.styles';
 import API_BASE_URL from '../config';
 import GenresSelect from '../components/GenresSelect';
-import BackButton from '../components/BackButton.js'
 
 
 
@@ -126,7 +125,6 @@ function UserProfile() {
 
   return (
    <Wrapper>
-       <BackButton /> 
     
   <ProfileCard>
     <HeaderContainer>

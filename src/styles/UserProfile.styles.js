@@ -8,6 +8,9 @@ export const Wrapper = styled.div`
   padding: 20px;
   margin-top: 40px;
   background-color: #fdfcf8;
+    @media (max-width: 768px) {
+    margin-top: 0px;
+  }
 `;
 
 

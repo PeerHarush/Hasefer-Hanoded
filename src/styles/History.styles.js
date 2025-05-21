@@ -13,6 +13,9 @@ export const Title = styled.h2`
   text-align: center;
   color: #333;
   margin-bottom: 2rem;
+    @media (max-width: 768px) {
+    margin-top: 0px;
+  }
 `;
 
 export const Message = styled.p`

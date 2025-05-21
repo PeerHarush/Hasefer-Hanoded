@@ -13,7 +13,6 @@ import {
   FilterWrapper
 } from '../styles/Transaction.styles';
 import { useNavigate } from 'react-router-dom';
-import BackButton from '../components/BackButton.js'
 
 
 
@@ -168,7 +167,6 @@ const TransactionsPage = () => {
 
   return (
     <PageContainer>
-              <BackButton /> 
 
       <Title>העסקאות שלי</Title>
 

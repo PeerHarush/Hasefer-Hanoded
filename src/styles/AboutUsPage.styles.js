@@ -9,9 +9,11 @@ export const AboutWrapper = styled.div`
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   direction: rtl;
     text-align: justify;
-     @media (max-width: 768px) {
-    max-width: 80%;;
 
+   @media (max-width: 768px) {
+    margin-top: 0px;
+     max-width: 80%;
+  
   }
 
 `;

@@ -6,15 +6,14 @@ import {
   AboutContent,
   LogoImage
 } from '../styles/AboutUsPage.styles';
-import BackButton from '../components/BackButton.js'
 
 
 function AboutUsPage() {
   return (
-    
-    <AboutWrapper>
+        <AboutWrapper>
       <AboutContent>
-                      <BackButton /> 
+     
+                      
         
         <div>
           <Title>עלינו</Title>

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import API_BASE_URL from '../config';
-import BackButton from '../components/BackButton.js'
 import {
   PageContainer,
   Title,
@@ -130,11 +129,10 @@ const UserActivityPage = () => {
 
   return (
   <PageContainer>
-    <BackButton />
 
-    <Title>📖 היסטוריית הפעולות שלי</Title>
+    <Title> היסטוריית הפעולות שלי</Title>
 
-    {loading && <Message>🔄 טוען נתונים...</Message>}
+    {loading && <Message> טוען נתונים...🔄</Message>}
     {error && <Message error>⚠️ {error}</Message>}
 
     {!loading && !error && visibleActivities.length === 0 && (

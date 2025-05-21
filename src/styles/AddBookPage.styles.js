@@ -8,7 +8,10 @@ export const Wrapper = styled.div`
   padding: 0 20px; 
   overflow: auto; 
   margin-top: 20px;
-  background-color: transparent; 
+  background-color: transparent;  
+   @media (max-width: 768px) {
+    margin-top: 0px;
+  }
 `;
 
 export const Card = styled.div`
