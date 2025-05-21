@@ -9,6 +9,7 @@ import {
 } from '../styles/WishList.styles';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../config';
+import BackButton from '../components/BackButton.js';
 
 function MyAddedBooks() {
   const [listings, setListings] = useState([]);
@@ -68,7 +69,11 @@ function MyAddedBooks() {
 
   return (
     <Wrapper>
+        <BackButton /> 
+        
       <Title>הספרים שאני הוספתי</Title>
+             
+
       <CardsContainer>
         {listings.length === 0 ? (
           <p>לא נמצאו ספרים שלך</p>

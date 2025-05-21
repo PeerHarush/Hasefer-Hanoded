@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import API_BASE_URL from '../config';
+import BackButton from '../components/BackButton.js'
+import {
+  PageContainer,
+  Title,
+  Message,
+  ActivityList,
+  ActivityItem,
+  ActivityDate,
+  ActivityDescription,
+} from '../styles/History.styles.js'
+
 
 const PAGE_SIZE = 20;
 
@@ -32,29 +43,37 @@ const UserActivityPage = () => {
         const activity = [];
 
         // עסקאות
-        transactions.forEach(tx => {
-          if (String(tx.buyer?.id) === userId && tx.status === 'pending') {
-            activity.push({
-              type: 'reserve',
-              description: `📌 שריינת את הספר "${tx.listing.book.title}"`,
-              date: tx.created_at
-            });
-          }
-          if (String(tx.buyer?.id) === userId && tx.status === 'completed') {
-            activity.push({
-              type: 'purchase',
-              description: `✅ השלמת רכישה של "${tx.listing.book.title}"`,
-              date: tx.updated_at
-            });
-          }
-          if (String(tx.seller?.id) === userId && tx.status === 'completed') {
-            activity.push({
-              type: 'sold',
-              description: `💰 מכרת את הספר "${tx.listing.book.title}"`,
-              date: tx.updated_at
-            });
-          }
-        });
+       transactions.forEach(tx => {
+  const isUserBuyer = String(tx.buyer?.id) === userId;
+  const isUserSeller = String(tx.seller?.id) === userId;
+
+  if (isUserBuyer && tx.status === 'pending') {
+    activity.push({
+      type: 'reserve',
+      description: `📌 שריינת את הספר "${tx.listing.book.title}"`,
+      date: tx.created_at
+    });
+  }
+
+  if (isUserBuyer && tx.status === 'completed') {
+    activity.push({
+      type: 'purchase',
+      description: `✅ השלמת רכישה של "${tx.listing.book.title}"`,
+      date: tx.created_at
+    });
+  }
+
+  // 👇 כאן התוספת:
+  if (isUserSeller && tx.status === 'completed') {
+    activity.push({
+      type: 'sold',
+      description: `💰 מכרת את הספר "${tx.listing.book.title}"`,
+     date: tx.created_at
+
+    });
+  }
+});
+
 
     
 
@@ -110,40 +129,31 @@ const UserActivityPage = () => {
   }, [page, activities, visibleActivities]);
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '700px', margin: '0 auto' }}>
-      <h2>📖 היסטוריית הפעולות שלי</h2>
+  <PageContainer>
+    <BackButton />
 
-      {loading && <p>🔄 טוען נתונים...</p>}
-      {error && <p style={{ color: 'red' }}>⚠️ {error}</p>}
+    <Title>📖 היסטוריית הפעולות שלי</Title>
 
-      {!loading && !error && visibleActivities.length === 0 && (
-        <p>😕 לא נמצאו פעולות עבור המשתמש.</p>
-      )}
+    {loading && <Message>🔄 טוען נתונים...</Message>}
+    {error && <Message error>⚠️ {error}</Message>}
 
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {visibleActivities.map((act, index) => (
-          <li
-            key={index}
-            style={{
-              background: '#f9f9f9',
-              border: '1px solid #ddd',
-              borderRadius: '8px',
-              padding: '1rem',
-              marginBottom: '1rem',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-              direction: 'rtl',
-              lineHeight: '1.6'
-            }}
-          >
-            <div style={{ fontSize: '0.9rem', color: '#888' }}>
-              🕓 {new Date(act.date).toLocaleString('he-IL')}
-            </div>
-            <div style={{ fontWeight: '500' }}>{act.description}</div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+    {!loading && !error && visibleActivities.length === 0 && (
+      <Message>😕 לא נמצאו פעולות עבור המשתמש.</Message>
+    )}
+
+    <ActivityList>
+      {visibleActivities.map((act, index) => (
+        <ActivityItem key={index}>
+          <ActivityDate>
+            🕓 {new Date(act.date).toLocaleString('he-IL')}
+          </ActivityDate>
+          <ActivityDescription>{act.description}</ActivityDescription>
+        </ActivityItem>
+      ))}
+    </ActivityList>
+  </PageContainer>
+);
+
 };
 
 export default UserActivityPage;

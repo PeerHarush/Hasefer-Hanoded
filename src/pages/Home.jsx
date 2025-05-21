@@ -24,6 +24,11 @@ import {
  
   
 } from '../styles/Home.styles';
+import BackButton from '../components/BackButton.js'
+
+
+
+
 
 function Home() {
   const navigate = useNavigate();
@@ -183,6 +188,7 @@ const markAllAsRead = () => {
 };
 return (
   <PageWrapper>
+    
     <TopBar>
       <UserGreeting>
         {userName ? `שלום, ${userName}! 🌸` : 'שלום אורח 🌸'}

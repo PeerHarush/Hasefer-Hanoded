@@ -6,6 +6,9 @@ import {
   ChatContent, ChatHeader, UserName, ChatDate,
   BookTitle, 
 } from '../styles/MessagesPage.styles';
+import BackButton from '../components/BackButton.js'
+
+
 
 const MessagesPage = () => {
   const [chatRooms, setChatRooms] = useState([]);
@@ -56,7 +59,7 @@ const MessagesPage = () => {
   <Wrapper>
     <Card>
       <Title>הודעות</Title>
-
+<BackButton /> 
       {chatRooms.map((room) => (
         <ChatCard
           key={room.id}

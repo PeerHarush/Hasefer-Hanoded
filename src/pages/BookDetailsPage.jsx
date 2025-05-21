@@ -13,13 +13,15 @@ import {
   ButtonsContainer,
   MobileButtonsContainer,
   StyledLinkButton,
-  BackButton,
   Button,
 } from '../styles/BookDetailsPage.styles';
 
 import Table from 'react-bootstrap/Table'; // טבלת bootstrap להצגת העותקים
 import BookReviews from '../components/BookReviews.js'; // ייבוא קומפוננטת הביקורות
 import Map, { geocodeAddress, calculateDistance } from '../components/Map'; // ייבוא קומפוננטת המפה וחישוב מרחק
+import BackButton from '../components/BackButton.js'
+
+
 
 const BookDetails = () => {
   const { bookTitle } = useParams();
@@ -274,8 +276,8 @@ const BookDetails = () => {
         <Wrapper>
           <BookInfo>
             <h1>{errorMessage}</h1>
-            <BackButton onClick={goBack}>חזור</BackButton>
-          </BookInfo>
+              <BackButton />
+            </BookInfo>
         </Wrapper>
       </PageContainer>
     );
@@ -298,7 +300,7 @@ const BookDetails = () => {
 
   return (
     <PageContainer>
-      <BackButton onClick={goBack}> אחורה</BackButton>
+      <BackButton /> 
 
       <Wrapper>
         <BookInfo>

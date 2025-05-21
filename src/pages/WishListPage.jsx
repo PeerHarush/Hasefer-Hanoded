@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Wrapper, CardsContainer, BookCard, StockTag, DeleteButton, Title } from '../styles/WishList.styles';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../config';
+import BackButton from '../components/BackButton.js'
+
+
 
 function WishList() {
   const [books, setBooks] = useState([]);
@@ -71,6 +74,8 @@ function WishList() {
 
   return (
     <Wrapper>
+              <BackButton /> 
+
   <Title>רשימת המשאלות שלי</Title>
   <CardsContainer>
 

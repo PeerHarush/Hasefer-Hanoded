@@ -7,6 +7,8 @@ import {
 } from '../styles/AddBookPage.styles';
 import GenresSelect from "../components/GenresSelect";
 import Map, { geocodeAddress } from '../components/Map';
+import BackButton from '../components/BackButton.js'
+
 
 const AddBookPage = () => {
   const [form, setForm] = useState({
@@ -349,6 +351,9 @@ const AddBookPage = () => {
   
   return (
     <Wrapper>
+
+      <BackButton /> 
+
       <Card>
         <Title>הוסף ספר</Title>
         <Subtitle>הזן את פרטי הספר שברצונך להוסיף</Subtitle>
