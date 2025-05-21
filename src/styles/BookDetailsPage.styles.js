@@ -193,3 +193,59 @@ border-radius: 0px;
 `;
 
 
+
+export const MapControlsWrapper = styled.div`
+  margin: 1rem 0;
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+`;
+
+export const ControlsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+export const InputRow = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`;
+
+export const AddressInput = styled.input`
+  flex: 1;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+`;
+
+export const MapWrapper = styled.div`
+  margin-top: 1rem;
+`;
+
+export const SmallButton = styled.button`
+  color: white;
+  width: 220px;
+  border: none;
+  padding: 0.75rem;
+  font-size: 1rem;
+  cursor: pointer;
+border-radius: 6px;
+width: fit-content;
+ background: rgb(218, 195, 164);
+
+  &:hover {
+    background: rgb(224, 205, 165);
+  }
+  @media (max-width: 600px) {
+    font-size: 0.95rem;
+width: fit-content;
+  }
+`;
+
+  // display: flex;
+  // justify-content: center;
+  // align-items: center;
+  // border-radius: 6px;
+  // margin: 2px;
+  

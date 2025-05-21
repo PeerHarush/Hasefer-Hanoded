@@ -14,6 +14,12 @@ import {
   MobileButtonsContainer,
   StyledLinkButton,
   Button,
+  MapControlsWrapper,
+  ControlsContainer,
+  InputRow,
+  AddressInput,
+  MapWrapper,
+  SmallButton,
 } from '../styles/BookDetailsPage.styles';
 
 import Table from 'react-bootstrap/Table'; // טבלת bootstrap להצגת העותקים
@@ -34,8 +40,8 @@ const BookDetails = () => {
   const [showStickyTitle, setShowStickyTitle] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-const [sortBy, setSortBy] = useState('');
-const [sortDirection, setSortDirection] = useState('asc');
+
+const [showAddressInput, setShowAddressInput] = useState(false);
 
 
   // משתנים חדשים למיקום המשתמש וחישוב מרחקים
@@ -330,13 +336,11 @@ const sortedCopies = [...relevantCopies].sort((a, b) => {
             </MobileButtonsContainer>
           )}
 
-         
-
-        <h3>עותקים זמינים</h3>
-        {relevantCopies.length > 0 ? (
-          <Table striped bordered hover responsive>
-            <thead>
-                
+         {relevantCopies.length > 0 && (
+  <>
+            <h3>עותקים זמינים</h3>
+            <Table striped bordered hover responsive>
+              <thead>
                 <tr>
                   <th>מצב הספר</th>
                   <th>מחיר</th>
@@ -348,9 +352,9 @@ const sortedCopies = [...relevantCopies].sort((a, b) => {
               <tbody>
                 {sortedCopies.map(copy => (
                   <tr key={copy.id}>
-                    <td>{conditionTranslations[copy.condition] }</td>
-                    <td>{copy.price ? `${copy.price} ₪` : 'חינם '}</td>
-                    <td>{copy.location }</td>
+                    <td>{conditionTranslations[copy.condition]}</td>
+                    <td>{copy.price ? `${copy.price} ₪` : 'חינם'}</td>
+                    <td>{copy.location}</td>
                     <td>{`${distanceMap[copy.id]} ק"מ`}</td>
                     <td>
                       {reservedCopies.has(copy.id) ? (
@@ -368,40 +372,37 @@ const sortedCopies = [...relevantCopies].sort((a, b) => {
                 ))}
               </tbody>
             </Table>
-          ) : (
-            <p>אין עותקים זמינים כרגע.</p>
-          )}
- {/* כפתורים לחישוב מרחק */}
-          <div style={{ margin: '1rem 0', borderTop: '1px solid #eee', paddingTop: '1rem' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <input
-                  type="text"
-                  value={userAddress}
-                  onChange={(e) => setUserAddress(e.target.value)}
-                  placeholder="הזן כתובת"
-                  style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                />
-                <Button onClick={handleAddressSearch}>חפש</Button>
-              </div>
-              <Button onClick={() => setShowMap(!showMap)}>
-                {showMap ? 'הסתר מפה' : 'הצג מפה'}
-              </Button>
-            </div>
 
-            {showMap && (
-              <div style={{ marginTop: '1rem' }}>
-                <Map
-                  height="300px"
-                  position={userPosition}
-                  setPosition={setUserPosition}
-                  address={userAddress}
-                  updateAddress={setUserAddress}
-                  helpText="לחץ על המפה לבחירת מיקום"
-                />
-              </div>
-            )}
-          </div>
+            {/* כפתורים לחישוב מרחק */}
+<MapControlsWrapper>
+  <ControlsContainer>
+   {!showAddressInput && (
+  <SmallButton onClick={() => setShowAddressInput(true)}>
+    חיפוש לפי מרחק ממיקום שונה
+  </SmallButton>
+)}
+
+{showAddressInput && (
+  <InputRow>
+    <AddressInput
+      type="text"
+      value={userAddress}
+      onChange={(e) => setUserAddress(e.target.value)}
+      placeholder="הזן כתובת"
+    />
+    <SmallButton onClick={handleAddressSearch}>חפש</SmallButton>
+    <SmallButton onClick={() => setShowAddressInput(false)}>סגור חיפוש</SmallButton>
+  </InputRow>
+)}
+
+  
+    <SmallButton onClick={() => setShowMap(!showMap)}>
+      {showMap ? 'הסתר מפה' : 'הצג מפה'}
+    </SmallButton>
+  </ControlsContainer>
+</MapControlsWrapper>
+         </>
+        )}
 
           {/* הוספת ביקורות */}
           <h3> ביקורות </h3>
