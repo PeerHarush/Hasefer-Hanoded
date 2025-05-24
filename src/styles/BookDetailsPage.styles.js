@@ -204,6 +204,7 @@ export const ControlsContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  
 `;
 
 export const InputRow = styled.div`
@@ -232,6 +233,7 @@ export const SmallButton = styled.button`
   cursor: pointer;
 border-radius: 6px;
 width: fit-content;
+
  background: rgb(218, 195, 164);
 
   &:hover {
@@ -239,13 +241,12 @@ width: fit-content;
   }
   @media (max-width: 600px) {
     font-size: 0.95rem;
-width: fit-content;
+  width: fit-content;
   }
 `;
 
   // display: flex;
-  // justify-content: center;
-  // align-items: center;
+
   // border-radius: 6px;
   // margin: 2px;
   

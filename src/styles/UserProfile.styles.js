@@ -37,6 +37,7 @@ export const HeaderContainer = styled.div`
 export const Title = styled.h2`
   text-align: center;
   color:rgb(144, 83, 8);
+     font-size: 40px;
 
   margin-bottom: 0.25rem;
 `;

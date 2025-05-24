@@ -9,6 +9,8 @@ export const AboutWrapper = styled.div`
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   direction: rtl;
     text-align: justify;
+        margin: 35px auto;
+
 
    @media (max-width: 768px) {
     margin-top: 0px;
@@ -30,10 +32,19 @@ export const AboutContent = styled.div`
   }
 `;
 
-export const Title = styled.h1`
-  font-size: 2.5rem;
+
+
+export const Title = styled.h2`
+  text-align: center;
+   font-size: 40px;
+  color: rgb(144, 83, 8);
+  margin-right: 150px;
   margin-bottom: 1.5rem;
-  color: #333;
+    @media (max-width: 768px) {
+    margin-top: 0px;
+  margin-right: 0px;
+
+  }
 `;
 
 export const Paragraph = styled.p`

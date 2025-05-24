@@ -127,6 +127,7 @@ export const Title = styled.h2`
   text-align: center;
   color: rgb(144, 83, 8);
   margin: 60px 0 1rem;
+     font-size: 40px;
 
   @media (max-width: 768px) {
     margin-top: 20px;

@@ -8,9 +8,12 @@ export const Wrapper = styled.div`
   padding: 0 20px; 
   overflow: auto; 
   margin-top: 20px;
+    margin: 0 auto;
+
   background-color: transparent;  
    @media (max-width: 768px) {
     margin-top: 0px;
+    
   }
 `;
 
@@ -29,6 +32,8 @@ export const Card = styled.div`
 
 export const Title = styled.h2`
   text-align: center;
+     font-size: 40px;
+
   color:rgb(144, 83, 8);
   margin-bottom: 0.25rem;
 `;

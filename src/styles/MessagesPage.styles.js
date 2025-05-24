@@ -4,6 +4,8 @@ export const Wrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+      margin: 0 auto;
+
   padding: 60px 20px;
 
   @media (max-width: 768px) {
@@ -28,6 +30,7 @@ export const Card = styled.div`
 
 export const Title = styled.h2`
   text-align: center;
+   font-size: 40px;
   color: rgb(144, 83, 8);
   margin-bottom: 1.5rem; 
   
