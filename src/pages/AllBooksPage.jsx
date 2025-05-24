@@ -10,6 +10,7 @@ import {
   GalleryContainer,
   FilterHeader,
   Wrapper,
+  Title,
 } from '../styles/AllBooksPage.styles';
 import API_BASE_URL from '../config'; 
 import { useSearchParams } from 'react-router-dom';
@@ -50,7 +51,7 @@ function AllBooksPage() {
 
 
   const handleCategorySelect = (genre) => {
-    setSearchParams(genre ? { genre } : {}); // אם genre=null, זה מוחק את הפרמטר מה-URL
+    setSearchParams(genre ? { genre } : {}); 
   };
 
   return (
@@ -72,13 +73,13 @@ function AllBooksPage() {
               <CategoryItem
                 key={genre.id}
                 active={selectedCategory === genre.id}
-                onClick={() => handleCategorySelect(genre.id)} // ✅
+                onClick={() => handleCategorySelect(genre.id)} 
               >
                 {genre.name}
               </CategoryItem>
             ))}
             <CategoryItem
-              onClick={() => handleCategorySelect(null)} // ✅ איפוס הסינון
+              onClick={() => handleCategorySelect(null)}
               active={selectedCategory === null}
             >
               הצג הכל
@@ -87,7 +88,7 @@ function AllBooksPage() {
         </Sidebar>
 
         <GalleryContainer>
-          <h1>{selectedGenreName ? `ספרים בז'אנר: ${selectedGenreName}` : 'כל הספרים'}</h1>
+          <Title>{selectedGenreName ? `ספרים בז'אנר: ${selectedGenreName}` : 'כל הספרים'}</Title>
 
           <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 

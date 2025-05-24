@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 export const StyledBackButton = styled.button`
   position: absolute;
+  
   top: 100px;
   right: 30px;
   z-index: 1000;

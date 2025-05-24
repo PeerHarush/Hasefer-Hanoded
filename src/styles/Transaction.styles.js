@@ -1,9 +1,11 @@
     // src/styles/Transaction.styles.js
     import styled from 'styled-components';
 
-    export const PageContainer = styled.div`
-      margin: 10px;
-    `;
+   export const PageContainer = styled.div`
+  padding: 0 1rem;
+  
+`;
+
 export const TransactionBox = styled.div`
   background: #fff;
   border-radius: 12px;
@@ -81,13 +83,15 @@ export const TransactionsGrid = styled.div`
     }
   `;
 
- export const Title = styled.h2`
+
+export const Title = styled.h2`
   text-align: center;
   color: rgb(144, 83, 8);
-  margin: 40px 0 1rem;
+  margin: 60px 0 1rem;
+     font-size: 40px;
 
   @media (max-width: 768px) {
-    margin-top: 0px;
+    margin-top: 20px;
   }
 `;
 

@@ -1,28 +1,42 @@
 import styled from 'styled-components';
 
 export const PageContainer = styled.div`
-  padding: 2rem;
-  direction: rtl;
+  padding: 1rem;
   
 `;
 
+
+
+export const Title = styled.h2`
+  text-align: center;
+  color: rgb(144, 83, 8);
+  margin: 30px 0 1rem;
+     font-size: 40px;
+
+  @media (max-width: 768px) {
+    margin-top: 20px;
+  }
+`;
+
+
+
 export const Sidebar = styled.aside`
-  margin-top: 10px;
+  margin-top: 60px;
   width: 232px;
   padding: 1rem;
   background-color: rgba(243, 227, 195, 1);
   border-radius: 16px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   position: sticky;
-  top: 2rem;
-  height: fit-content;
+  top: 4rem;
+   height: fit-content;
   align-self: flex-start;
 
   @media (max-width: 768px) {
     width: 100%;
+      margin-top: 0px;
+
     position: static;
-    margin-bottom: 1rem;
-    padding: 0.5rem;
   }
 `;
 

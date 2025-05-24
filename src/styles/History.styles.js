@@ -3,7 +3,6 @@ import styled from "styled-components";
 
 
 export const PageContainer = styled.div`
-  padding: 2rem;
   max-width: 700px;
   margin: 0 auto;
   
@@ -11,10 +10,12 @@ export const PageContainer = styled.div`
 
 export const Title = styled.h2`
   text-align: center;
-  color: #333;
-  margin-bottom: 2rem;
-    @media (max-width: 768px) {
-    margin-top: 0px;
+  color: rgb(144, 83, 8);
+  margin: 60px 0 1rem;
+     font-size: 40px;
+
+  @media (max-width: 768px) {
+    margin-top: 20px;
   }
 `;
 
