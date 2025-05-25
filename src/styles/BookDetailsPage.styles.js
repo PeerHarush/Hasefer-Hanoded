@@ -123,7 +123,7 @@ export const Button = styled.button`
   background-color: rgb(241, 206, 162);
 
   &:hover {
-     background-color: rgb(215, 184, 146);
+     background-color: rgb(247, 192, 126);
   }
 
   @media (max-width: 768px) {
@@ -234,11 +234,12 @@ export const SmallButton = styled.button`
 border-radius: 6px;
 width: fit-content;
 
- background: rgb(218, 195, 164);
+   background-color: rgb(241, 206, 162);
 
   &:hover {
-    background: rgb(224, 205, 165);
+     background-color: rgb(247, 192, 126);
   }
+
   @media (max-width: 600px) {
     font-size: 0.95rem;
   width: fit-content;

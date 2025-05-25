@@ -12,10 +12,10 @@ export const StyledBackButton = styled.button`
   font-size: 0.9rem;
   cursor: pointer;
   padding: 8px 16px;
-  background-color: rgb(241, 206, 162);
+ background-color: rgb(241, 206, 162);
 
   &:hover {
-     background-color: rgb(253, 220, 180);
+     background-color: rgb(247, 192, 126);
   }
 
     
