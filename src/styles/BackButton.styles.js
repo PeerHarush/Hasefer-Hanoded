@@ -5,17 +5,19 @@ export const StyledBackButton = styled.button`
   top: 100px;
   right: 30px;
   z-index: 1000;
-  background-color: rgb(218, 195, 164);
+  
   border: none;
   border-radius: 6px;
   color: white;
   font-size: 0.9rem;
   cursor: pointer;
   padding: 8px 16px;
+  background-color: rgb(241, 206, 162);
 
   &:hover {
-    background-color: rgb(215, 184, 146);
+     background-color: rgb(253, 220, 180);
   }
+
     
   
  @media (max-width: 768px) {

@@ -239,9 +239,6 @@ const [showAddressInput, setShowAddressInput] = useState(false);
     }
   };
 
-  const handleReserve = (copyId) => {
-    setReservedCopies(prev => new Set(prev).add(copyId));
-  };
 
   const handleReserveAndStartChat = async (copy) => {
     const token = localStorage.getItem('access_token');
