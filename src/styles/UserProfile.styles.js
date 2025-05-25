@@ -112,7 +112,6 @@ export const PointsText = styled.p`
 
 export const SaveButton = styled.button`
   width: 100%;
-  background: rgb(215, 184, 146);
   color: white;
   border: none;
   border-radius: 6px;
@@ -121,8 +120,10 @@ export const SaveButton = styled.button`
   cursor: pointer;
   margin-top: 10px;
 
+   background-color: rgb(241, 206, 162);
+
   &:hover {
-    background: rgb(241, 206, 162);
+     background-color: rgb(247, 192, 126);
   }
 `;
 

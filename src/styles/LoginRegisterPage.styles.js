@@ -76,9 +76,10 @@ export const Input = styled.input`
 
 export const Button = styled.button`
   width: 100%;
- background: rgb(215, 184, 146);
+   background-color: rgb(241, 206, 162);
+
   &:hover {
-    background:rgb(241, 206, 162);
+     background-color: rgb(247, 192, 126);
   }
       color: white;
   border: none;

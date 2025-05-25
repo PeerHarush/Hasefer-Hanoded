@@ -10,8 +10,8 @@ export const ChatContainer = styled.div`
   border-radius: 16px;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
   width: 95%;
-  height: 80vh;        
-  overflow: hidden;     
+  height: 80vh;
+  overflow: hidden;
 
   @media (max-width: 768px) {
     max-width: 90%;
@@ -56,20 +56,25 @@ export const ChatWrapper = styled.div`
   justify-content: center;
   align-items: center;
   padding: 16px;
-
-  @media (max-width: 768px) {
-    padding: 0;
+  height: calc(100vh - 100px); 
+  box-sizing: border-box;
+  background-color: #fefaf2;
+  margin-top: 60px; 
+   @media (max-width: 768px) {
+    margin-top: 0; 
   }
 `;
 
+
 export const Messages = styled.div`
-  padding: 20px;
+   flex: 1;
+    padding: 20px;
   display: flex;
-  flex-direction: column-reverse; /* הודעות מורות מלמטה למעלה */
-  overflow-y: auto;      /* גלילה רק כאן */
-  min-height: 0;         /* חשוב כדי לגרום ל-flex-grow לעבוד טוב עם גלילה */
+  flex-direction: column-reverse; 
+  overflow-y: auto;    
+  min-height: 0;        
   
-  /* סגנון לסרגל גלילה */
+
   scrollbar-width: thin;
   scrollbar-color: #ccc transparent;
 
@@ -154,10 +159,10 @@ export const SendButton = styled.button`
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s ease;
-  background: rgb(215, 184, 146);
+   background-color: rgb(241, 206, 162);
 
   &:hover {
-    background: rgb(241, 206, 162);
+     background-color: rgb(247, 192, 126);
   }
 
   @media (max-width: 600px) {
