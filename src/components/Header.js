@@ -132,40 +132,41 @@ function Header() {
             {!hideSearch && (
               <SearchContainer ref={searchWrapperRef}>
                 <SearchForm
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const query = searchTerm.trim();
-                  if (!query) return;
+       onSubmit={async (e) => {
+  e.preventDefault();
+  const query = searchTerm.trim();
+  if (!query) return;
 
-                  try {
-                    const res = await fetch(`${API_BASE_URL}/books?search=${encodeURIComponent(query)}`);
-                    const data = await res.json();
+  const titleOnly = query.includes("—")
+    ? query.split("—")[0].trim()
+    : query;
 
-                    if (Array.isArray(data) && data.length > 0) {
-                      // חיפוש הספר הכי מתאים
-                      const lowerQuery = query.toLowerCase();
-                      const bestMatch = data.find(book =>
-                        book.title?.toLowerCase().includes(lowerQuery) ||
-                        (Array.isArray(book.authors)
-                          ? book.authors.join(" ").toLowerCase().includes(lowerQuery)
-                          : (book.authors || "").toLowerCase().includes(lowerQuery))
-                      );
+  try {
+    const res = await fetch(`${API_BASE_URL}/books?search=${encodeURIComponent(titleOnly)}`);
+    const data = await res.json();
 
-                      if (bestMatch) {
-                        navigate(`/book/${encodeURIComponent(bestMatch.title.trim())}`);
-                      } else {
-                        alert("לא נמצא ספר מתאים");
-                      }
-                    } else {
-                      alert("לא נמצאו תוצאות");
-                    }
+    if (Array.isArray(data) && data.length > 0) {
+      const normalizedTitle = titleOnly.toLowerCase();
 
-                    setIsSuggestionsVisible(false);
-                    setSearchTerm("");
-                  } catch (err) {
-                    console.error("שגיאה בביצוע חיפוש:", err);
-                  }
-                }}
+      const bestMatch = data.find(book =>
+        book.title?.toLowerCase() === normalizedTitle
+      );
+
+      if (bestMatch) {
+        navigate(`/book/${encodeURIComponent(bestMatch.title.trim())}`);
+      } else {
+        alert("לא נמצא ספר תואם לשם שהוזן.");
+      }
+    } else {
+      alert("לא נמצאו תוצאות.");
+    }
+
+    setIsSuggestionsVisible(false);
+    setSearchTerm("");
+  } catch (err) {
+    console.error("שגיאה בביצוע חיפוש:", err);
+  }
+}}
 
 
 
@@ -173,7 +174,7 @@ function Header() {
                 >
                   <SearchInput
                     type="search"
-                    placeholder="חפש ספר או מחבר..."
+                    placeholder="חפש ספר  "
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
