@@ -28,7 +28,7 @@ export const InteractiveStar = styled.span`
   transition: color 0.2s;
 
   &:hover {
-    color: #f5a623;
+   color: rgb(250, 177, 88);
   }
 `;
 
@@ -46,10 +46,10 @@ export const Textarea = styled.textarea`
 export const SubmitButton = styled.button`
   margin-top: 12px;
   padding: 10px 20px;
-  background: rgb(215, 184, 146);
+   background-color: rgb(241, 206, 162);
 
   &:hover {
-    background: rgb(241, 206, 162);
+     background-color: rgb(247, 192, 126);
   }
 
   color: white;
@@ -128,8 +128,8 @@ export const AverageRating = styled.div`
   font-size: 17px;
   font-weight: bold;
   margin-bottom: 20px;
-  color: #f5a623;
-  text-align: center;
+ color: rgb(250, 177, 88);
+   text-align: center;
 `;
 
 export const AvatarImage = styled.img`

@@ -120,10 +120,10 @@ export const Button = styled.button`
   border-radius: 6px;
   cursor: pointer;
   margin: 2px;
-  background: rgb(218, 195, 164);
+  background-color: rgb(241, 206, 162);
 
   &:hover {
-    background: rgb(224, 205, 165);
+     background-color: rgb(215, 184, 146);
   }
 
   @media (max-width: 768px) {

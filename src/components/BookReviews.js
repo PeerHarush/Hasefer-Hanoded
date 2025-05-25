@@ -86,8 +86,8 @@ const BookReviews = ({ bookId, userId }) => {
         throw new Error(errorData.detail || 'לא הצלחנו לשלוח את הביקורת');
       }
 
-      const newReview = await response.json();
-      setReviews(prev => [...prev, newReview]);
+      await response.json(); 
+      await fetchReviews();
       setRating(0);
       setComment('');
       setErrorMessage('');
