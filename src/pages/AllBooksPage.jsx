@@ -100,11 +100,7 @@ useEffect(() => {
         <Sidebar>
         <FilterHeader>
           <h3>סינון לפי קטגוריה:</h3>
-          <select onChange={(e) => setSortBy(e.target.value)} defaultValue="">
-            <option value="">מיין לפי</option>
-            <option value="az">א-ב</option>
-            <option value="za">ת-א</option>
-          </select>
+        
         </FilterHeader>
 
           <CategoryList>

@@ -28,7 +28,7 @@ export const Wrapper = styled.div`
 
 export const Sidebar = styled.aside`
   margin-top: 10px;
-  width: 300px;
+  width: 320px;
   border-radius: 16px;
   position: sticky;
   top: 1rem;
