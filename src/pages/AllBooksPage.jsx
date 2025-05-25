@@ -22,32 +22,71 @@ function AllBooksPage() {
   const [sortBy, setSortBy] = useState('');
   const [searchTerm, setSearchTerm] = useState(''); 
   const [books, setBooks] = useState([]); 
+const [allBooks, setAllBooks] = useState([]);
+const [filteredBooks, setFilteredBooks] = useState([]);
 
   const selectedGenreName = selectedCategory
     ? genresList.find((genre) => genre.id === selectedCategory)?.name
     : null;
+useEffect(() => {
+  const fetchBooks = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/books`);
+      const data = await res.json();
+      if (res.ok) {
+        setAllBooks(data);
+      } else {
+        throw new Error('שגיאה בקבלת הספרים');
+      }
+    } catch (err) {
+      console.error('שגיאה בטעינת ספרים:', err);
+    }
+  };
+
+  fetchBooks();
+}, []);
 
   useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const url = searchTerm.trim()
-          ? `${API_BASE_URL}/books?search=${encodeURIComponent(searchTerm)}`
-          : `${API_BASE_URL}/books`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if (res.ok) {
-          setBooks(data);
-        } else {
-          throw new Error('שגיאה בקבלת הספרים');
-        }
-      } catch (err) {
-        console.error('שגיאה בטעינת ספרים:', err);
-      }
-    };
+  const fetchBooks = async () => {
+    try {
+      const params = new URLSearchParams();
 
-    const delayDebounce = setTimeout(fetchBooks, 300);
-    return () => clearTimeout(delayDebounce);
-  }, [searchTerm]); 
+      if (searchTerm.trim()) {
+        params.append('search', searchTerm.trim());
+      }
+      if (selectedCategory) {
+        params.append('genre', selectedCategory);
+      }
+
+      const url = `${API_BASE_URL}/books?${params.toString()}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (res.ok) {
+        setBooks(data);
+      } else {
+        throw new Error('שגיאה בקבלת הספרים');
+      }
+    } catch (err) {
+      console.error('שגיאה בטעינת ספרים:', err);
+    }
+  };
+
+  const delayDebounce = setTimeout(fetchBooks, 300);
+  return () => clearTimeout(delayDebounce);
+}, [searchTerm, selectedCategory]);
+useEffect(() => {
+  const lowerSearch = searchTerm.toLowerCase();
+
+  const filtered = allBooks.filter(book => {
+    const titleMatch = book.title?.toLowerCase().includes(lowerSearch);
+    const authors = Array.isArray(book.authors) ? book.authors.join(' ') : String(book.authors);
+    const authorMatch = authors.toLowerCase().includes(lowerSearch);
+    return titleMatch || authorMatch;
+  });
+
+  setFilteredBooks(filtered);
+}, [searchTerm, allBooks]);
 
 
   const handleCategorySelect = (genre) => {
@@ -72,7 +111,7 @@ function AllBooksPage() {
             {genresList.map((genre) => (
               <CategoryItem
                 key={genre.id}
-                active={selectedCategory === genre.id}
+                $active={selectedCategory === genre.id}
                 onClick={() => handleCategorySelect(genre.id)} 
               >
                 {genre.name}
@@ -80,7 +119,7 @@ function AllBooksPage() {
             ))}
             <CategoryItem
               onClick={() => handleCategorySelect(null)}
-              active={selectedCategory === null}
+              $active={selectedCategory === null}
             >
               הצג הכל
             </CategoryItem>
@@ -92,10 +131,11 @@ function AllBooksPage() {
 
           <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-          <BookGallery
-            books={books}
-            sortBy={sortBy}
-          />
+       <BookGallery
+          books={filteredBooks}
+          sortBy={sortBy}
+        />
+
         </GalleryContainer>
       </Wrapper>
     </PageContainer>
