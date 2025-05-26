@@ -64,7 +64,7 @@ export const NavItemLink = styled(Link)`
     padding: 2px 2px;
     font-size: 12px;
   }
-
+   
   &:hover {
     transform: translateY(-4px);
     text-decoration: none;
@@ -75,7 +75,10 @@ export const SearchContainer = styled.div`
   position: relative;
   max-width: 300px;
   width: 100%;
-  margin-inline-end: auto;
+    margin-right: 0;
+@media (max-width: 1100px) {
+    max-width: 250px;
+  }
 `;
 
 export const SearchForm = styled.form`
@@ -124,6 +127,7 @@ export const SearchButton = styled.button`
   }
 
   @media (max-width: 1180px) {
+    padding: 2px 12px; 
     font-size: 12px;
   }
 `;
