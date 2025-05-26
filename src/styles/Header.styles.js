@@ -9,6 +9,20 @@ export const StyledNavbar = styled.nav`
   direction: rtl;
   text-align: right;
   padding: 10px;
+  @media (max-width: 1406px) {
+    padding: 6px 8px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 1260px) {
+    padding: 3px 4px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 1180px) {
+    padding: 2px 2px;
+    font-size: 12px;
+  }
 `;
 
 export const NavbarRight = styled.ul`
@@ -22,6 +36,8 @@ export const NavbarRight = styled.ul`
 export const NavbarLeft = styled.ul`
   display: flex;
   justify-content: flex-start;
+  margin: 0;
+  flex-grow: 1;
   margin-left: 0;
   padding: 0;
 `;
@@ -29,10 +45,25 @@ export const NavbarLeft = styled.ul`
 export const NavItemLink = styled(Link)`
   text-decoration: none;
   padding: 8px 12px;
+  font-size: 16px;
   font-weight: ${props => (props.$active ? "bold" : "normal")};
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: inline-block;
   color: inherit;
+
+  @media (max-width: 1406px) {
+    padding: 6px 8px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 1260px) {
+    padding: 3px 4px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 1180px) {
+    padding: 2px 2px;
+    font-size: 12px;
+  }
 
   &:hover {
     transform: translateY(-4px);
@@ -71,6 +102,11 @@ export const SearchInput = styled.input`
     outline: none;
     box-shadow: none;
   }
+
+  @media (max-width: 1180px) {
+    padding: 2px 2px;
+    font-size: 12px;
+  }
 `;
 
 export const SearchButton = styled.button`
@@ -85,6 +121,10 @@ export const SearchButton = styled.button`
 
   &:hover {
     background-color: #b3855f;
+  }
+
+  @media (max-width: 1180px) {
+    font-size: 12px;
   }
 `;
 

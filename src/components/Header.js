@@ -128,48 +128,50 @@ function Header() {
               </>
             )}
 
+
+          </NavbarRight>
+
+          <NavbarLeft className="navbar-nav ms-3">
+
             {/* טופס חיפוש */}
             {!hideSearch && (
               <SearchContainer ref={searchWrapperRef}>
                 <SearchForm
-       onSubmit={async (e) => {
-  e.preventDefault();
-  const query = searchTerm.trim();
-  if (!query) return;
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const query = searchTerm.trim();
+                    if (!query) return;
 
-  const titleOnly = query.includes("—")
-    ? query.split("—")[0].trim()
-    : query;
+                    const titleOnly = query.includes("—")
+                      ? query.split("—")[0].trim()
+                      : query;
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/books?search=${encodeURIComponent(titleOnly)}`);
-    const data = await res.json();
+                    try {
+                      const res = await fetch(`${API_BASE_URL}/books?search=${encodeURIComponent(titleOnly)}`);
+                      const data = await res.json();
 
-    if (Array.isArray(data) && data.length > 0) {
-      const normalizedTitle = titleOnly.toLowerCase();
+                      if (Array.isArray(data) && data.length > 0) {
+                        const normalizedTitle = titleOnly.toLowerCase();
 
-      const bestMatch = data.find(book =>
-        book.title?.toLowerCase() === normalizedTitle
-      );
+                        const bestMatch = data.find(book =>
+                          book.title?.toLowerCase() === normalizedTitle
+                        );
 
-      if (bestMatch) {
-        navigate(`/book/${encodeURIComponent(bestMatch.title.trim())}`);
-      } else {
-        alert("לא נמצא ספר תואם לשם שהוזן.");
-      }
-    } else {
-      alert("לא נמצאו תוצאות.");
-    }
+                        if (bestMatch) {
+                          navigate(`/book/${encodeURIComponent(bestMatch.title.trim())}`);
+                        } else {
+                          alert("לא נמצא ספר תואם לשם שהוזן.");
+                        }
+                      } else {
+                        alert("לא נמצאו תוצאות.");
+                      }
 
-    setIsSuggestionsVisible(false);
-    setSearchTerm("");
-  } catch (err) {
-    console.error("שגיאה בביצוע חיפוש:", err);
-  }
-}}
-
-
-
+                      setIsSuggestionsVisible(false);
+                      setSearchTerm("");
+                    } catch (err) {
+                      console.error("שגיאה בביצוע חיפוש:", err);
+                    }
+                  }}
 
                 >
                   <SearchInput
@@ -207,9 +209,6 @@ function Header() {
                 )}
               </SearchContainer>
             )}
-          </NavbarRight>
-
-          <NavbarLeft className="navbar-nav ms-3">
             {!isLoggedIn ? (
               <li className="nav-item">
                 <NavItemLink to="/login" $active={currentPath === "/login"}>התחברות / הרשמה</NavItemLink>
