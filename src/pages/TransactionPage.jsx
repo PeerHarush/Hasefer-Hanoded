@@ -8,26 +8,62 @@ import {
   InfoSection,
   Label,
   ConfirmButton,
+  DeleteIconButton,
   ButtonRow,
   TransactionsGrid,
   FilterWrapper
 } from '../styles/Transaction.styles';
 import { useNavigate } from 'react-router-dom';
-
-
-
+import { FaTrashAlt } from 'react-icons/fa';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
+import { Modal, Button } from 'react-bootstrap';
 
 const TransactionsPage = () => {
   const [transactions, setTransactions] = useState([]);
   const [chatRooms, setChatRooms] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedTransactionId, setSelectedTransactionId] = useState(null);
 
-  const userId = localStorage.getItem('user_id');
+  const navigate = useNavigate();
   const token = localStorage.getItem('access_token');
 
-  // טען עסקאות
+  const renderCancelTooltip = (props) => (
+    <Tooltip id="cancel-tooltip" {...props}>
+      לביטול העסקה הזו
+    </Tooltip>
+  );
+
+  const handleCancelClick = (transactionId) => {
+    setSelectedTransactionId(transactionId);
+    setShowCancelModal(true);
+  };
+
+  const confirmCancelTransaction = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/transactions/${selectedTransactionId}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'cancelled' }),
+      });
+
+      if (!res.ok) throw new Error("ביטול העסקה נכשל");
+
+      alert("העסקה בוטלה בהצלחה.");
+      setShowCancelModal(false);
+      setSelectedTransactionId(null);
+      window.location.reload();
+    } catch (err) {
+      alert("שגיאה בביטול העסקה");
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -43,11 +79,6 @@ const TransactionsPage = () => {
       }
     };
 
-    if (token) fetchTransactions();
-  }, [token]);
-
-  // טען צ'אטים
-  useEffect(() => {
     const fetchChats = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/chats`, {
@@ -60,10 +91,12 @@ const TransactionsPage = () => {
       }
     };
 
-    if (token) fetchChats();
+    if (token) {
+      fetchTransactions();
+      fetchChats();
+    }
   }, [token]);
 
-  // אישור עסקה
   const confirmTransaction = async (transactionId) => {
     try {
       const res = await fetch(`${API_BASE_URL}/transactions/${transactionId}`, {
@@ -85,7 +118,6 @@ const TransactionsPage = () => {
     }
   };
 
-  // קיבוץ עסקאות כפולות
   const groupedTransactions = transactions.reduce((acc, tx) => {
     const key = `${tx.seller.id}-${tx.buyer.id}-${tx.listing.book.title}`;
     if (!acc[key]) {
@@ -100,10 +132,8 @@ const TransactionsPage = () => {
     }
     return acc;
   }, {});
-  const groupedArray = Object.values(groupedTransactions);
 
-  // סינון
-  const filteredTransactions = groupedArray.filter(tx => {
+  const filteredTransactions = Object.values(groupedTransactions).filter(tx => {
     switch (filter) {
       case 'seller':
         return tx.is_user_buyer === false;
@@ -119,55 +149,32 @@ const TransactionsPage = () => {
     }
   });
 
-  // מיון
   const sortedTransactions = filteredTransactions.sort((a, b) => {
-    const statusOrder = {
-      pending: 0,
-      completed: 1,
-      cancelled: 2,
-    };
-    const statusCompare = statusOrder[a.status] - statusOrder[b.status];
-    if (statusCompare !== 0) return statusCompare;
-
-    if (filter === 'seller') {
-      return a.listing.book.title.localeCompare(b.listing.book.title, 'he');
-    }
-
-    return 0;
+    const statusOrder = { pending: 0, completed: 1, cancelled: 2 };
+    const diff = statusOrder[a.status] - statusOrder[b.status];
+    return diff !== 0 ? diff : a.listing.book.title.localeCompare(b.listing.book.title, 'he');
   });
 
-  // חיבור עסקאות לצ׳אטים
   const transactionsWithChat = sortedTransactions.map(tx => {
     const participants = [tx.buyer.id, tx.seller.id];
+    const matchingChat = chatRooms.find(chat =>
+      participants.includes(chat.other_user?.id)
+    );
 
-    const matchingChat = chatRooms.find(chat => {
-      const otherId = chat.other_user?.id;
-      return otherId && participants.includes(otherId);
-    });
-
-    return {
-      ...tx,
-      chat_room_id: matchingChat?.id || null
-    };
+    return { ...tx, chat_room_id: matchingChat?.id || null };
   });
 
-  // תרגום סטטוס
   const translateStatus = (status) => {
     switch (status) {
-      case 'pending':
-        return 'ממתין לאישור';
-      case 'completed':
-        return 'הושלמה';
-      case 'cancelled':
-        return 'בוטלה';
-      default:
-        return status;
+      case 'pending': return 'ממתין לאישור';
+      case 'completed': return 'הושלמה';
+      case 'cancelled': return 'בוטלה';
+      default: return status;
     }
   };
 
   return (
     <PageContainer>
-
       <Title>העסקאות שלי</Title>
 
       <FilterWrapper>
@@ -182,6 +189,23 @@ const TransactionsPage = () => {
         </select>
       </FilterWrapper>
 
+      <Modal show={showCancelModal} onHide={() => setShowCancelModal(false)} centered>
+        <Modal.Header>
+          <Modal.Title>לבטל את העסקה? </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          בטוח שאתה רוצה לבטל את העסקה הזו?<br />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowCancelModal(false)}>
+            ביטול
+          </Button>
+          <Button variant="danger" onClick={confirmCancelTransaction}>
+            כן, בטל
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       {transactionsWithChat.length === 0 ? (
         <p style={{ textAlign: 'center' }}>אין עסקאות תואמות לסינון הנבחר.</p>
       ) : (
@@ -192,23 +216,42 @@ const TransactionsPage = () => {
               <InfoSection>
                 <Label><strong>סטטוס:</strong> {translateStatus(tx.status)}</Label>
                 <Label><strong>ספר:</strong> {tx.listing.book.title}</Label>
-                <Label><strong>מחיר:</strong> {tx.listing.price} ₪</Label>
+                 <Label>
+                    {tx.listing.price === 0
+                      ? 'למסירה'
+                      : <>
+                          <strong>מחיר:</strong> {tx.listing.price} ₪
+                        </>
+                    }
+                  </Label>
+
                 <Label><strong>מוכר:</strong> {tx.seller.full_name}</Label>
                 <Label><strong>קונה:</strong> {tx.buyer.full_name}</Label>
-                <Label>
-                  <strong>תאריך עסקה:</strong>{' '}
-                  {new Date(tx.created_at).toLocaleDateString('he-IL', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </Label>
+                    {tx.status === 'completed' && (
+                      <Label>
+                        <strong>תאריך עסקה:</strong>{' '}
+                        {new Date(tx.created_at).toLocaleDateString('he-IL', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </Label>
+                    )}
+
 
                 <ButtonRow>
-                  {tx.status === 'pending' && tx.is_user_buyer === false && (
-                    <ConfirmButton onClick={() => confirmTransaction(tx.groupedIds[0])}>
-                      ✅ אשר שהעסקה הושלמה
-                    </ConfirmButton>
+                  {tx.status === 'pending' && !tx.is_user_buyer && (
+                    <>
+                      <ConfirmButton onClick={() => confirmTransaction(tx.groupedIds[0])}>
+                        ✅ אשר שהעסקה הושלמה
+                      </ConfirmButton>
+
+                      <OverlayTrigger placement="top" overlay={renderCancelTooltip}>
+                        <DeleteIconButton onClick={() => handleCancelClick(tx.groupedIds[0])}>
+                          <FaTrashAlt />
+                        </DeleteIconButton>
+                      </OverlayTrigger>
+                    </>
                   )}
 
                   {tx.chat_room_id ? (

@@ -2,13 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Wrapper, CardsContainer, BookCard, StockTag, FavoriteButton, Title } from '../styles/WishList.styles';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../config';
-import { FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaHeart } from 'react-icons/fa';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
 
 
 
 function WishList() {
   const [books, setBooks] = useState([]);
   const [copies, setCopies] = useState([]);
+const renderTooltip = (props) => (
+  <Tooltip id="wishlist-tooltip" {...props}>
+להסרה מרשימת המשאלות  </Tooltip>
+);
 
   useEffect(() => {
     const fetchWishlistBooks = async () => {
@@ -85,16 +91,18 @@ function WishList() {
   key={book.id}
 >
   <BookCard>
-   <FavoriteButton
-  $isFavorite={true}
-  onClick={(e) => {
-    e.preventDefault(); 
-    handleDelete(book.id); 
-  }}
-  title="הספר הוסר מרשימת המשאלות"
->
-  <FaHeart />
-</FavoriteButton>
+<OverlayTrigger placement="top" overlay={renderTooltip}>
+  <FavoriteButton
+    $isFavorite={true}
+    onClick={(e) => {
+      e.preventDefault(); 
+      handleDelete(book.id); 
+    }}
+  >
+    <FaHeart />
+  </FavoriteButton>
+</OverlayTrigger>
+
 
     <img
       src={book.image_url}

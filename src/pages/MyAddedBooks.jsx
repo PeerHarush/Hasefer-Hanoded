@@ -6,13 +6,44 @@ import {
   StockTag,
   Title,
   DeleteButton,
+  
 } from '../styles/WishList.styles';
+import { DeleteIconButton } from '../styles/MyAddedBooks.styles';
 import { Link } from 'react-router-dom';
 import API_BASE_URL from '../config';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
+import { Modal, Button } from 'react-bootstrap';
+import { FaTrashAlt } from 'react-icons/fa';
+
 
 function MyAddedBooks() {
   const [listings, setListings] = useState([]);
   const [userId, setUserId] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+const [selectedListingId, setSelectedListingId] = useState(null);
+const handleShowModal = (id) => {
+  setSelectedListingId(id);
+  setShowDeleteModal(true);
+};
+
+const handleConfirmDelete = () => {
+  if (selectedListingId) {
+    handleDelete(selectedListingId);
+    setShowDeleteModal(false);
+    setSelectedListingId(null);
+  }
+};
+
+const handleCancelDelete = () => {
+  setShowDeleteModal(false);
+  setSelectedListingId(null);
+};
+
+const renderDeleteTooltip = (props) => (
+  <Tooltip id="delete-tooltip" {...props}>
+למחיקת העותק מהמערכת  </Tooltip>
+);
 
   useEffect(() => {
     const fetchUserAndListings = async () => {
@@ -68,8 +99,28 @@ function MyAddedBooks() {
 
   return (
     <Wrapper>
+      <Modal show={showDeleteModal} onHide={handleCancelDelete} centered>
+ 
+  <Modal.Header>
+  <Modal.Title>למחוק את הספר?😢</Modal.Title>
+</Modal.Header>
+
+  <Modal.Body>
+    בטוח שאתה רוצה למחוק את הספר?<br />
+    סתם יצבור אבק במדף... לא חבל?
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={handleCancelDelete}>
+      ביטול
+    </Button>
+    <Button variant="danger" onClick={handleConfirmDelete}>
+      כן, תמחק
+    </Button>
+  </Modal.Footer>
+</Modal>
+
         
-      <Title>הספרים שאני הוספתי</Title>
+      <Title> הספרים שלי </Title>
              
 
       <CardsContainer>
@@ -83,14 +134,19 @@ function MyAddedBooks() {
               style={{ textDecoration: 'none', color: 'inherit' }}
             >
               <BookCard>
-                <DeleteButton
-                  onClick={(e) => {
-                    e.preventDefault(); // למנוע מעבר לעמוד הספר
-                    handleDelete(listing.id);
-                  }}
-                >
-                  🗑️
-                </DeleteButton>
+              <OverlayTrigger placement="top" overlay={renderDeleteTooltip}>
+                      <DeleteIconButton
+                        onClick={(e) => {
+                          e.preventDefault(); // לא לנווט
+                          handleShowModal(listing.id); // הצג מודל
+                        }}
+                        title="מחק עותק"
+                      >
+                        <FaTrashAlt />
+                      </DeleteIconButton>
+                    </OverlayTrigger>
+
+
                 <img
                   src={listing.book?.image_url || '/images/default-book.png'}
                   alt={listing.book?.title}
