@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BookGallery from '../components/BookGallery';
-import SearchBar from '../components/SearchBar';
 import HomeBookGallery from '../components/HomeBookGallery';
 import API_BASE_URL from '../config';
+
 import {
   PageWrapper,
   TopBar,
@@ -18,7 +17,7 @@ import {
   NotificationsWrapper,
   MarkAsReadIcon,
   MarkAllAsReadButton,
-  NotificationsBox,
+  NotificationsBox, 
   NotificationItem,
   NotificationTitle, 
   NotificationsScroll, 
@@ -246,7 +245,6 @@ return (
         </BannerText>
       </Banner>
 
-      <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
       <BookSection>
         <HomeBookGallery />
