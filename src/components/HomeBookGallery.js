@@ -23,16 +23,28 @@ const HomeBookGallery = () => {
   const location = useLocation();
   const [favorites, setFavorites] = useState(new Set());
   const [books, setBooks] = useState([]);
-  const swiperRef = useRef();
+  const [booksWithCopies, setBooksWithCopies] = useState([]);
+  const swiperRef1 = useRef();
+  const swiperRef2 = useRef();
 
   const isLoggedIn = !!localStorage.getItem('access_token');
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/books`);
-        const data = await res.json();
-        setBooks(data.slice(0, 10));
+        const [booksRes, copiesRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/books`),
+          fetch(`${API_BASE_URL}/book-listings`)
+        ]);
+
+        const booksData = await booksRes.json();
+        const copiesData = await copiesRes.json();
+
+        const bookIdsWithCopies = new Set(copiesData.map(copy => copy.book?.id));
+        const filteredBooks = booksData.filter(book => bookIdsWithCopies.has(book.id));
+
+        setBooks(booksData.slice(0, 10));
+        setBooksWithCopies(filteredBooks.slice(0, 10));
       } catch (err) {
         console.error('שגיאה בטעינת ספרים:', err);
       }
@@ -66,56 +78,62 @@ const HomeBookGallery = () => {
     }
   };
 
+  const renderCarousel = (booksArray, swiperRef) => (
+    <CarouselWrapper>
+      <SwiperNavButton onClick={() => swiperRef.current?.slidePrev()}>
+        ‹
+      </SwiperNavButton>
+
+      <Swiper
+        modules={[Navigation]}
+        onBeforeInit={(swiper) => {
+          swiperRef.current = swiper;
+        }}
+        slidesPerView={5}
+        spaceBetween={10}
+        breakpoints={{
+          1024: { slidesPerView: 5 },
+          768: { slidesPerView: 3 },
+          480: { slidesPerView: 2 },
+        }}
+      >
+        {booksArray.map((book) => (
+          <SwiperSlide key={book.id}>
+            <HomeBookCard>
+              <Link to={`/book/${encodeURIComponent(book.title)}`} state={{ from: location.pathname }} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <HomeBookImage src={book.image_url.startsWith('http') ? book.image_url : `${API_BASE_URL}/${book.image_url}`} alt={book.title} />
+                <HomeBookTitle>{book.title}</HomeBookTitle>
+                <HomeBookAuthor>{book.authors || 'לא ידוע'}</HomeBookAuthor>
+              </Link>
+              {isLoggedIn && (
+                <FavoriteButton
+                  $isFavorite={favorites.has(book.id)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleFavorite(book);
+                  }}
+                >
+                  {favorites.has(book.id) ? <FaHeart /> : <FaRegHeart />}
+                </FavoriteButton>
+              )}
+            </HomeBookCard>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+
+      <SwiperNavButton onClick={() => swiperRef.current?.slideNext()}>
+        ›
+      </SwiperNavButton>
+    </CarouselWrapper>
+  );
+
   return (
     <>
       <SectionTitle>📚 ספרים רנדומליים</SectionTitle>
+      {renderCarousel(books, swiperRef1)}
 
-      <CarouselWrapper>
-        <SwiperNavButton onClick={() => swiperRef.current?.slidePrev()}>
-          ‹
-        </SwiperNavButton>
-
-        <Swiper
-          modules={[Navigation]}
-          onBeforeInit={(swiper) => {
-            swiperRef.current = swiper;
-          }}
-          slidesPerView={5}
-          spaceBetween={10}
-          breakpoints={{
-            1024: { slidesPerView: 5 },
-            768: { slidesPerView: 3 },
-            480: { slidesPerView: 2 },
-          }}
-        >
-          {books.map((book) => (
-            <SwiperSlide key={book.id}>
-              <HomeBookCard>
-                <Link to={`/book/${encodeURIComponent(book.title)}`} state={{ from: location.pathname }} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <HomeBookImage src={book.image_url.startsWith('http') ? book.image_url : `${API_BASE_URL}/${book.image_url}`} alt={book.title} />
-                  <HomeBookTitle>{book.title}</HomeBookTitle>
-                  <HomeBookAuthor>{book.authors || 'לא ידוע'}</HomeBookAuthor>
-                </Link>
-                {isLoggedIn && (
-                  <FavoriteButton
-                    $isFavorite={favorites.has(book.id)}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleFavorite(book);
-                    }}
-                  >
-                    {favorites.has(book.id) ? <FaHeart /> : <FaRegHeart />}
-                  </FavoriteButton>
-                )}
-              </HomeBookCard>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-
-        <SwiperNavButton onClick={() => swiperRef.current?.slideNext()}>
-          ›
-        </SwiperNavButton>
-      </CarouselWrapper>
+      <SectionTitle>📦 ספרים שיש להם עותקים זמינים</SectionTitle>
+      {renderCarousel(booksWithCopies, swiperRef2)}
     </>
   );
 };
