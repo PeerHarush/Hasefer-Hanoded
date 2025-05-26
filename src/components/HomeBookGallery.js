@@ -1,18 +1,24 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
+import styled from 'styled-components';
 import {
   HomeBookCard,
   HomeBookImage,
   HomeBookTitle,
   HomeBookAuthor,
-  BookListWrapper,
   SectionTitle,
-  FavoriteButton
+  FavoriteButton,
+  SwiperNavButton,
+  CarouselWrapper
 } from '../styles/Home.styles';
 import API_BASE_URL from '../config';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation } from 'swiper/modules';
 
-// ערבוב רנדומלי
+import 'swiper/css';
+import 'swiper/css/navigation';
+
 function shuffleArray(array) {
   return array
     .map((value) => ({ value, sort: Math.random() }))
@@ -22,43 +28,43 @@ function shuffleArray(array) {
 
 const HomeBookGallery = () => {
   const location = useLocation();
-  const [allBooks, setAllBooks] = useState([]);
-  const [booksWithCopies, setBooksWithCopies] = useState([]);
   const [favorites, setFavorites] = useState(new Set());
   const isLoggedIn = !!localStorage.getItem('access_token');
   const [randomAllBooks, setRandomAllBooks] = useState([]);
   const [randomBooksWithCopies, setRandomBooksWithCopies] = useState([]);
 
+  const [activeIndex1, setActiveIndex1] = useState(0);
+  const [isBeginning1, setIsBeginning1] = useState(true);
+  const [isEnd1, setIsEnd1] = useState(false);
 
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const [booksRes, copiesRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/books`),
-        fetch(`${API_BASE_URL}/book-listings`)
-      ]);
+  const [activeIndex2, setActiveIndex2] = useState(0);
+  const [isBeginning2, setIsBeginning2] = useState(true);
+  const [isEnd2, setIsEnd2] = useState(false);
 
-      const booksData = await booksRes.json();
-      const copiesData = await copiesRes.json();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [booksRes, copiesRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/books`),
+          fetch(`${API_BASE_URL}/book-listings`),
+        ]);
 
-      setAllBooks(booksData);
-      setBooksWithCopies([]);
+        const booksData = await booksRes.json();
+        const copiesData = await copiesRes.json();
 
-      const bookIdsWithCopies = new Set(copiesData.map(copy => copy.book?.id));
-      const filtered = booksData.filter(book => bookIdsWithCopies.has(book.id));
+        const bookIdsWithCopies = new Set(copiesData.map((copy) => copy.book?.id));
+        const filtered = booksData.filter((book) => bookIdsWithCopies.has(book.id));
 
-      setRandomAllBooks(shuffleArray(booksData).slice(0, 6));
-      setRandomBooksWithCopies(shuffleArray(filtered).slice(0, 6));
-    } catch (err) {
-      console.error("שגיאה בטעינת ספרים או עותקים:", err);
-    }
-  };
+        setRandomAllBooks(shuffleArray(booksData).slice(0, 10));
+        setRandomBooksWithCopies(shuffleArray(filtered).slice(0, 10));
+      } catch (err) {
+        console.error('שגיאה בטעינת ספרים או עותקים:', err);
+      }
+    };
 
-  fetchData();
-}, []);
+    fetchData();
+  }, []);
 
-
-  // הוספה / הסרה מרשימת משאלות
   const toggleFavorite = async (book) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -75,7 +81,7 @@ useEffect(() => {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error('שגיאה במחיקה מהשרת');
-        setFavorites(prev => {
+        setFavorites((prev) => {
           const newSet = new Set(prev);
           newSet.delete(id);
           return newSet;
@@ -86,7 +92,7 @@ useEffect(() => {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error('שגיאה בהוספה לשרת');
-        setFavorites(prev => new Set(prev).add(id));
+        setFavorites((prev) => new Set(prev).add(id));
       }
     } catch (err) {
       console.error(err.message);
@@ -94,48 +100,80 @@ useEffect(() => {
     }
   };
 
-  const renderBooks = (booksArray) =>
-  booksArray.map((book) => (
-    <Link
-      key={book.id}
-      to={`/book/${encodeURIComponent(book.title)}`}
-      state={{ from: location.pathname }}
-      style={{ textDecoration: 'none', color: 'inherit', position: 'relative' }}
-    >
-      <HomeBookCard>
-        {isLoggedIn && (
-          <FavoriteButton
-            $isFavorite={favorites.has(book.id)}
-            onClick={(e) => {
-              e.preventDefault();
-              toggleFavorite(book);
-            }}
-          >
-            {favorites.has(book.id) ? <FaHeart /> : <FaRegHeart />}
-          </FavoriteButton>
+  const renderCarousel = (booksArray, indexSetters, isBeginning, isEnd) => {
+    const [setActiveIndex, setIsBeginning, setIsEnd] = indexSetters;
+
+    return (
+      <CarouselWrapper>
+        {!isBeginning && (
+          <SwiperNavButton className="swiper-button-prev">‹</SwiperNavButton>
         )}
-        <HomeBookImage
-          src={
-            book.image_url?.startsWith('http')
-              ? book.image_url
-              : `${API_BASE_URL}/${book.image_url}`
-          }
-          alt={book.title}
-        />
-        <HomeBookTitle>{book.title}</HomeBookTitle>
-        <HomeBookAuthor>{book.authors || 'לא ידוע'}</HomeBookAuthor>
-      </HomeBookCard>
-    </Link>
-  ));
+        <Swiper
+          modules={[Navigation]}
+          navigation={{ prevEl: '.prev-button', nextEl: '.next-button' }}
+          onSlideChange={(swiper) => {
+            setActiveIndex(swiper.activeIndex);
+            setIsBeginning(swiper.isBeginning);
+            setIsEnd(swiper.isEnd);
+          }}
+          spaceBetween={5}
+          slidesPerView={5}
+          loop={false}
+          centeredSlides={false}
+          breakpoints={{
+            1024: { slidesPerView: 5 },
+            768: { slidesPerView: 3 },
+            480: { slidesPerView: 2 },
+          }}
+        >
+          {booksArray.map((book) => (
+            <SwiperSlide key={book.id}>
+              <HomeBookCard>
+                <Link
+                  to={`/book/${encodeURIComponent(book.title)}`}
+                  state={{ from: location.pathname }}
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <HomeBookImage
+                    src={
+                      book.image_url?.startsWith('http')
+                        ? book.image_url
+                        : `${API_BASE_URL}/${book.image_url}`
+                    }
+                    alt={book.title}
+                  />
+                  <HomeBookTitle>{book.title}</HomeBookTitle>
+                  <HomeBookAuthor>{book.authors || 'לא ידוע'}</HomeBookAuthor>
+                </Link>
+                {isLoggedIn && (
+                  <FavoriteButton
+                    $isFavorite={favorites.has(book.id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleFavorite(book);
+                    }}
+                  >
+                    {favorites.has(book.id) ? <FaHeart /> : <FaRegHeart />}
+                  </FavoriteButton>
+                )}
+              </HomeBookCard>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+        {!isEnd && (
+          <SwiperNavButton className="swiper-button-next">›</SwiperNavButton>
+        )}
+      </CarouselWrapper>
+    );
+  };
 
   return (
     <>
-     <SectionTitle>📚 ספרים רנדומליים מכל המאגר</SectionTitle>
-      <BookListWrapper>{renderBooks(randomAllBooks)}</BookListWrapper>
+      <SectionTitle>📚 ספרים רנדומליים מכל המאגר</SectionTitle>
+      {renderCarousel(randomAllBooks, [setActiveIndex1, setIsBeginning1, setIsEnd1], isBeginning1, isEnd1)}
 
       <SectionTitle>📦 ספרים רנדומליים שיש להם עותקים זמינים</SectionTitle>
-      <BookListWrapper>{renderBooks(randomBooksWithCopies)}</BookListWrapper>
-
+      {renderCarousel(randomBooksWithCopies, [setActiveIndex2, setIsBeginning2, setIsEnd2], isBeginning2, isEnd2)}
     </>
   );
 };

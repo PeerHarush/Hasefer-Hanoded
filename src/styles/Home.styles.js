@@ -27,7 +27,7 @@ export const NotificationIcon = styled.div`
   font-size: 1.5rem;
   cursor: pointer;
   color: #7a4a16;
-  position: relative; /* חשוב כדי למקם את העיגול האדום */
+  position: relative;
 `;
 
 /* עיגול אדום למספר התראות */
@@ -49,8 +49,7 @@ export const NotificationBadge = styled.div`
   line-height: 1;
 `;
 
-
-/* באנר עליון – רקע + מיקום מרכזי */
+/* באנר עליון */
 export const Banner = styled.div`
   background-color: #f4e6d8;
   color: #a05921;
@@ -75,13 +74,11 @@ export const Banner = styled.div`
   }
 `;
 
-/* טקסט מתגלגל בתוך הבאנר */
 export const BannerText = styled.div`
   display: inline-block;
   position: absolute;
   white-space: nowrap;
   animation: scrollText 25s linear infinite;
-  
 
   @keyframes scrollText {
     0% {
@@ -93,19 +90,16 @@ export const BannerText = styled.div`
   }
 `;
 
-/* קפסולת ספרים (כותרת + תוכן) */
 export const BookSection = styled.div`
   margin-bottom: 3rem;
 `;
 
-/* כותרות של מקטעים */
 export const SectionTitle = styled.h2`
   font-size: 1.4rem;
   margin-bottom: 1rem;
   color: #8d572a;
 `;
 
-/* אזור ביקורות אחרונות */
 export const ReviewSection = styled.div`
   margin-top: 2rem;
 `;
@@ -125,8 +119,8 @@ export const NotificationsBox = styled.div`
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
   padding: 0.8rem 1rem;
   z-index: 9990;
-  max-height: 350px; /* הגבלת גובה מקסימלי */
-  overflow: hidden; /* הסתרת תוכן שחורג */
+  max-height: 350px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 
@@ -134,7 +128,7 @@ export const NotificationsBox = styled.div`
     content: '';
     position: absolute;
     top: -10px;
-    left: 20px; 
+    left: 20px;
     border-width: 6px;
     border-style: solid;
     border-color: transparent transparent #ddd transparent;
@@ -144,7 +138,7 @@ export const NotificationsBox = styled.div`
     content: '';
     position: absolute;
     top: -9px;
-    left: 20px; 
+    left: 20px;
     border-width: 6px;
     border-style: solid;
     border-color: transparent transparent #fff transparent;
@@ -158,8 +152,6 @@ export const NotificationItem = styled.li`
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-
   color: ${props => props.$isUnread ? '#000' : '#666'};
   background-color: ${props => props.$isUnread ? '#f5f0e6' : 'transparent'};
   font-weight: ${props => props.$isUnread ? 'bold' : 'normal'};
@@ -181,26 +173,26 @@ export const NotificationItem = styled.li`
     content: '${props => props.$type === 'message' ? '💬 ' : props.$type === 'complete' ? '✅ ' : '📦 '}';
   }
 `;
+
 export const NotificationsScroll = styled.div`
   overflow-y: auto;
-  max-height: 280px; /* גובה מקסימלי למכולת הגלילה */
+  max-height: 280px;
   margin: 0.5rem 0;
-  
-  /* עיצוב סרגל הגלילה */
+
   &::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 10px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: #ddc5aa;
     border-radius: 10px;
   }
-  
+
   &::-webkit-scrollbar-thumb:hover {
     background: #c9a98b;
   }
@@ -218,7 +210,6 @@ export const MarkAsReadIcon = styled.span`
   }
 `;
 
-
 export const NotificationTitle = styled.div`
   font-weight: bold;
   color: #7a4a16;
@@ -231,7 +222,7 @@ export const Card = styled.div`
   padding: 0.6rem;
   text-align: center;
   transition: transform 0.2s ease;
-  
+
   &:hover {
     transform: translateY(-5px);
   }
@@ -253,13 +244,13 @@ export const HomeBookCard = styled.div`
   padding: 1rem;
   text-align: center;
   position: relative;
-  width: 220px; 
+  width: 220px;
   min-height: 380px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-height: 100%;
-display: flex;
-flex-direction: column;
-justify-content: space-between;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 
   &:hover {
     transform: translateY(-4px);
@@ -284,7 +275,7 @@ justify-content: space-between;
 
 export const HomeBookImage = styled.img`
   width: 100%;
-  height: 250px; 
+  height: 250px;
   object-fit: cover;
   border-radius: 8px;
 
@@ -317,13 +308,14 @@ export const BookListWrapper = styled.div`
   }
 
   @media (max-width: 460px) {
-    grid-template-columns: repeat(2, 1fr); 
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.8rem;
   }
-      @media (max-width: 340px) {
-    grid-template-columns: repeat(1, 1fr); 
+
+  @media (max-width: 340px) {
+    grid-template-columns: repeat(1, 1fr);
     gap: 0.8rem;
-justify-items: center;
+    justify-items: center;
   }
 `;
 
@@ -364,11 +356,11 @@ export const MarkAllAsReadButton = styled.button`
   background-color: #f4e6d8;
   border: none;
   border-radius: 15px;
-   padding: 6px ;
+  padding: 6px;
   cursor: pointer;
   font-size: 0.8rem;
   width: 100%;
-  color:rgb(122, 78, 31);
+  color: rgb(122, 78, 31);
   font-weight: bold;
   transition: background-color 0.2s;
 
@@ -377,3 +369,43 @@ export const MarkAllAsReadButton = styled.button`
   }
 `;
 
+export const CarouselWrapper = styled.div`
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+`;
+
+export const SwiperNavButton = styled.button`
+  background: #fff8f2;
+  border: 2px solid #d6a77a;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.8rem;
+  color: #8d572a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+
+  &:hover {
+    background-color: #f4e6d8;
+    border-color: #a05921;
+    color: #a05921;
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  @media (max-width: 768px) {
+    width: 32px;
+    height: 32px;
+    font-size: 1.3rem;
+  }
+`;

@@ -50,7 +50,7 @@ export const SearchContainer = styled.div`
 export const SearchForm = styled.form`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.2rem;
 `;
 
 export const SearchInput = styled.input`
