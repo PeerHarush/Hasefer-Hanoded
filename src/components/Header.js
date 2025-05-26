@@ -129,10 +129,7 @@ function Header() {
             )}
 
 
-          </NavbarRight>
-
-          <NavbarLeft className="navbar-nav ms-3">
-
+         
             {/* טופס חיפוש */}
             {!hideSearch && (
               <SearchContainer ref={searchWrapperRef}>
@@ -209,6 +206,10 @@ function Header() {
                 )}
               </SearchContainer>
             )}
+             </NavbarRight>
+
+          <NavbarLeft className="navbar-nav ms-3">
+
             {!isLoggedIn ? (
               <li className="nav-item">
                 <NavItemLink to="/login" $active={currentPath === "/login"}>התחברות / הרשמה</NavItemLink>

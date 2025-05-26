@@ -35,7 +35,7 @@ export const NavbarRight = styled.ul`
 
 export const NavbarLeft = styled.ul`
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-end;
   margin: 0;
   flex-grow: 1;
   margin-left: 0;
