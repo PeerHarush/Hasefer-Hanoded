@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 
 /* מעטפת כללית של הדף */
 export const PageWrapper = styled.div`
@@ -323,13 +323,18 @@ export const HomeBookTitle = styled.h3`
   margin-top: 10px;
   color: rgb(144, 83, 8);
   font-size: 1.1rem;
+  min-height: 2.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
-
 export const HomeBookAuthor = styled.p`
   color: #555;
   font-size: 0.95rem;
   margin: 4px 0 0;
+  min-height: 1.2rem;
 `;
+
 
 export const FavoriteButton = styled.button`
   position: absolute;
@@ -409,3 +414,17 @@ export const SwiperNavButton = styled.button`
     font-size: 1.3rem;
   }
 `;
+
+
+export const GlobalSwiperStyle = createGlobalStyle`
+  .swiper.custom-swiper {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .swiper-slide {
+    display: flex;
+    justify-content: center;
+  }
+`;
+
