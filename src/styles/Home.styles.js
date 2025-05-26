@@ -367,3 +367,53 @@ export const MarkAllAsReadButton = styled.button`
   }
 `;
 
+export const SwiperNavButton = styled.div`
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  width: 40px;
+  height: 40px;
+  background-color: #fff8f2;
+  border: 2px solid #d6a77a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8d572a;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+
+  &.swiper-button-prev {
+    left: -40px;
+  }
+
+  &.swiper-button-next {
+    right: -40px;
+  }
+
+  &:hover {
+    background-color: #f4e6d8;
+    color: #a05921;
+    border-color: #a05921;
+  }
+
+  @media (max-width: 768px) {
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+
+    &.swiper-button-prev {
+      left: -35px;
+    }
+
+    &.swiper-button-next {
+      right: -35px;
+    }
+  }
+    
+`;
+
+
