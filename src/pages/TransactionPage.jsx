@@ -195,6 +195,7 @@ const TransactionsPage = () => {
         </Modal.Header>
         <Modal.Body>
           בטוח שאתה רוצה לבטל את העסקה הזו?<br />
+          שים לב, ביטול העסקה לא ימחק את העותק של הספר
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowCancelModal(false)}>
