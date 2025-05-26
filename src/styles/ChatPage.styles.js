@@ -70,7 +70,7 @@ export const Messages = styled.div`
    flex: 1;
     padding: 20px;
   display: flex;
-  flex-direction: column-reverse; 
+  flex-direction: column; /* <--- CHANGE THIS LINE FROM column-reverse to column */
   overflow-y: auto;    
   min-height: 0;        
   
@@ -86,6 +86,7 @@ export const Messages = styled.div`
     border-radius: 4px;
   }
 `;
+
 export const Message = styled.div`
   max-width: 60%;
   margin: 5px 0;
