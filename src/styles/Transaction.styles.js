@@ -6,6 +6,23 @@
   
 `;
 
+export const DeleteIconButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.2);
+    color: #a71d2a;
+  }
+
+  &:focus {
+    outline: none;
+  }
+`;
+
 export const TransactionBox = styled.div`
   background: #fff;
   border-radius: 12px;
