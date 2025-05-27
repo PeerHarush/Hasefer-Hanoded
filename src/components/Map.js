@@ -162,7 +162,7 @@ const Map = ({ position, setPosition, address, updateAddress, height = '300px', 
 
   return (
     <>
-      <ValidationContainer>
+      {/* <ValidationContainer>
         <AddressValidation
           validationState={validationState}
           suggestedAddress={suggestedAddress}
@@ -170,7 +170,7 @@ const Map = ({ position, setPosition, address, updateAddress, height = '300px', 
           onRejectSuggestion={handleRejectSuggestion}
           isValidating={isValidating}
         />
-      </ValidationContainer>
+      </ValidationContainer> */}
 
       <MapContainerStyled height={height}>
         <LeafletMapContainer center={position || [32.0853, 34.7818]} zoom={15} style={{ height: '100%', width: '100%' }}>
