@@ -140,10 +140,10 @@
       
       <>
         <GlobalSwiperStyle />
-        <SectionTitle>📚 ספרים רנדומליים</SectionTitle>
+        <SectionTitle> ספרים רנדומליים📚</SectionTitle>
         {renderCarousel(books, swiperRef1)}
 
-        <SectionTitle>📦 ספרים שיש להם עותקים זמינים</SectionTitle>
+        <SectionTitle> ספרים שיש להם עותקים זמינים📦</SectionTitle>
         {renderCarousel(booksWithCopies, swiperRef2)}
       </>
     );
