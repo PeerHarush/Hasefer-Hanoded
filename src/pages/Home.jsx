@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomeBookGallery from '../components/HomeBookGallery';
+import TopUsersLeaderboard from '../components/TopUsersLeaderboard';
 import API_BASE_URL from '../config';
 
 import {
@@ -252,7 +253,9 @@ return (
           עד כה הצלחנו להעביר הלאה {recycledCount} ספרים! תודה שאתם חלק מהקהילה 💛
         </BannerText>
       </Banner>
-
+<BookSection>
+  <TopUsersLeaderboard />
+</BookSection>
 <BookSection>
   <HomeBookGallery />
 </BookSection>
