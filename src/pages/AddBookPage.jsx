@@ -6,7 +6,7 @@ import {
   MapHelpText, MapContainer, ActionButton
 } from '../styles/AddBookPage.styles';
 import GenresSelect from "../components/GenresSelect";
-import Map, { geocodeAddress } from '../components/Map';
+import Map, { reverseGeocode, geocodeAddress, calculateDistance } from '../components/Map';
 
 
 const AddBookPage = () => {
@@ -20,6 +20,7 @@ const AddBookPage = () => {
     location: '',
     bookImage: null,
   });
+const fileInputRef = useRef(null);
 
   const [bookSuggestions, setBookSuggestions] = useState([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
@@ -29,319 +30,7 @@ const AddBookPage = () => {
   const [showAutoFillButton, setShowAutoFillButton] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(null);
 
-  // Address validation states - now handled by the unified Map component
-  const [addressValidationState, setAddressValidationState] = useState(null);
-  const [suggestedAddress, setSuggestedAddress] = useState('');
-  const [isValidatingAddress, setIsValidatingAddress] = useState(false);
-  const [validatedPosition, setValidatedPosition] = useState(null);
-
-  const fileInputRef = useRef(null);
-  const addressInputRef = useRef(null);
-  const addressTimeoutRef = useRef(null);
-
-  // Helper function for fuzzy string matching
-  const levenshteinDistance = (str1, str2) => {
-    const matrix = [];
-    
-    for (let i = 0; i <= str2.length; i++) {
-      matrix[i] = [i];
-    }
-    
-    for (let j = 0; j <= str1.length; j++) {
-      matrix[0][j] = j;
-    }
-    
-    for (let i = 1; i <= str2.length; i++) {
-      for (let j = 1; j <= str1.length; j++) {
-        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-          matrix[i][j] = matrix[i - 1][j - 1];
-        } else {
-          matrix[i][j] = Math.min(
-            matrix[i - 1][j - 1] + 1,
-            matrix[i][j - 1] + 1,
-            matrix[i - 1][j] + 1
-          );
-        }
-      }
-    }
-    
-    return matrix[str2.length][str1.length];
-  };
-
-  // Enhanced address validation function with stricter requirements
-  const validateAddress = useCallback(async (address) => {
-  if (!address || address.trim().length < 2) { // הקטנתי מ-5 ל-2 תווים
-    setAddressValidationState(null);
-    return;
-  }
-
-  const trimmedAddress = address.trim();
-  
-  // בדיקות בסיסיות יותר גמישות
-  const hasLetters = /[א-ת]|[a-zA-Z]/.test(trimmedAddress);
-  
-  // דחיית כתובות שהן רק מספרים או ריקות
-  if (!hasLetters || trimmedAddress.length < 2) {
-    setAddressValidationState('invalid');
-    setIsValidatingAddress(false);
-    return;
-  }
-
-  setIsValidatingAddress(true);
-  setAddressValidationState('validating');
-
-  try {
-    // ניסיון ראשון - חיפוש מדויק בישראל
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmedAddress)}&limit=10&accept-language=he&addressdetails=1&countrycodes=il&bounded=1&viewbox=34.2,33.3,35.9,29.5`
-    );
-    const data = await response.json();
-
-    // אם לא נמצא כלום, ננסה חיפוש רחב יותר
-    let searchResults = data;
-    if (data.length === 0) {
-      console.log('לא נמצאו תוצאות בחיפוש מצומצם, מנסה חיפוש רחב יותר...');
-      
-      // חיפוש רחב יותר ללא הגבלת תיבה
-      const broadResponse = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmedAddress + ', israel')}&limit=10&accept-language=he&addressdetails=1`
-      );
-      searchResults = await broadResponse.json();
-    }
-
-    if (searchResults.length === 0) {
-      setAddressValidationState('not_found');
-      setIsValidatingAddress(false);
-      return;
-    }
-
-    // Enhanced address matching with more flexible requirements
-    const checkAddressMatch = (result, inputAddress) => {
-      const displayName = result.display_name.toLowerCase();
-      const inputLower = inputAddress.toLowerCase().trim();
-      
-      // Must be in Israel
-      const isIsraeliAddress = displayName.includes('israel') || displayName.includes('ישראל');
-      if (!isIsraeliAddress) {
-        return { match: false, confidence: 0, reason: 'not_israel' };
-      }
-
-      // Parse input address parts
-      const inputParts = inputLower.split(/[\s,]+/).filter(part => part.length > 1);
-      const addressDetails = result.address || {};
-      
-      // Extract key components
-      const apiStreet = (addressDetails.road || '').toLowerCase();
-      const apiCity = (addressDetails.city || addressDetails.town || addressDetails.village || '').toLowerCase();
-      const apiState = (addressDetails.state || '').toLowerCase();
-      const apiHouseNumber = addressDetails.house_number;
-      
-      // Look for street number in input
-      const streetNumberMatch = inputLower.match(/(\d+)/);
-      const inputStreetNumber = streetNumberMatch ? streetNumberMatch[1] : null;
-
-      let streetMatches = 0;
-      let cityMatches = 0;
-      let numberMatches = 0;
-      let qualityScore = 0;
-      let totalChecked = 0;
-
-      // Check if input is just a city name
-      const isJustCityName = inputParts.length === 1 && !inputStreetNumber;
-
-      // More sophisticated matching
-      for (const part of inputParts) {
-        if (part.length < 2) continue;
-        totalChecked++;
-
-        // Check house number match
-        if (part.match(/^\d+$/) && inputStreetNumber) {
-          if (apiHouseNumber === part || displayName.includes(` ${part} `)) {
-            numberMatches++;
-            qualityScore += 0.3;
-          }
-          continue;
-        }
-
-        // Check city match - more flexible
-        if (apiCity) {
-          if (apiCity.includes(part) || part.includes(apiCity)) {
-            cityMatches++;
-            qualityScore += 0.6; // עיר חשובה יותר
-          } else if (levenshteinDistance(apiCity, part) <= 2 && part.length > 2) {
-            cityMatches += 0.8;
-            qualityScore += 0.5;
-          }
-        }
-
-        // Check state/region match (for cities)
-        if (apiState && (apiState.includes(part) || part.includes(apiState))) {
-          cityMatches += 0.3;
-          qualityScore += 0.2;
-        }
-
-        // Check street match - only if not just city name
-        if (apiStreet && !isJustCityName) {
-          if (apiStreet.includes(part) || part.includes(apiStreet)) {
-            streetMatches++;
-            qualityScore += 0.3;
-          } else if (levenshteinDistance(apiStreet, part) <= 2 && part.length > 2) {
-            streetMatches += 0.7;
-            qualityScore += 0.2;
-          }
-        }
-      }
-
-      // Calculate base confidence
-      const baseConfidence = totalChecked > 0 ? qualityScore / Math.max(totalChecked * 0.4, 1) : 0;
-      
-      // Different requirements for city-only vs full address
-      let finalConfidence = baseConfidence;
-      let hasRequiredElements = false;
-      
-      if (isJustCityName) {
-        // For city names, we just need a good city match
-        hasRequiredElements = cityMatches > 0.5;
-        if (hasRequiredElements) finalConfidence += 0.3;
-        if (cityMatches >= 1) finalConfidence += 0.2;
-      } else {
-        // For full addresses, we need both city and street
-        const hasRequiredCity = cityMatches > 0;
-        const hasRequiredStreet = streetMatches > 0 || apiStreet.length > 0;
-        const hasGoodStructure = addressDetails.road && (addressDetails.city || addressDetails.town || addressDetails.village);
-        
-        hasRequiredElements = hasRequiredCity && (hasRequiredStreet || hasGoodStructure);
-        
-        if (hasGoodStructure) finalConfidence += 0.15;
-        if (hasRequiredCity && hasRequiredStreet) finalConfidence += 0.2;
-        if (numberMatches > 0) finalConfidence += 0.1;
-        
-        // Less penalty for incomplete addresses if we have a city
-        if (!hasRequiredCity) finalConfidence -= 0.3;
-        if (!hasRequiredStreet && !apiStreet && !isJustCityName) finalConfidence -= 0.1;
-      }
-      
-      finalConfidence = Math.max(0, Math.min(1, finalConfidence));
-
-      // Determine if this is a good match
-      const isGoodMatch = finalConfidence >= 0.6 && hasRequiredElements;
-      const isPartialMatch = finalConfidence >= 0.3 && finalConfidence < 0.6 && hasRequiredElements;
-
-      return { 
-        match: isGoodMatch, 
-        confidence: finalConfidence,
-        isPartial: isPartialMatch,
-        hasRequiredElements,
-        isJustCity: isJustCityName,
-        reason: !hasRequiredElements ? 'incomplete' : 'ok'
-      };
-    };
-
-    // Check all results and find best matches
-    const results = searchResults.map(result => ({
-      ...result,
-      ...checkAddressMatch(result, trimmedAddress)
-    }));
-
-    // Sort by confidence and quality
-    results.sort((a, b) => {
-      if (a.hasRequiredElements !== b.hasRequiredElements) {
-        return b.hasRequiredElements ? 1 : -1;
-      }
-      return b.confidence - a.confidence;
-    });
-
-    const bestResult = results[0];
-    
-    console.log('Best result:', bestResult, 'confidence:', bestResult.confidence);
-    
-    // Decision logic with more flexible requirements
-    if (bestResult.match && bestResult.confidence >= 0.6 && bestResult.hasRequiredElements) {
-      // Excellent match - valid address
-      const position = [parseFloat(bestResult.lat), parseFloat(bestResult.lon)];
-      setValidatedPosition(position);
-      setCurrentPosition(position);
-      setAddressValidationState('valid');
-    } else if (bestResult.isPartial && bestResult.confidence >= 0.3 && bestResult.hasRequiredElements) {
-      // Partial match with good structure - suggest correction
-      const position = [parseFloat(bestResult.lat), parseFloat(bestResult.lon)];
-      
-      const formatSuggestedAddress = (result) => {
-        if (result.address) {
-          const { road, house_number, city, town, village } = result.address;
-          const parts = [];
-
-          // Build suggested address
-          if (road) {
-            parts.push(house_number ? `${road} ${house_number}` : road);
-          }
-
-          const cityName = city || town || village;
-          if (cityName) {
-            parts.push(cityName);
-          }
-
-          return parts.join(', ');
-        }
-        return result.display_name.split(',').slice(0, 3).join(',').trim();
-      };
-
-      setSuggestedAddress(formatSuggestedAddress(bestResult));
-      setValidatedPosition(position);
-      setCurrentPosition(position);
-      setAddressValidationState('suggestion');
-    } else if (bestResult.confidence >= 0.2 && bestResult.hasRequiredElements) {
-      // Low confidence but has basic structure
-      const position = [parseFloat(bestResult.lat), parseFloat(bestResult.lon)];
-      setValidatedPosition(position);
-      setCurrentPosition(position);
-      setAddressValidationState('low_confidence');
-    } else {
-      // No good match found - but give more specific feedback
-      if (searchResults.length > 0) {
-        setAddressValidationState('found_but_unclear');
-      } else {
-        setAddressValidationState('not_found');
-      }
-    }
-  } catch (error) {
-    console.error('שגיאה בוולידציה של כתובת:', error);
-    setAddressValidationState('error');
-  } finally {
-    setIsValidatingAddress(false);
-  }
-}, []);
-  // Debounced address validation
-  const debouncedValidateAddress = useCallback((address) => {
-    if (addressTimeoutRef.current) {
-      clearTimeout(addressTimeoutRef.current);
-    }
-
-    addressTimeoutRef.current = setTimeout(() => {
-      validateAddress(address);
-    }, 300); 
-  }, [validateAddress]);
-
-  // Handle accepting suggested address
-  const handleAcceptSuggestion = () => {
-    setForm(prev => ({ ...prev, location: suggestedAddress }));
-    if (validatedPosition) {
-  setCurrentPosition(validatedPosition);
-}
-  
-    setAddressValidationState('valid');
-  };
-
-  // Handle rejecting suggestion
-  const handleRejectSuggestion = () => {
-    setAddressValidationState(null);
-    setSuggestedAddress('');
-    // Focus back to the input for editing
-    if (addressInputRef.current) {
-      addressInputRef.current.focus();
-    }
-  };
-
+ 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) return;
@@ -355,10 +44,7 @@ const AddBookPage = () => {
         setUserAddress(data.address);
         setForm(prev => ({ ...prev, location: data.address }));
 
-        // Validate the user's default address
-        if (data.address) {
-          validateAddress(data.address);
-        }
+       
       })
       .catch(err => {
         console.error('❌ שגיאה:', err.message);
@@ -380,12 +66,8 @@ const AddBookPage = () => {
       setCurrentPosition([32.0853, 34.7818]);
     }
 
-    return () => {
-      if (addressTimeoutRef.current) {
-        clearTimeout(addressTimeoutRef.current);
-      }
-    };
-  }, [validateAddress]);
+   
+  }, []);
 
   const handleAutoFillBook = async () => {
     const title = form.bookTitle.trim();
@@ -475,16 +157,7 @@ const AddBookPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check if address is validated with stricter requirements
-    if (!addressValidationState || ['invalid', 'missing_city', 'missing_street', 'error'].includes(addressValidationState)) {
-      alert('יש לוודא שהכתובת תקינה וכוללת רחוב ועיר לפני שליחת הטופס');
-      return;
-    }
-
-    if (addressValidationState === 'suggestion') {
-      alert('יש לאשר או לדחות את הצעת הכתובת לפני שליחת הטופס');
-      return;
-    }
+  
 
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -538,10 +211,7 @@ const AddBookPage = () => {
         bookId: null,
       });
       setPreviewImage(null);
-      setAddressValidationState(null);
-      setSuggestedAddress('');
-      if (fileInputRef.current) fileInputRef.current.value = null;
-
+     
     } catch (err) {
       alert(`❌ שגיאה: ${err.message}`);
       console.error('Upload error:', err);
@@ -596,34 +266,10 @@ const AddBookPage = () => {
     const address = e.target.value;
     setForm(prev => ({ ...prev, location: address }));
 
-    // Reset validation state when user types
-    setAddressValidationState(null);
-    setSuggestedAddress('');
-
-    // Start validation process
-    debouncedValidateAddress(address);
+   
   };
 
-  const handleAddressKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      validateAddress(form.location);
-    }
-  };
-
-  const finishAddressEditing = () => {
-    setIsEditingLocation(false);
-    // Final validation when editing is done
-    if (form.location.trim()) {
-      validateAddress(form.location);
-    }
-  };
-
-  const updateAddressFromMap = (address) => {
-    setForm(prev => ({ ...prev, location: address }));
-    // Validate the address selected from map
-    validateAddress(address);
-  };
+  
 
   return (
     <Wrapper>
@@ -697,44 +343,33 @@ const AddBookPage = () => {
           </FormGroup>
 
           <FormGroup>
-            <Label>מיקום</Label>
-            {!isEditingLocation ? (
-              <>
-                <div>{form.location}</div>
-                <EditAddressButton type="button" onClick={() => setIsEditingLocation(true)}>שנה כתובת</EditAddressButton>
-              </>
-            ) : (
-              <>
-                <Input
-                  name="location"
-                  value={form.location}
-                  onChange={handleAddressChange}
-                  onKeyDown={handleAddressKeyDown}
-                  ref={addressInputRef}
-                  placeholder="הקלד כתובת מלאה עם רחוב ועיר (לדוגמה: רחוב הרצל 5, תל אביב)"
+            <FormGroup>
+              <Label>מיקום</Label>
+              <Input
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                placeholder="הקלד כתובת מלאה עם רחוב ועיר (לדוגמה: רחוב הרצל 5, תל אביב)"
+              />
+            </FormGroup>
+
+            {currentPosition && (
+              <MapContainer>
+                <Map
+                  position={currentPosition}
+                  setPosition={setCurrentPosition}
+                  address={form.location}
+                  updateAddress={(address) =>
+                    setForm((prev) => ({ ...prev, location: address }))
+                  }
+                  helpText="לחץ על המפה לעדכון המיקום או הקלד כתובת למעלה"
                 />
-                <ActionButton type="button" onClick={finishAddressEditing}>עדכון ואישור הכתובת</ActionButton>
-              </>
+              </MapContainer>
             )}
+
           </FormGroup>
 
-          {currentPosition && (
-            <MapContainer>
-              <Map
-                position={currentPosition}
-                setPosition={setCurrentPosition}
-                address={form.location}
-                updateAddress={updateAddressFromMap}
-                helpText="לחץ על המפה לעדכון המיקום או הקלד כתובת מלאה למעלה"
-                showValidation={true}
-                validationState={addressValidationState}
-                suggestedAddress={suggestedAddress}
-                onAcceptSuggestion={handleAcceptSuggestion}
-                onRejectSuggestion={handleRejectSuggestion}
-                isValidating={isValidatingAddress}
-              />
-            </MapContainer>
-          )}
+        
 
           <Button type="submit" style={{ marginTop: '1rem' }}>הוסף ספר</Button>
         </form>

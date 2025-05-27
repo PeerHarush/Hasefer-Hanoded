@@ -1,131 +1,67 @@
-import React, { useState, useRef, useEffect } from 'react';
+// LoginRegisterPage.jsx
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import API_BASE_URL from "../config";
+import API_BASE_URL from '../config';
 import {
   Wrapper, Card, Title, Subtitle, Tabs, Tab, FormGroup, Label,
   Input, Button, ImageUploadContainer, PreviewImage
-} from "../styles/LoginRegisterPage.styles";
-import GenresSelect from "../components/GenresSelect";
-import Map, { geocodeAddress, reverseGeocode } from '../components/Map'; // ייבוא קומפוננטת המפה
+} from '../styles/LoginRegisterPage.styles';
+import GenresSelect from '../components/GenresSelect';
+import Map from '../components/Map';
 
-// ולידציות בסיסיות
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-const isValidPhoneNumber = (phone) => /^05\d{8}$/.test(phone); // מספר ישראלי תקין
-const isValidAddress = (address) => {
-  // בדיקה פחות מחמירה כי המפה תוודא כתובות תקינות
-  return address && address.trim().length > 5;
-};
+const isValidPhoneNumber = (phone) => /^05\d{8}$/.test(phone);
 
 const LoginRegisterPage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('login');
   const [form, setForm] = useState({
-    name: '',
-    email: '',
-    password: '',
-    genres: [],
-    phonenum: '',
-    address: '',
-    profile_image: null,
+    name: '', email: '', password: '', genres: [], phonenum: '', address: '', profile_image: null
   });
-  const [mapPosition, setMapPosition] = useState(null); // מיקום במפה
   const [errors, setErrors] = useState({});
   const [previewImage, setPreviewImage] = useState(null);
+  const [mapPosition, setMapPosition] = useState(null);
   const fileInputRef = useRef(null);
-  const addressInputTimeout = useRef(null);
 
-  // כשהמשתמש מקליד כתובת, עדכן את המפה
-  const handleAddressChange = (e) => {
-    const { value } = e.target;
-    setForm(prev => ({ ...prev, address: value }));
-
-    // נקה את הטיימר הקודם אם קיים
-    if (addressInputTimeout.current) {
-      clearTimeout(addressInputTimeout.current);
-    }
-
-    // הגדר טיימר חדש לחיפוש הכתובת במפה (כדי לא לחפש בכל הקלדה)
-    addressInputTimeout.current = setTimeout(() => {
-      if (value.trim().length > 3) {
-        geocodeAddress(value)
-          .then(position => {
-            if (position) {
-              setMapPosition(position);
-            }
-          })
-          .catch(err => {
-            console.error('שגיאה בחיפוש כתובת:', err);
-          });
-      }
-    }, 800); // חכה 800 מילישניות לאחר הקלדה לפני חיפוש
-  };
-
-  // עדכון הכתובת המילולית כאשר נבחר מיקום במפה
-  const updateAddressFromMap = (address) => {
-    setForm(prev => ({ ...prev, address }));
-    
-    // נקה את שגיאת הכתובת אם קיימת
-    if (errors.address) {
-      setErrors(prev => ({ ...prev, address: '' }));
-    }
-  };
-
-  const handleChange = e => {
+  const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
     if (type === 'checkbox') {
       setForm(prev => {
         const genres = prev.genres || [];
-        return checked
-          ? { ...prev, genres: [...genres, value] }
-          : { ...prev, genres: genres.filter(g => g !== value) };
+        return checked ? { ...prev, genres: [...genres, value] } : { ...prev, genres: genres.filter(g => g !== value) };
       });
-    } else if (name === 'address') {
-      // יש לנו טיפול מיוחד לשדה הכתובת
-      handleAddressChange(e);
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
-
       if (activeTab === 'register') {
-        let errorMessage = '';
-
-        if (name === 'email' && !isValidEmail(value)) {
-          errorMessage = 'כתובת אימייל לא תקינה';
-        } else if (name === 'phonenum' && !isValidPhoneNumber(value)) {
-          errorMessage = 'מספר טלפון לא תקין (חייב להתחיל ב־05 ולהכיל 10 ספרות)';
-        }
-
-        setErrors(prev => ({ ...prev, [name]: errorMessage }));
+        const newErrors = { ...errors };
+        if (name === 'email' && !isValidEmail(value)) newErrors.email = 'כתובת אימייל לא תקינה';
+        else if (name === 'phonenum' && !isValidPhoneNumber(value)) newErrors.phonenum = 'מספר טלפון לא תקין';
+        else delete newErrors[name];
+        setErrors(newErrors);
       }
     }
   };
 
-  const handleImageChange = e => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (!file) return;
-    setForm(prev => ({ ...prev, profile_image: file }));
-    const reader = new FileReader();
-    reader.onloadend = () => setPreviewImage(reader.result);
-    reader.readAsDataURL(file);
+    if (file) {
+      setForm(prev => ({ ...prev, profile_image: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => setPreviewImage(reader.result);
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleUploadClick = () => fileInputRef.current.click();
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (activeTab === 'register') {
-      // ולידציה נוספת לפני שליחה
       const newErrors = {};
-
       if (!isValidEmail(form.email)) newErrors.email = 'כתובת אימייל לא תקינה';
-      if (!isValidPhoneNumber(form.phonenum)) newErrors.phonenum = 'מספר טלפון לא תקין (חייב להתחיל ב־05 ולהכיל 10 ספרות)';
-      if (!isValidAddress(form.address)) newErrors.address = 'נא להזין כתובת תקינה או לבחור מיקום במפה';
-
-      if (Object.keys(newErrors).length > 0) {
-        setErrors(newErrors);
-        return;
-      }
+      if (!isValidPhoneNumber(form.phonenum)) newErrors.phonenum = 'מספר טלפון לא תקין';
+      if (!form.address) newErrors.address = 'כתובת נדרשת';
+      if (Object.keys(newErrors).length > 0) return setErrors(newErrors);
 
       const fd = new FormData();
       fd.append('email', form.email);
@@ -134,20 +70,13 @@ const LoginRegisterPage = () => {
       fd.append('phone_number', form.phonenum);
       fd.append('address', form.address);
       fd.append('favorite_genres', form.genres.join(','));
-      if (form.profile_image) {
-        fd.append('avatar', form.profile_image);
-      }
-      // אם יש צורך לשמור את קואורדינטות המיקום במסד הנתונים
+      if (form.profile_image) fd.append('avatar', form.profile_image);
       if (mapPosition) {
         fd.append('latitude', mapPosition[0]);
         fd.append('longitude', mapPosition[1]);
       }
-
       try {
-        const res = await fetch(`${API_BASE_URL}/signup`, {
-          method: 'POST',
-          body: fd
-        });
+        const res = await fetch(`${API_BASE_URL}/signup`, { method: 'POST', body: fd });
         const json = await res.json();
         if (!res.ok) throw new Error(json.detail || 'Signup failed');
         alert('נרשמת בהצלחה!');
@@ -156,23 +85,17 @@ const LoginRegisterPage = () => {
         alert(err.message);
       }
     } else {
-      // login
       try {
         const res = await fetch(`${API_BASE_URL}/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: form.email,
-            password: form.password
-          })
+          body: JSON.stringify({ email: form.email, password: form.password })
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.detail || 'Login failed');
-
         localStorage.setItem('access_token', json.access_token);
         localStorage.setItem('refresh_token', json.refresh_token);
         localStorage.setItem('userLoggedIn', 'true');
-
         navigate('/');
       } catch (err) {
         alert(err.message);
@@ -184,123 +107,69 @@ const LoginRegisterPage = () => {
     <Wrapper isRegister={activeTab === 'register'}>
       <Card>
         <Title>ברוכים הבאים</Title>
-        <Subtitle>
-          {activeTab === 'login' ? 'התחבר לחשבון שלך' : 'צור חשבון חדש'}
-        </Subtitle>
+        <Subtitle>{activeTab === 'login' ? 'התחבר לחשבון שלך' : 'צור חשבון חדש'}</Subtitle>
         <Tabs>
-          <Tab active={activeTab === 'login'} onClick={() => setActiveTab('login')}>
-            התחברות
-          </Tab>
-          <Tab active={activeTab === 'register'} onClick={() => setActiveTab('register')}>
-            הרשמה
-          </Tab>
+          <Tab active={activeTab === 'login'} onClick={() => setActiveTab('login')}>התחברות</Tab>
+          <Tab active={activeTab === 'register'} onClick={() => setActiveTab('register')}>הרשמה</Tab>
         </Tabs>
-
         <form onSubmit={handleSubmit}>
           {activeTab === 'register' && (
             <FormGroup>
               <Label>שם מלא</Label>
-              <Input
-                name="name"
-                type="text"
-                value={form.name}
-                onChange={handleChange}
-                required
-              />
+              <Input name="name" value={form.name} onChange={handleChange} required />
             </FormGroup>
           )}
-
           <FormGroup>
-            <Label>דוא״ל</Label>
-            <Input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
-            {errors.email && <div style={{ color: 'red', fontSize: '0.9em' }}>{errors.email}</div>}
+            <Label>דוא"ל</Label>
+            <Input name="email" value={form.email} onChange={handleChange} required />
+            {errors.email && <div style={{ color: 'red' }}>{errors.email}</div>}
           </FormGroup>
-
           <FormGroup>
             <Label>סיסמה</Label>
-            <Input
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={handleChange}
-              required
-            />
+            <Input name="password" type="password" value={form.password} onChange={handleChange} required />
           </FormGroup>
-
           {activeTab === 'register' && (
             <>
               <FormGroup>
                 <Label>טלפון</Label>
-                <Input
-                  name="phonenum"
-                  type="text"
-                  value={form.phonenum}
-                  onChange={handleChange}
-                  required
-                />
-                {errors.phonenum && <div style={{ color: 'red', fontSize: '0.9em' }}>{errors.phonenum}</div>}
+                <Input name="phonenum" value={form.phonenum} onChange={handleChange} required />
+                {errors.phonenum && <div style={{ color: 'red' }}>{errors.phonenum}</div>}
               </FormGroup>
-
               <FormGroup>
                 <Label>כתובת</Label>
-                <Input
-                  name="address"
-                  type="text"
-                  value={form.address}
-                  onChange={handleAddressChange}
-                  required
-                  placeholder="לדוגמה: דיזנגוף 100 תל אביב"
-                />
-                {errors.address && <div style={{ color: 'red', fontSize: '0.9em' }}>{errors.address}</div>}
-                
-                {/* הוסף את קומפוננטת המפה */}
+                <Input name="address" value={form.address} onChange={handleChange} required />
+                {errors.address && <div style={{ color: 'red' }}>{errors.address}</div>}
                 <Map
                   position={mapPosition}
                   setPosition={setMapPosition}
                   address={form.address}
-                  updateAddress={updateAddressFromMap}
-                  height="250px"
-                  margin="0.5rem 0"
-                  helpText="לחץ על המפה לעדכון הכתובת או הקלד כתובת למעלה"
+                  updateAddress={(addr) => setForm(prev => ({ ...prev, address: addr }))}
+                  showValidation={true}
+                  helpText="לחץ על המפה או הקלד כתובת"
                 />
               </FormGroup>
-
               <FormGroup>
                 <Label>תמונה</Label>
                 <ImageUploadContainer onClick={handleUploadClick}>
                   {previewImage ? (
-                    <PreviewImage src={previewImage} />
+                    <PreviewImage src={previewImage} alt="תמונה" />
                   ) : (
-                    <span>לחץ להעלאת תמונה</span>
+                    <span>לחץ להעלאה</span>
                   )}
                   <Input
-                    ref={fileInputRef}
                     type="file"
+                    ref={fileInputRef}
                     name="profile_image"
-                    accept="image/*"
                     style={{ display: 'none' }}
+                    accept="image/*"
                     onChange={handleImageChange}
                   />
                 </ImageUploadContainer>
               </FormGroup>
-
-              <GenresSelect
-                selectedGenres={form.genres}
-                onChange={handleChange}
-                labelText="ז'אנרים אהובים"
-              />
+              <GenresSelect selectedGenres={form.genres} onChange={handleChange} labelText="ז'אנרים אהובים" />
             </>
           )}
-
-          <Button type="submit">
-            {activeTab === 'login' ? 'התחבר' : 'הרשמה'}
-          </Button>
+          <Button type="submit">{activeTab === 'login' ? 'התחבר' : 'הרשמה'}</Button>
         </form>
       </Card>
     </Wrapper>
