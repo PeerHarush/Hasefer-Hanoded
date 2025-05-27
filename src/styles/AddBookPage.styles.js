@@ -22,7 +22,7 @@ export const Card = styled.div`
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   width: 100%;
-  max-width: 420px;
+  max-width: 450px;
   padding: 2rem;
   box-sizing: border-box;
   overflow: hidden; 

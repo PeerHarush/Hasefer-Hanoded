@@ -70,217 +70,247 @@ const AddBookPage = () => {
 
   // Enhanced address validation function with stricter requirements
   const validateAddress = useCallback(async (address) => {
-    if (!address || address.trim().length < 5) { // Minimum 5 characters instead of 3
-      setAddressValidationState(null);
-      return;
+  if (!address || address.trim().length < 2) { // הקטנתי מ-5 ל-2 תווים
+    setAddressValidationState(null);
+    return;
+  }
+
+  const trimmedAddress = address.trim();
+  
+  // בדיקות בסיסיות יותר גמישות
+  const hasLetters = /[א-ת]|[a-zA-Z]/.test(trimmedAddress);
+  
+  // דחיית כתובות שהן רק מספרים או ריקות
+  if (!hasLetters || trimmedAddress.length < 2) {
+    setAddressValidationState('invalid');
+    setIsValidatingAddress(false);
+    return;
+  }
+
+  setIsValidatingAddress(true);
+  setAddressValidationState('validating');
+
+  try {
+    // ניסיון ראשון - חיפוש מדויק בישראל
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmedAddress)}&limit=10&accept-language=he&addressdetails=1&countrycodes=il&bounded=1&viewbox=34.2,33.3,35.9,29.5`
+    );
+    const data = await response.json();
+
+    // אם לא נמצא כלום, ננסה חיפוש רחב יותר
+    let searchResults = data;
+    if (data.length === 0) {
+      console.log('לא נמצאו תוצאות בחיפוש מצומצם, מנסה חיפוש רחב יותר...');
+      
+      // חיפוש רחב יותר ללא הגבלת תיבה
+      const broadResponse = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmedAddress + ', israel')}&limit=10&accept-language=he&addressdetails=1`
+      );
+      searchResults = await broadResponse.json();
     }
 
-    const trimmedAddress = address.trim();
-    
-    // Basic structure validation - Israeli address should have street + city/number
-    const hasNumber = /\d+/.test(trimmedAddress);
-    const hasLetters = /[א-ת]|[a-zA-Z]/.test(trimmedAddress);
-    const wordCount = trimmedAddress.split(/\s+/).length;
-    
-    // Reject addresses that are too simple or incomplete
-    if (wordCount < 2 || !hasLetters) {
-      setAddressValidationState('invalid');
+    if (searchResults.length === 0) {
+      setAddressValidationState('not_found');
       setIsValidatingAddress(false);
       return;
     }
 
-    setIsValidatingAddress(true);
-    setAddressValidationState('validating');
-
-    try {
-      // Try to geocode the exact address with more specific parameters
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmedAddress)}&limit=10&accept-language=he&addressdetails=1&countrycodes=il&bounded=1&viewbox=34.2,33.3,35.9,29.5`
-      );
-      const data = await response.json();
-
-      if (data.length === 0) {
-        setAddressValidationState('invalid');
-        setIsValidatingAddress(false);
-        return;
+    // Enhanced address matching with more flexible requirements
+    const checkAddressMatch = (result, inputAddress) => {
+      const displayName = result.display_name.toLowerCase();
+      const inputLower = inputAddress.toLowerCase().trim();
+      
+      // Must be in Israel
+      const isIsraeliAddress = displayName.includes('israel') || displayName.includes('ישראל');
+      if (!isIsraeliAddress) {
+        return { match: false, confidence: 0, reason: 'not_israel' };
       }
 
-      // Enhanced address matching with stricter requirements
-      const checkAddressMatch = (result, inputAddress) => {
-        const displayName = result.display_name.toLowerCase();
-        const inputLower = inputAddress.toLowerCase().trim();
-        
-        // Must be in Israel
-        const isIsraeliAddress = displayName.includes('israel') || displayName.includes('ישראל');
-        if (!isIsraeliAddress) {
-          return { match: false, confidence: 0, reason: 'not_israel' };
+      // Parse input address parts
+      const inputParts = inputLower.split(/[\s,]+/).filter(part => part.length > 1);
+      const addressDetails = result.address || {};
+      
+      // Extract key components
+      const apiStreet = (addressDetails.road || '').toLowerCase();
+      const apiCity = (addressDetails.city || addressDetails.town || addressDetails.village || '').toLowerCase();
+      const apiState = (addressDetails.state || '').toLowerCase();
+      const apiHouseNumber = addressDetails.house_number;
+      
+      // Look for street number in input
+      const streetNumberMatch = inputLower.match(/(\d+)/);
+      const inputStreetNumber = streetNumberMatch ? streetNumberMatch[1] : null;
+
+      let streetMatches = 0;
+      let cityMatches = 0;
+      let numberMatches = 0;
+      let qualityScore = 0;
+      let totalChecked = 0;
+
+      // Check if input is just a city name
+      const isJustCityName = inputParts.length === 1 && !inputStreetNumber;
+
+      // More sophisticated matching
+      for (const part of inputParts) {
+        if (part.length < 2) continue;
+        totalChecked++;
+
+        // Check house number match
+        if (part.match(/^\d+$/) && inputStreetNumber) {
+          if (apiHouseNumber === part || displayName.includes(` ${part} `)) {
+            numberMatches++;
+            qualityScore += 0.3;
+          }
+          continue;
         }
 
-        // Parse input address parts
-        const inputParts = inputLower.split(/[\s,]+/).filter(part => part.length > 1);
-        const addressDetails = result.address || {};
-        
-        // Extract key components
-        const apiStreet = (addressDetails.road || '').toLowerCase();
-        const apiCity = (addressDetails.city || addressDetails.town || addressDetails.village || '').toLowerCase();
-        const apiHouseNumber = addressDetails.house_number;
-        
-        // Look for street number in input
-        const streetNumberMatch = inputLower.match(/(\d+)/);
-        const inputStreetNumber = streetNumberMatch ? streetNumberMatch[1] : null;
-
-        let streetMatches = 0;
-        let cityMatches = 0;
-        let numberMatches = 0;
-        let qualityScore = 0;
-        let totalChecked = 0;
-
-        // More sophisticated matching
-        for (const part of inputParts) {
-          if (part.length < 2) continue;
-          totalChecked++;
-
-          // Check house number match
-          if (part.match(/^\d+$/) && inputStreetNumber) {
-            if (apiHouseNumber === part || displayName.includes(` ${part} `)) {
-              numberMatches++;
-              qualityScore += 0.3; // House number is important
-            }
-            continue;
-          }
-
-          // Check city match - more precise
-          if (apiCity) {
-            if (apiCity.includes(part) || part.includes(apiCity)) {
-              cityMatches++;
-              qualityScore += 0.4; // City is very important
-            } else if (levenshteinDistance(apiCity, part) <= 2 && part.length > 3) {
-              // Allow small typos in city names
-              cityMatches += 0.7;
-              qualityScore += 0.3;
-            }
-          }
-
-          // Check street match - more precise
-          if (apiStreet) {
-            if (apiStreet.includes(part) || part.includes(apiStreet)) {
-              streetMatches++;
-              qualityScore += 0.3;
-            } else if (levenshteinDistance(apiStreet, part) <= 2 && part.length > 3) {
-              // Allow small typos in street names
-              streetMatches += 0.7;
-              qualityScore += 0.2;
-            }
+        // Check city match - more flexible
+        if (apiCity) {
+          if (apiCity.includes(part) || part.includes(apiCity)) {
+            cityMatches++;
+            qualityScore += 0.6; // עיר חשובה יותר
+          } else if (levenshteinDistance(apiCity, part) <= 2 && part.length > 2) {
+            cityMatches += 0.8;
+            qualityScore += 0.5;
           }
         }
 
-        // Calculate base confidence
-        const baseConfidence = totalChecked > 0 ? qualityScore / Math.max(totalChecked * 0.4, 1) : 0;
-        
-        // Requirement checks for Israeli addresses
+        // Check state/region match (for cities)
+        if (apiState && (apiState.includes(part) || part.includes(apiState))) {
+          cityMatches += 0.3;
+          qualityScore += 0.2;
+        }
+
+        // Check street match - only if not just city name
+        if (apiStreet && !isJustCityName) {
+          if (apiStreet.includes(part) || part.includes(apiStreet)) {
+            streetMatches++;
+            qualityScore += 0.3;
+          } else if (levenshteinDistance(apiStreet, part) <= 2 && part.length > 2) {
+            streetMatches += 0.7;
+            qualityScore += 0.2;
+          }
+        }
+      }
+
+      // Calculate base confidence
+      const baseConfidence = totalChecked > 0 ? qualityScore / Math.max(totalChecked * 0.4, 1) : 0;
+      
+      // Different requirements for city-only vs full address
+      let finalConfidence = baseConfidence;
+      let hasRequiredElements = false;
+      
+      if (isJustCityName) {
+        // For city names, we just need a good city match
+        hasRequiredElements = cityMatches > 0.5;
+        if (hasRequiredElements) finalConfidence += 0.3;
+        if (cityMatches >= 1) finalConfidence += 0.2;
+      } else {
+        // For full addresses, we need both city and street
         const hasRequiredCity = cityMatches > 0;
         const hasRequiredStreet = streetMatches > 0 || apiStreet.length > 0;
         const hasGoodStructure = addressDetails.road && (addressDetails.city || addressDetails.town || addressDetails.village);
         
-        // Bonus for complete address structure
-        let finalConfidence = baseConfidence;
+        hasRequiredElements = hasRequiredCity && (hasRequiredStreet || hasGoodStructure);
+        
         if (hasGoodStructure) finalConfidence += 0.15;
         if (hasRequiredCity && hasRequiredStreet) finalConfidence += 0.2;
         if (numberMatches > 0) finalConfidence += 0.1;
         
-        // Penalty for incomplete addresses
+        // Less penalty for incomplete addresses if we have a city
         if (!hasRequiredCity) finalConfidence -= 0.3;
-        if (!hasRequiredStreet && !apiStreet) finalConfidence -= 0.2;
-        
-        finalConfidence = Math.max(0, Math.min(1, finalConfidence));
+        if (!hasRequiredStreet && !apiStreet && !isJustCityName) finalConfidence -= 0.1;
+      }
+      
+      finalConfidence = Math.max(0, Math.min(1, finalConfidence));
 
-        // Determine if this is a good match
-        const isGoodMatch = finalConfidence >= 0.7 && hasRequiredCity && hasGoodStructure;
-        const isPartialMatch = finalConfidence >= 0.4 && finalConfidence < 0.7 && hasGoodStructure;
+      // Determine if this is a good match
+      const isGoodMatch = finalConfidence >= 0.6 && hasRequiredElements;
+      const isPartialMatch = finalConfidence >= 0.3 && finalConfidence < 0.6 && hasRequiredElements;
 
-        return { 
-          match: isGoodMatch, 
-          confidence: finalConfidence,
-          isPartial: isPartialMatch,
-          hasRequiredElements: hasRequiredCity && hasGoodStructure,
-          reason: !hasRequiredCity ? 'missing_city' : !hasRequiredStreet ? 'missing_street' : 'ok'
-        };
+      return { 
+        match: isGoodMatch, 
+        confidence: finalConfidence,
+        isPartial: isPartialMatch,
+        hasRequiredElements,
+        isJustCity: isJustCityName,
+        reason: !hasRequiredElements ? 'incomplete' : 'ok'
+      };
+    };
+
+    // Check all results and find best matches
+    const results = searchResults.map(result => ({
+      ...result,
+      ...checkAddressMatch(result, trimmedAddress)
+    }));
+
+    // Sort by confidence and quality
+    results.sort((a, b) => {
+      if (a.hasRequiredElements !== b.hasRequiredElements) {
+        return b.hasRequiredElements ? 1 : -1;
+      }
+      return b.confidence - a.confidence;
+    });
+
+    const bestResult = results[0];
+    
+    console.log('Best result:', bestResult, 'confidence:', bestResult.confidence);
+    
+    // Decision logic with more flexible requirements
+    if (bestResult.match && bestResult.confidence >= 0.6 && bestResult.hasRequiredElements) {
+      // Excellent match - valid address
+      const position = [parseFloat(bestResult.lat), parseFloat(bestResult.lon)];
+      setValidatedPosition(position);
+      setCurrentPosition(position);
+      setAddressValidationState('valid');
+    } else if (bestResult.isPartial && bestResult.confidence >= 0.3 && bestResult.hasRequiredElements) {
+      // Partial match with good structure - suggest correction
+      const position = [parseFloat(bestResult.lat), parseFloat(bestResult.lon)];
+      
+      const formatSuggestedAddress = (result) => {
+        if (result.address) {
+          const { road, house_number, city, town, village } = result.address;
+          const parts = [];
+
+          // Build suggested address
+          if (road) {
+            parts.push(house_number ? `${road} ${house_number}` : road);
+          }
+
+          const cityName = city || town || village;
+          if (cityName) {
+            parts.push(cityName);
+          }
+
+          return parts.join(', ');
+        }
+        return result.display_name.split(',').slice(0, 3).join(',').trim();
       };
 
-      // Check all results and find best matches
-      const results = data.map(result => ({
-        ...result,
-        ...checkAddressMatch(result, trimmedAddress)
-      }));
-
-      // Sort by confidence and quality
-      results.sort((a, b) => {
-        if (a.hasRequiredElements !== b.hasRequiredElements) {
-          return b.hasRequiredElements ? 1 : -1;
-        }
-        return b.confidence - a.confidence;
-      });
-
-      const bestResult = results[0];
-      
-      // Decision logic with stricter requirements
-      if (bestResult.match && bestResult.confidence >= 0.7 && bestResult.hasRequiredElements) {
-        // Excellent match - valid address
-        const position = [parseFloat(bestResult.lat), parseFloat(bestResult.lon)];
-        setValidatedPosition(position);
-        setCurrentPosition(position);
-        setAddressValidationState('valid');
-      } else if (bestResult.isPartial && bestResult.confidence >= 0.5 && bestResult.hasRequiredElements) {
-        // Partial match with good structure - suggest correction
-        const position = [parseFloat(bestResult.lat), parseFloat(bestResult.lon)];
-        
-        const formatSuggestedAddress = (result) => {
-          if (result.address) {
-            const { road, house_number, city, town, village } = result.address;
-            const parts = [];
-
-            // Build suggested address
-            if (road) {
-              parts.push(house_number ? `${road} ${house_number}` : road);
-            }
-
-            const cityName = city || town || village;
-            if (cityName) {
-              parts.push(cityName);
-            }
-
-            return parts.join(', ');
-          }
-          return result.display_name.split(',').slice(0, 2).join(',').trim();
-        };
-
-        setSuggestedAddress(formatSuggestedAddress(bestResult));
-        setValidatedPosition(position);
-        setAddressValidationState('suggestion');
-      } else if (bestResult.confidence >= 0.3 && bestResult.hasRequiredElements) {
-        // Low confidence but has basic structure
-        const position = [parseFloat(bestResult.lat), parseFloat(bestResult.lon)];
-        setValidatedPosition(position);
-        setCurrentPosition(position);
-        setAddressValidationState('low_confidence');
+      setSuggestedAddress(formatSuggestedAddress(bestResult));
+      setValidatedPosition(position);
+      setCurrentPosition(position);
+      setAddressValidationState('suggestion');
+    } else if (bestResult.confidence >= 0.2 && bestResult.hasRequiredElements) {
+      // Low confidence but has basic structure
+      const position = [parseFloat(bestResult.lat), parseFloat(bestResult.lon)];
+      setValidatedPosition(position);
+      setCurrentPosition(position);
+      setAddressValidationState('low_confidence');
+    } else {
+      // No good match found - but give more specific feedback
+      if (searchResults.length > 0) {
+        setAddressValidationState('found_but_unclear');
       } else {
-        // No good match found
-        if (bestResult.reason === 'missing_city') {
-          setAddressValidationState('missing_city');
-        } else if (bestResult.reason === 'missing_street') {
-          setAddressValidationState('missing_street');
-        } else {
-          setAddressValidationState('invalid');
-        }
+        setAddressValidationState('not_found');
       }
-    } catch (error) {
-      console.error('שגיאה בוולידציה של כתובת:', error);
-      setAddressValidationState('error');
-    } finally {
-      setIsValidatingAddress(false);
     }
-  }, []);
-
+  } catch (error) {
+    console.error('שגיאה בוולידציה של כתובת:', error);
+    setAddressValidationState('error');
+  } finally {
+    setIsValidatingAddress(false);
+  }
+}, []);
   // Debounced address validation
   const debouncedValidateAddress = useCallback((address) => {
     if (addressTimeoutRef.current) {
@@ -289,13 +319,16 @@ const AddBookPage = () => {
 
     addressTimeoutRef.current = setTimeout(() => {
       validateAddress(address);
-    }, 800); // Wait 800ms after user stops typing
+    }, 300); 
   }, [validateAddress]);
 
   // Handle accepting suggested address
   const handleAcceptSuggestion = () => {
     setForm(prev => ({ ...prev, location: suggestedAddress }));
-    setCurrentPosition(validatedPosition);
+    if (validatedPosition) {
+  setCurrentPosition(validatedPosition);
+}
+  
     setAddressValidationState('valid');
   };
 
