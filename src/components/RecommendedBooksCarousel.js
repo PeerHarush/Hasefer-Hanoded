@@ -59,7 +59,11 @@ const RecommendedBooksCarousel = ({ userGenres }) => {
           {recommendedBooks.map(book => (
             <SwiperSlide key={book.id}>
               <HomeBookCard>
-                <Link to={`/book/${encodeURIComponent(book.title)}`} state={{ from: location.pathname }}>
+                    <Link
+                      to={`/book/${encodeURIComponent(book.title)}`}
+                      state={{ from: location.pathname }}
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
                   <HomeBookImage src={book.image_url.startsWith('http') ? book.image_url : `${API_BASE_URL}/${book.image_url}`} alt={book.title} />
                   <HomeBookTitle>{book.title}</HomeBookTitle>
                   <HomeBookAuthor>{book.authors || 'לא ידוע'}</HomeBookAuthor>

@@ -327,6 +327,8 @@ export const HomeBookTitle = styled.h3`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: wrap;
+  text-decoration: none;
+
 `;
 export const HomeBookAuthor = styled.p`
   color: #555;

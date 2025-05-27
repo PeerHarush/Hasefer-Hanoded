@@ -263,7 +263,7 @@ return (
 )}
 
 <ReviewSection>
-  <SectionTitle>📝 המלצות וביקורות ספרים</SectionTitle>
+  <SectionTitle>המלצות וביקורות ספרים📝</SectionTitle>
 </ReviewSection>
 
       
