@@ -11,7 +11,7 @@ export const GenresContainer = styled.div`
   flex-direction: column;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 10px;
+  padding: 5px;
   border: 1px solid #ccc;
   border-radius: 8px;
 
@@ -21,7 +21,8 @@ export const GenresContainer = styled.div`
 `;
 
 export const Label = styled.label`
-display: "flex";
-alignItems: "center";
+display: flex;
+alignItems: center;
   gap: 5px";
+  font-size: 10px;
 `;

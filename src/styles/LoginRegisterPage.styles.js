@@ -17,7 +17,7 @@ export const Card = styled.div`
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   padding: 2rem;
   width: 100%;
-  max-width: 420px;
+  max-width: 450px;
    
 
 `;
