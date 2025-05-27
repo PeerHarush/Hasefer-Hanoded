@@ -22,7 +22,7 @@ import {
   SmallButton,
 } from '../styles/BookDetailsPage.styles';
 
-import Table from 'react-bootstrap/Table'; // טבלת bootstrap להצגת העותקים
+import Table from 'react-bootstrap/Table'; 
 import BookReviews from '../components/BookReviews.js'; // ייבוא קומפוננטת הביקורות
 import Map, { geocodeAddress, calculateDistance } from '../components/Map'; // ייבוא קומפוננטת המפה וחישוב מרחק
 
