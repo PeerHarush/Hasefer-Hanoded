@@ -152,27 +152,28 @@ export const NotificationItem = styled.li`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: ${props => props.$isUnread ? '#000' : '#666'};
-  background-color: ${props => props.$isUnread ? '#f5f0e6' : 'transparent'};
+  color: ${props => props.$isUnread ? '#000' : '#999'}; /* כהה לקריאה, אפור לבקריאה */
+  background-color: ${props => props.$isUnread ? '#fdf3e5' : '#f9f9f9'}; /* רקע שונה */
   font-weight: ${props => props.$isUnread ? 'bold' : 'normal'};
   padding: 0.6rem 0.4rem;
   border-bottom: 1px solid #eee;
   margin: 0.2rem 0;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
 
   &:last-child {
     border-bottom: none;
   }
 
   &:hover {
-    background-color: ${props => props.$isUnread ? '#efe5d3' : '#f5f5f5'};
+    background-color: ${props => props.$isUnread ? '#f7e8d2' : '#efefef'};
   }
 
   &::before {
     content: '${props => props.$type === 'message' ? '💬 ' : props.$type === 'complete' ? '✅ ' : '📦 '}';
   }
 `;
+
 
 export const NotificationsScroll = styled.div`
   overflow-y: auto;

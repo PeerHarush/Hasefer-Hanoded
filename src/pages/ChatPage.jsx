@@ -14,24 +14,19 @@ import {
     SendButton,
     CalendarButton,
 } from '../styles/ChatPage.styles';
-// Import Supabase client
 import {createClient} from '@supabase/supabase-js';
 
-// --- Supabase Initialization ---
-// IMPORTANT: Using provided keys directly as requested.
-// In a production app, these should ideally come from environment variables.
+
 const supabaseUrl = "https://vbgqetdtomcesxyaijiw.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZiZ3FldGR0b21jZXN4eWFpaml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUxODQzMzIsImV4cCI6MjA2MDc2MDMzMn0.H9WJXx9V3Gga8IhFhvuo2iBfBSiXC408EpMz4Hz_y2U";
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
-// ---------------------------------
 
 
 const ChatPage = () => {
     const {chatRoomId} = useParams();
     const location = useLocation();
     const token = localStorage.getItem('access_token');
-    // Get the current user's ID for 'is_from_user' logic
     const currentUserId = localStorage.getItem('user_id');
 
     const [messages, setMessages] = useState([]);
@@ -42,7 +37,6 @@ const ChatPage = () => {
 
     const messagesEndRef = useRef(null); // Used for auto-scrolling to the bottom
 
-    // Auto-scroll to bottom whenever messages change
     useEffect(() => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({behavior: 'smooth'});
@@ -50,18 +44,17 @@ const ChatPage = () => {
     }, [messages]);
 
 
-    useEffect(() => {
-        if (location.state?.sellerName && location.state?.bookTitle) {
-            const defaultMessage = `היי ${location.state.sellerName}, אני מעוניין בספר שלך "${location.state.bookTitle}".\nמתי ניתן לתאם?`;
-            setInput(defaultMessage);
-            if (location.state.autoSend) {
-                sendInitialMessage(defaultMessage);
-            }
-        }
-    }, [location.state]);
+    // useEffect(() => {
+    //     if (location.state?.sellerName && location.state?.bookTitle) {
+    //         const defaultMessage = `היי ${location.state.sellerName}, אני מעוניין בספר שלך "${location.state.bookTitle}".\nמתי ניתן לתאם?`;
+    //         setInput(defaultMessage);
+    //         if (location.state.autoSend) {
+    //             sendInitialMessage(defaultMessage);
+    //         }
+    //     }
+    // }, [location.state]);
 
 
-    // Helper to format messages consistently from API or Realtime
     const formatMessage = (msgData, userId) => {
         return {
             id: msgData.id,
@@ -75,9 +68,7 @@ const ChatPage = () => {
     const sendInitialMessage = async (message) => {
         if (!token || !chatRoomId || !message || !currentUserId) return;
 
-        // Issue 1 Fix: Optimistic UI update.
-        // We add a temporary message with a unique client-generated ID.
-        // When the real message arrives via Realtime, we'll replace this one.
+     
         const tempId = `temp-${Date.now()}`;
         const tempMessage = {
             id: tempId,
@@ -104,7 +95,6 @@ const ChatPage = () => {
                 setMessages(prev => prev.filter(msg => msg.id !== tempId));
                 throw new Error('Failed to send initial message');
             }
-            // No need to manually add message from response, Realtime will handle it.
             setInput('');
             detectTimeInText(message);
         } catch (err) {
@@ -131,11 +121,9 @@ const ChatPage = () => {
                 if (!messagesRes.ok) throw new Error('Failed to fetch messages');
                 const messagesData = await messagesRes.json();
 
-                // Issue 2 Fix: Backend returns messages in descending order (newest first).
-                // Reverse them once to get oldest at top, newest at bottom.
+               
                 setMessages(messagesData.reverse());
 
-                // 2. Fetch chat room details (other user, book title)
                 const chatsRes = await fetch(`${API_BASE_URL}/chats`, {
                     headers: {Authorization: `Bearer ${token}`},
                 });
@@ -154,7 +142,6 @@ const ChatPage = () => {
 
         fetchInitialChatData();
 
-        // 3. Set up Supabase Realtime Subscription
         const chatChannel = supabase
             .channel(`chat_room_${chatRoomId}`) // Use a unique channel name per chat room
             .on(
@@ -168,23 +155,17 @@ const ChatPage = () => {
                 (payload) => {
                     const newRealtimeMessage = formatMessage(payload.new, currentUserId);
                     setMessages(prev => {
-                        // Issue 1 Fix: Check if this Realtime message is a confirmation of an optimistic message.
-                        // We look for a temporary message with the same content sent by the current user.
-                        // Note: This relies on message content for matching, which is a common heuristic.
-                        // A more robust solution might involve passing a client-generated temp_id to the backend.
                         if (newRealtimeMessage.is_from_user) {
                             const optimisticMessageIndex = prev.findIndex(
                                 msg => msg.is_temp && msg.message === newRealtimeMessage.message
                             );
 
                             if (optimisticMessageIndex > -1) {
-                                // Found an optimistic message, replace it with the real one
                                 const updatedMessages = [...prev];
                                 updatedMessages[optimisticMessageIndex] = newRealtimeMessage;
                                 return updatedMessages;
                             }
                         }
-                        // If not from current user, or no matching optimistic message, just add it.
                         return [...prev, newRealtimeMessage];
                     });
 
@@ -193,7 +174,6 @@ const ChatPage = () => {
             )
             .subscribe();
 
-        // Cleanup function: Unsubscribe from the channel when the component unmounts
         return () => {
             console.log(`Unsubscribing from chat room ${chatRoomId}`);
             supabase.removeChannel(chatChannel);
@@ -202,7 +182,6 @@ const ChatPage = () => {
     }, [chatRoomId, token, currentUserId]);
 
 
-    // פונקציה לזיהוי שעה בזמן אמת (existing functionality)
     const detectTimeInText = (text) => {
         const timeRegex = /(\d{1,2})(:\d{2})?/g;
         const match = [...text.matchAll(timeRegex)].find(m => {
@@ -222,9 +201,7 @@ const ChatPage = () => {
     const handleSend = useCallback(async () => {
         if (!input.trim()) return;
 
-        // Issue 1 Fix: Optimistic UI update.
-        // Add a temporary message with a unique client-generated ID before API call.
-        const tempId = `temp-${Date.now()}`;
+            const tempId = `temp-${Date.now()}`;
         const tempMessage = {
             id: tempId,
             message: input,
@@ -248,12 +225,10 @@ const ChatPage = () => {
             });
 
             if (!res.ok) {
-                // If sending fails, remove the optimistic message
                 setMessages(prev => prev.filter(msg => msg.id !== tempId));
                 throw new Error('Failed to send message');
             }
 
-            // Input will be cleared. The message will appear via the Realtime listener.
             setInput('');
 
         } catch (err) {

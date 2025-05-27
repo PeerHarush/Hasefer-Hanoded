@@ -138,30 +138,27 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    const fetchCompletedTransactions = async () => {
-      const token = localStorage.getItem('access_token');
-      if (!token) return;
+  const fetchCompletedTransactions = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
 
-      try {
-        const res = await fetch(`${API_BASE_URL}/transactions`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+    try {
+      const res = await fetch(`${API_BASE_URL}/transactions/completed`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        const data = await res.json();
-        const completed = Array.isArray(data)
-          ? data.filter(tx => tx.status === 'completed')
-          : [];
+      const data = await res.json();
 
-        setRecycledCount(completed.length);
-      } catch (err) {
-        console.error('שגיאה בטעינת עסקאות:', err);
-      }
-    };
+      // נניח ש־data הוא מערך של עסקאות שהושלמו
+      setRecycledCount(Array.isArray(data) ? data.length : 0);
+    } catch (err) {
+      console.error('שגיאה בטעינת עסקאות שהושלמו:', err);
+    }
+  };
 
-    fetchCompletedTransactions();
+  fetchCompletedTransactions();
+}, []);
 
-  }, []);
-  
   const markAsRead = (notificationId) => {
     const updatedNotifications = notifications.map(note =>
       note.id === notificationId ? { ...note, isUnread: false } : note
@@ -216,21 +213,25 @@ return (
                     <NotificationItem>אין התראות כרגע</NotificationItem>
                   ) : (
                     notifications.map((note) => (
-                      <NotificationItem
-                        key={note.id}
-                        $isUnread={note.isUnread}
-                        $type={note.type}
-                      >
-                        <div onClick={() => navigate(note.link)} style={{ flex: 1, cursor: 'pointer' }}>
-                          {note.message}
-                        </div>
+                        <NotificationItem
+  key={note.id}
+  $isUnread={note.isUnread}
+  $type={note.type}
+  onClick={() => {
+    // נווט קודם
+    navigate(note.link);
 
-                        {note.isUnread && (
-                          <MarkAsReadIcon onClick={() => markAsRead(note.id)} title="סמן כהודעה שנקראה">
-                            ✔️
-                          </MarkAsReadIcon>
-                        )}
-                      </NotificationItem>
+    if (note.isUnread) {
+      setTimeout(() => markAsRead(note.id), 300);
+    }
+  }}
+  style={{ cursor: 'pointer' }}
+>
+  <div style={{ flex: 1 }}>
+    {note.message}
+  </div>
+</NotificationItem>
+
                     ))
                   )}
                 </NotificationsScroll>
