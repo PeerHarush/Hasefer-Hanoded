@@ -23,6 +23,7 @@ import {
   NotificationsScroll, 
 } from '../styles/Home.styles';
 import BackButton from '../components/BackButton.js'
+import RecommendedBooksCarousel from '../components/RecommendedBooksCarousel';
 
 
 
@@ -37,26 +38,32 @@ function Home() {
   const [notifications, setNotifications] = useState([]);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [readNotificationIds, setReadNotificationIds] = useState([]);
+  const [favoriteGenres, setFavoriteGenres] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    
-    if (!token) return;
+  const token = localStorage.getItem('access_token');
+  if (!token) return;
 
-    fetch(`${API_BASE_URL}/users`, {
-      headers: { Authorization: `Bearer ${token}` },
+  fetch(`${API_BASE_URL}/users`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then(async res => {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'בעיה בפרופיל');
+
+      localStorage.setItem('user_id', data.id);
+      setUserName(data.full_name);
+
+      // 💡 כאן שמרי את הז'אנרים האהובים
+      const genres = Array.isArray(data.favorite_genres)
+        ? data.favorite_genres
+        : data.favorite_genres?.split(',') || [];
+      setFavoriteGenres(genres);
     })
-      .then(async res => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'בעיה בפרופיל');
-        localStorage.setItem('user_id', data.id); 
-        setUserName(data.full_name);
-
-      })
-      .catch(err => {
-        console.error('❌ שגיאה:', err.message);
-      });
-  }, []);
+    .catch(err => {
+      console.error('❌ שגיאה:', err.message);
+    });
+}, []);
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -245,15 +252,23 @@ return (
         </BannerText>
       </Banner>
 
+<BookSection>
+  <HomeBookGallery />
+</BookSection>
 
-      <BookSection>
-        <HomeBookGallery />
-      </BookSection>
+{favoriteGenres.length > 0 && (
+  <BookSection>
+    <RecommendedBooksCarousel userGenres={favoriteGenres} />
+  </BookSection>
+)}
 
-      <ReviewSection>
-        <SectionTitle>📝 המלצות וביקורות ספרים</SectionTitle>
-      </ReviewSection>
+<ReviewSection>
+  <SectionTitle>📝 המלצות וביקורות ספרים</SectionTitle>
+</ReviewSection>
+
+      
     </PageWrapper>
+    
   );
 }
 

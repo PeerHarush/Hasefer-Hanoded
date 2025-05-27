@@ -131,7 +131,7 @@ function Header() {
 
           </NavbarRight>
 
-          <NavbarLeft className="navbar-nav ms-3">
+          
 
             {/* טופס חיפוש */}
             {!hideSearch && (
@@ -209,6 +209,7 @@ function Header() {
                 )}
               </SearchContainer>
             )}
+            <NavbarLeft className="navbar-nav ms-3">
             {!isLoggedIn ? (
               <li className="nav-item">
                 <NavItemLink to="/login" $active={currentPath === "/login"}>התחברות / הרשמה</NavItemLink>

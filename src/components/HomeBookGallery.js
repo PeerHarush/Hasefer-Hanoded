@@ -8,7 +8,8 @@
     SectionTitle,
     FavoriteButton,
     CarouselWrapper,
-    SwiperNavButton
+    SwiperNavButton, 
+    GlobalSwiperStyle,
   } from '../styles/Home.styles';
 
   import { Swiper, SwiperSlide } from 'swiper/react';
@@ -87,44 +88,46 @@
 
 
 
-        <Swiper
-          modules={[Navigation]}
-          onBeforeInit={(swiper) => {
-            swiperRef.current = swiper;
-          }}
-          slidesPerView={4}
-          spaceBetween={10}
-         breakpoints={{
+<Swiper
+  className="custom-swiper"
+  modules={[Navigation]}
+  onBeforeInit={(swiper) => {
+    swiperRef.current = swiper;
+  }}
+  observer
+  observeParents
+  breakpoints={{
+    1255: { slidesPerView: 5, spaceBetween: 20 },
     1024: { slidesPerView: 4, spaceBetween: 30 },
-    768: { slidesPerView: 3, spaceBetween: 20 },
-    480: { slidesPerView: 2, spaceBetween: 15 },
-     280: { slidesPerView: 1, spaceBetween: 10 },
-     0: { slidesPerView: 1, spaceBetween: 10 },
-          }}
-        >
-          {booksArray.map((book) => (
-            <SwiperSlide key={book.id}>
-              <HomeBookCard>
-                <Link to={`/book/${encodeURIComponent(book.title)}`} state={{ from: location.pathname }} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <HomeBookImage src={book.image_url.startsWith('http') ? book.image_url : `${API_BASE_URL}/${book.image_url}`} alt={book.title} />
-                  <HomeBookTitle>{book.title}</HomeBookTitle>
-                  <HomeBookAuthor>{book.authors || 'לא ידוע'}</HomeBookAuthor>
-                </Link>
-                {isLoggedIn && (
-                  <FavoriteButton
-                    $isFavorite={favorites.has(book.id)}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleFavorite(book);
-                    }}
-                  >
-                    {favorites.has(book.id) ? <FaHeart /> : <FaRegHeart />}
-                  </FavoriteButton>
-                )}
-              </HomeBookCard>
-            </SwiperSlide>
-          ))}
-        </Swiper>
+    768:  { slidesPerView: 3, spaceBetween: 20 },
+    480:  { slidesPerView: 2, spaceBetween: 15 },
+    0:    { slidesPerView: 1, spaceBetween: 10 },
+  }}
+>
+  {booksArray.map((book) => (
+    <SwiperSlide key={book.id}>
+      <HomeBookCard>
+        <Link to={`/book/${encodeURIComponent(book.title)}`} state={{ from: location.pathname }} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <HomeBookImage src={book.image_url.startsWith('http') ? book.image_url : `${API_BASE_URL}/${book.image_url}`} alt={book.title} />
+          <HomeBookTitle>{book.title}</HomeBookTitle>
+          <HomeBookAuthor>{book.authors || 'לא ידוע'}</HomeBookAuthor>
+        </Link>
+        {isLoggedIn && (
+          <FavoriteButton
+            $isFavorite={favorites.has(book.id)}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleFavorite(book);
+            }}
+          >
+            {favorites.has(book.id) ? <FaHeart /> : <FaRegHeart />}
+          </FavoriteButton>
+        )}
+      </HomeBookCard>
+    </SwiperSlide>
+  ))}
+</Swiper>
+
 
   <SwiperNavButton className="next" onClick={() => swiperRef.current?.slideNext()}>
     <FiChevronLeft />
@@ -134,7 +137,9 @@
     );
 
     return (
+      
       <>
+        <GlobalSwiperStyle />
         <SectionTitle>📚 ספרים רנדומליים</SectionTitle>
         {renderCarousel(books, swiperRef1)}
 

@@ -68,18 +68,27 @@ export const StockTag = styled.div`
   margin: 8px 0;
 `;
 
-export const DeleteButton = styled.button`
+
+
+export const DeleteIconButton = styled.button`
   position: absolute;
-  top: 8px;
+  bottom:  20px;
   left: 8px;
   background: none;
   border: none;
-  font-size: 18px;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
   cursor: pointer;
-  color: #c0392b;
+  transition: transform 0.2s ease;
 
   &:hover {
-    color: #e74c3c;
+    transform: scale(1.2);
+    color: #a71d2a;
+  }
+
+  &:focus {
+    outline: none;
   }
 `;
 
