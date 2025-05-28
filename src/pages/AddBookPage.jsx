@@ -296,9 +296,9 @@ const fileInputRef = useRef(null);
             <Input name="bookAuthor" value={form.bookAuthor} onChange={handleChange} required />
           </FormGroup>
 
-          {showAutoFillButton && (
+          {/* {showAutoFillButton && (
             <Button type="button" onClick={handleAutoFillBook}>מצא את הספר ומלא אוטומטית</Button>
-          )}
+          )} */}
 
           <FormGroup>
             <Label>תקציר</Label>
