@@ -29,31 +29,36 @@
     const swiperRef1 = useRef();
     const swiperRef2 = useRef();
 
+    
     const isLoggedIn = !!localStorage.getItem('access_token');
 
-    useEffect(() => {
-      const fetchBooks = async () => {
-        try {
-          const [booksRes, copiesRes] = await Promise.all([
-            fetch(`${API_BASE_URL}/books`),
-            fetch(`${API_BASE_URL}/book-listings`)
-          ]);
+  useEffect(() => {
+  const fetchBooks = async () => {
+    try {
+      const [booksRes, copiesRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/books`),
+        fetch(`${API_BASE_URL}/book-listings`)
+      ]);
 
-          const booksData = await booksRes.json();
-          const copiesData = await copiesRes.json();
+      const booksData = await booksRes.json();
+      const copiesData = await copiesRes.json();
 
-          const bookIdsWithCopies = new Set(copiesData.map(copy => copy.book?.id));
-          const filteredBooks = booksData.filter(book => bookIdsWithCopies.has(book.id));
+      const bookIdsWithCopies = new Set(copiesData.map(copy => copy.book?.id));
+      const filteredBooks = booksData.filter(book => bookIdsWithCopies.has(book.id));
 
-          setBooks(booksData.slice(0, 10));
-          setBooksWithCopies(filteredBooks.slice(0, 10));
-        } catch (err) {
-          console.error('שגיאה בטעינת ספרים:', err);
-        }
-      };
+      // 🔀 ערבוב לפני החיתוך
+      const shuffledBooks = [...booksData].sort(() => Math.random() - 0.5);
+      const shuffledWithCopies = [...filteredBooks].sort(() => Math.random() - 0.5);
 
-      fetchBooks();
-    }, []);
+      setBooks(shuffledBooks.slice(0, 10));
+      setBooksWithCopies(shuffledWithCopies.slice(0, 10));
+    } catch (err) {
+      console.error('שגיאה בטעינת ספרים:', err);
+    }
+  };
+
+  fetchBooks();
+}, []);
 
     const toggleFavorite = async (book) => {
       const token = localStorage.getItem('access_token');
@@ -97,6 +102,9 @@
   observer
   observeParents
   breakpoints={{
+    2200: { slidesPerView: 7, spaceBetween: 20 },
+    1800: { slidesPerView: 6, spaceBetween: 20 },
+
     1255: { slidesPerView: 5, spaceBetween: 20 },
     1024: { slidesPerView: 4, spaceBetween: 30 },
     768:  { slidesPerView: 3, spaceBetween: 20 },

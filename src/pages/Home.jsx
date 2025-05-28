@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomeBookGallery from '../components/HomeBookGallery';
 import API_BASE_URL from '../config';
+import LatestReviewsCarousel from '../components/LatestReviewsCarousel.js';
 
 import {
   PageWrapper,
@@ -40,7 +41,49 @@ function Home() {
   const [readNotificationIds, setReadNotificationIds] = useState([]);
   const [favoriteGenres, setFavoriteGenres] = useState([]);
 
-  useEffect(() => {
+useEffect(() => {
+  const fetchLatestReviewsWithBookImages = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/comments/latest`);
+      const reviews = await res.json();
+
+      const enhancedReviews = await Promise.all(
+        reviews.map(async (review) => {
+          const bookId = review.book?.id;
+          if (!bookId) return review;
+
+          try {
+            const bookRes = await fetch(`${API_BASE_URL}/books/${bookId}`);
+            const bookData = await bookRes.json();
+
+            return {
+              ...review,
+              book: {
+                ...review.book,
+                title: bookData.title,
+                authors: bookData.authors,
+                image_url: bookData.image_url,
+              }
+            };
+          } catch (err) {
+            console.error(`שגיאה בטעינת ספר ${bookId}:`, err);
+            return review;
+          }
+        })
+      );
+
+      setLatestReviews(enhancedReviews);
+    } catch (err) {
+      console.error('שגיאה בטעינת ביקורות אחרונות:', err);
+      
+    }
+    
+  };
+
+  fetchLatestReviewsWithBookImages();
+}, []);
+
+useEffect(() => {
   const token = localStorage.getItem('access_token');
   if (!token) return;
 
@@ -136,6 +179,17 @@ function Home() {
 
     fetchNotifications();
   }, []);
+
+  const [latestReviews, setLatestReviews] = useState([]);
+
+useEffect(() => {
+  fetch(`${API_BASE_URL}/comments/latest`)
+    .then(res => res.json())
+    .then(data => setLatestReviews(data))
+    .catch(err => console.error('שגיאה בטעינת ביקורות אחרונות:', err));
+}, []);
+
+
 
   useEffect(() => {
   const fetchCompletedTransactions = async () => {
@@ -264,8 +318,10 @@ return (
 )}
 
 <ReviewSection>
-  <SectionTitle>המלצות וביקורות ספרים📝</SectionTitle>
+  <LatestReviewsCarousel reviews={latestReviews} />
 </ReviewSection>
+
+
 
       
     </PageWrapper>
