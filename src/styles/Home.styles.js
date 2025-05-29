@@ -380,10 +380,16 @@ export const MarkAllAsReadButton = styled.button`
 export const CarouselWrapper = styled.div`
   position: relative;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-bottom: 2rem;
+  width: 100%;
+  max-width: 100vw;
+  overflow: visible;
+  padding: 0 1rem;
 `;
+
+
 
 export const SwiperNavButton = styled.button`
   background: #fff8f2;
@@ -429,5 +435,16 @@ export const GlobalSwiperStyle = createGlobalStyle`
     display: flex;
     justify-content: center;
   }
+`;
+
+
+
+export const ReviewCard = styled.div`
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  width: 220px;
+  text-align: center;
 `;
 
