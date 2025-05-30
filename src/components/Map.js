@@ -1,4 +1,4 @@
-// Map.jsx - קומפוננטת מפה כוללת ולידציות
+// Map.jsx - קומפוננטת מפה מתוקנת עם סינכרון טוב יותר
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { MapContainer as LeafletMapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -22,33 +22,43 @@ L.Icon.Default.mergeOptions({
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
+
 const reverseGeocode = async (position) => {
-  const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position[0]}&lon=${position[1]}&accept-language=he`);
-  const data = await response.json();
-  if (data && data.address) {
-    const { road, house_number, city, town, village } = data.address;
-    const cityName = city || town || village || '';
-    return [road, house_number, cityName].filter(Boolean).join(' ');
+  try {
+    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position[0]}&lon=${position[1]}&accept-language=he&addressdetails=1`);
+    const data = await response.json();
+    if (data && data.address) {
+      const { road, house_number, city, town, village, suburb } = data.address;
+      const streetPart = [road, house_number].filter(Boolean).join(' ');
+      const cityPart = city || town || village || suburb || '';
+      return [streetPart, cityPart].filter(Boolean).join(', ');
+    }
+    return null;
+  } catch (err) {
+    console.error('Reverse geocode error:', err);
+    return null;
   }
-  return null;
 };
 
-const AddressValidation = ({ validationState, suggestedAddress, onAcceptSuggestion, onRejectSuggestion, isValidating }) => {
+const AddressValidation = ({ validationState, suggestedAddresses, onAcceptSuggestion, onRejectSuggestion }) => {
   switch (validationState) {
     case 'validating':
-      return <ValidationMessage type="info">מאמת כתובת... <LoadingSpinner /></ValidationMessage>;
+      return <ValidationMessage type="info">מחפש כתובת... <LoadingSpinner /></ValidationMessage>;
     case 'valid':
-      return <ValidationMessage type="success">✓ כתובת תקינה</ValidationMessage>;
-    case 'invalid':
-      return <ValidationMessage type="error">✗ כתובת לא נמצאה</ValidationMessage>;
-    case 'suggestion':
+      return <ValidationMessage type="success">✓ כתובת נמצאה</ValidationMessage>;
+    case 'not_found':
+      return <ValidationMessage type="error">✗ כתובת לא נמצאה - נסה להקליד עיר ורחוב בישראל</ValidationMessage>;
+    case 'suggestions':
       return (
         <SuggestionContainer>
-          <SuggestionText>האם התכוונת ל:</SuggestionText>
-          <SuggestedAddress>{suggestedAddress}</SuggestedAddress>
+          <SuggestionText>האם התכוונת לאחד מהמקומות הבאים:</SuggestionText>
+          {suggestedAddresses.map((addr, idx) => (
+            <SuggestedAddress key={idx} onClick={() => onAcceptSuggestion(addr)}>
+              {addr.display_name}
+            </SuggestedAddress>
+          ))}
           <ButtonGroup>
-            <ValidationButton primary onClick={onAcceptSuggestion}>כן</ValidationButton>
-            <ValidationButton onClick={onRejectSuggestion}>לא</ValidationButton>
+            <ValidationButton onClick={onRejectSuggestion}>ביטול</ValidationButton>
           </ButtonGroup>
         </SuggestionContainer>
       );
@@ -57,125 +67,331 @@ const AddressValidation = ({ validationState, suggestedAddress, onAcceptSuggesti
   }
 };
 
-const LocationMarker = ({ position, setPosition, updateAddress }) => {
+const LocationMarker = ({ position, onMapClick, skipMapMove }) => {
   const map = useMapEvents({
     click(e) {
       const coords = [e.latlng.lat, e.latlng.lng];
-      setPosition(coords);
-      map.flyTo(coords);
-      reverseGeocode(coords).then(updateAddress).catch(() => {});
+      onMapClick(coords);
     },
   });
 
+  // עדכון מיקום המפה רק כשיש שינוי במיקום
+  const prevPosition = useRef(null);
   useEffect(() => {
-    if (position) map.flyTo(position);
-  }, [position]);
+    if (position && 
+        (!prevPosition.current || 
+         prevPosition.current[0] !== position[0] || 
+         prevPosition.current[1] !== position[1])) {
+      
+      // אם מסומן לדלג על תזוזת המפה (לחיצה על המפה), לא נזיז כלום
+      if (!skipMapMove) {
+        // בדיקה אם המיקום רחוק מהמרכז הנוכחי של המפה
+        const currentCenter = map.getCenter();
+        const distance = map.distance([currentCenter.lat, currentCenter.lng], position);
+        
+        // רק אם המיקום רחוק יותר מ-500 מטר, נזיז את המפה
+        if (distance > 500) {
+          map.flyTo(position, 16, { duration: 1.5 });
+        }
+      }
+      
+      prevPosition.current = position;
+    }
+  }, [position, map, skipMapMove]);
 
   return position ? <Marker position={position} /> : null;
 };
-const Map = ({ position, setPosition, address, updateAddress, height = '300px', helpText }) => {
+
+const Map = ({ 
+  position, 
+  setPosition, 
+  address, 
+  updateAddress, 
+  height = '300px', 
+  helpText,
+  userProfileAddress = null,
+  autoLocate = true,
+  onPositionChange
+}) => {
   const [validationState, setValidationState] = useState(null);
-  const [suggestedAddress, setSuggestedAddress] = useState('');
-  const [isValidating, setIsValidating] = useState(false);
+  const [suggestedAddresses, setSuggestedAddresses] = useState([]);
+  const [isUpdatingFromMap, setIsUpdatingFromMap] = useState(false);
+  const [isUpdatingFromAddress, setIsUpdatingFromAddress] = useState(false);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [skipMapMove, setSkipMapMove] = useState(false);
+  
   const addressTimeoutRef = useRef(null);
+  const hasAutoLocated = useRef(false);
+  const lastProcessedAddress = useRef('');
 
-  const levenshteinDistance = (str1, str2) => {
-    const matrix = Array(str2.length + 1).fill().map(() => []);
-    for (let i = 0; i <= str2.length; i++) matrix[i][0] = i;
-    for (let j = 0; j <= str1.length; j++) matrix[0][j] = j;
-    for (let i = 1; i <= str2.length; i++) {
-      for (let j = 1; j <= str1.length; j++) {
-        matrix[i][j] = str2[i - 1] === str1[j - 1]
-          ? matrix[i - 1][j - 1]
-          : Math.min(matrix[i - 1][j - 1], matrix[i][j - 1], matrix[i - 1][j]) + 1;
+  // פונקציה לקבלת המיקום הנוכחי
+  const getCurrentLocationAndAddress = useCallback(async () => {
+    if (hasAutoLocated.current || !autoLocate) return;
+    
+    setIsLoadingLocation(true);
+    hasAutoLocated.current = true;
+    
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const coords = [pos.coords.latitude, pos.coords.longitude];
+          setPosition(coords);
+          
+          try {
+            const currentAddress = await reverseGeocode(coords);
+            if (currentAddress && updateAddress) {
+              setIsUpdatingFromMap(true);
+              updateAddress(currentAddress);
+              setTimeout(() => setIsUpdatingFromMap(false), 100);
+            }
+          } catch (err) {
+            console.error('שגיאה בהמרת מיקום לכתובת:', err);
+            if (userProfileAddress && updateAddress) {
+              setIsUpdatingFromMap(true);
+              updateAddress(userProfileAddress);
+              setTimeout(() => setIsUpdatingFromMap(false), 100);
+            }
+          }
+          
+          setIsLoadingLocation(false);
+        },
+        async (err) => {
+          console.error('שגיאה באחזור מיקום:', err.message);
+          
+          if (userProfileAddress) {
+            const coords = await geocodeAddress(userProfileAddress);
+            if (coords) {
+              setPosition(coords);
+            } else {
+              setPosition([32.0853, 34.7818]);
+            }
+            
+            if (updateAddress) {
+              setIsUpdatingFromMap(true);
+              updateAddress(userProfileAddress);
+              setTimeout(() => setIsUpdatingFromMap(false), 100);
+            }
+          } else {
+            setPosition([32.0853, 34.7818]);
+          }
+          
+          setIsLoadingLocation(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000
+        }
+      );
+    } else {
+      if (userProfileAddress) {
+        const coords = await geocodeAddress(userProfileAddress);
+        if (coords) {
+          setPosition(coords);
+        } else {
+          setPosition([32.0853, 34.7818]);
+        }
+        
+        if (updateAddress) {
+          setIsUpdatingFromMap(true);
+          updateAddress(userProfileAddress);
+          setTimeout(() => setIsUpdatingFromMap(false), 100);
+        }
+      } else {
+        setPosition([32.0853, 34.7818]);
       }
+      
+      setIsLoadingLocation(false);
     }
-    return matrix[str2.length][str1.length];
-  };
+  }, [autoLocate, setPosition, updateAddress, userProfileAddress]);
 
-  const validateAddress = useCallback(async (input) => {
+  // חיפוש כתובת עם הצעות
+  const searchAddress = useCallback(async (input) => {
     if (!input || input.trim().length < 2) {
       setValidationState(null);
+      setSuggestedAddresses([]);
       return;
     }
 
     const trimmed = input.trim();
-    const hasLetters = /[א-ת]|[a-zA-Z]/.test(trimmed);
-    if (!hasLetters) {
-      setValidationState('invalid');
+    
+    // אם זו אותה כתובת שכבר עיבדנו, לא נעבד שוב
+    if (trimmed === lastProcessedAddress.current) {
       return;
     }
 
-    setIsValidating(true);
+    lastProcessedAddress.current = trimmed;
     setValidationState('validating');
 
     try {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmed + ', ישראל')}&limit=10&accept-language=he&addressdetails=1`;
-      const res = await fetch(url);
-      const data = await res.json();
+      // חיפוש גמיש - תחילה עם ישראל
+      let searchQueries = [
+        `${trimmed}, ישראל`,
+        trimmed
+      ];
 
-      if (!data.length) {
+      let allResults = [];
+      
+      for (let query of searchQueries) {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&accept-language=he&addressdetails=1&countrycodes=il`;
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        if (data && data.length > 0) {
+          allResults = [...allResults, ...data];
+          break; // אם מצא תוצאות, עוצר
+        }
+      }
+
+      if (allResults.length === 0) {
         setValidationState('not_found');
+        setSuggestedAddresses([]);
         return;
       }
 
-      const result = data[0];
-      const pos = [parseFloat(result.lat), parseFloat(result.lon)];
-      setPosition(pos);
+      // סינון תוצאות כפולות
+      const uniqueResults = allResults.filter((result, index, self) => 
+        index === self.findIndex(r => r.place_id === result.place_id)
+      );
 
-      const displayName = result.display_name.toLowerCase();
-      const confidence = 1 - (levenshteinDistance(trimmed.toLowerCase(), displayName) / displayName.length);
+      const firstResult = uniqueResults[0];
+      const coords = [parseFloat(firstResult.lat), parseFloat(firstResult.lon)];
 
-      if (confidence > 0.6) {
+      // בדיקה אם התוצאה הראשונה מדויקת
+      const inputLower = trimmed.toLowerCase();
+      const displayNameLower = firstResult.display_name.toLowerCase();
+      
+      // חיפוש מילים מרכזיות
+      const inputWords = inputLower.split(/[\s,]+/).filter(word => word.length > 1);
+      const matchingWords = inputWords.filter(word => displayNameLower.includes(word));
+      const accuracy = matchingWords.length / inputWords.length;
+
+      if (accuracy >= 0.5 || uniqueResults.length === 1) {
+        // כתובת מדויקת - עדכן מיקום (ללא תזוזת מפה כי זה מחיפוש)
+        setIsUpdatingFromAddress(true);
+        setPosition(coords);
         setValidationState('valid');
-        updateAddress(result.display_name);
+        setSuggestedAddresses([]);
+        setTimeout(() => setIsUpdatingFromAddress(false), 100);
       } else {
-        setSuggestedAddress(result.display_name);
-        setValidationState('suggestion');
+        // הצג הצעות
+        setValidationState('suggestions');
+        setSuggestedAddresses(uniqueResults.slice(0, 3));
       }
 
     } catch (err) {
-      setValidationState('error');
-    } finally {
-      setIsValidating(false);
+      console.error('שגיאה בחיפוש כתובת:', err);
+      setValidationState('not_found');
+      setSuggestedAddresses([]);
     }
+  }, [setPosition]);
+
+  // טיפול בקליק על המפה - כאן נמנע מתזוזת מפה נוספת
+  const handleMapClick = useCallback(async (coords) => {
+    setIsUpdatingFromMap(true);
+    setSkipMapMove(true); // מניעת תזוזת מפה נוספת
+    setPosition(coords);
+    setPosition(coords);
+if (onPositionChange) {
+  onPositionChange(coords, { source: 'map' });
+}
+
+    try {
+      const newAddress = await reverseGeocode(coords);
+      if (newAddress && updateAddress) {
+        updateAddress(newAddress);
+        setValidationState('valid');
+      }
+    } catch (err) {
+      console.error('שגיאה בהמרת מיקום לכתובת:', err);
+    }
+    
+    setTimeout(() => {
+      setIsUpdatingFromMap(false);
+      setSkipMapMove(false); // איפוס דגל מניעת תזוזה
+    }, 1000);
   }, [setPosition, updateAddress]);
 
-  const handleAcceptSuggestion = () => {
-    updateAddress(suggestedAddress);
+  // קבלת הצעה - כאן נאפשר תזוזת מפה
+  const handleAcceptSuggestion = (suggestion) => {
+    const coords = [parseFloat(suggestion.lat), parseFloat(suggestion.lon)];
+    setIsUpdatingFromAddress(true);
+    setPosition(coords);
+    
+    if (updateAddress) {
+      updateAddress(suggestion.display_name);
+    }
+    
     setValidationState('valid');
-    setSuggestedAddress('');
+    setSuggestedAddresses([]);
+    setTimeout(() => {
+      setIsUpdatingFromAddress(false);
+    }, 1000);
   };
 
   const handleRejectSuggestion = () => {
-    setValidationState(null);
-    setSuggestedAddress('');
+    setValidationState('not_found');
+    setSuggestedAddresses([]);
   };
 
+  // אפקט לטעינת מיקום ראשוני
   useEffect(() => {
-    if (addressTimeoutRef.current) clearTimeout(addressTimeoutRef.current);
+    if (!position && autoLocate) {
+      getCurrentLocationAndAddress();
+    }
+  }, [getCurrentLocationAndAddress, position, autoLocate]);
+
+  // אפקט לחיפוש כתובת - רק כשלא מגיע מהמפה
+  useEffect(() => {
+    if (isUpdatingFromMap) return;
+
+    if (addressTimeoutRef.current) {
+      clearTimeout(addressTimeoutRef.current);
+    }
+    
     addressTimeoutRef.current = setTimeout(() => {
-      validateAddress(address);
-    }, 400);
-    return () => clearTimeout(addressTimeoutRef.current);
-  }, [address, validateAddress]);
+      searchAddress(address);
+    }, 800); // זמן המתנה ארוך יותר למניעת חיפושים מיותרים
+
+    return () => {
+      if (addressTimeoutRef.current) {
+        clearTimeout(addressTimeoutRef.current);
+      }
+    };
+  }, [address, searchAddress, isUpdatingFromMap]);
+
+  if (isLoadingLocation) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px', color: '#666', fontSize: '16px' }}>
+        <LoadingSpinner style={{ marginBottom: '10px' }} />
+        <div>מאתר את המיקום הנוכחי...</div>
+      </div>
+    );
+  }
 
   return (
     <>
-      {/* <ValidationContainer>
+      <ValidationContainer>
         <AddressValidation
           validationState={validationState}
-          suggestedAddress={suggestedAddress}
+          suggestedAddresses={suggestedAddresses}
           onAcceptSuggestion={handleAcceptSuggestion}
           onRejectSuggestion={handleRejectSuggestion}
-          isValidating={isValidating}
         />
-      </ValidationContainer> */}
+      </ValidationContainer>
 
       <MapContainerStyled height={height}>
-        <LeafletMapContainer center={position || [32.0853, 34.7818]} zoom={15} style={{ height: '100%', width: '100%' }}>
+        <LeafletMapContainer 
+          center={position || [32.0853, 34.7818]} 
+          zoom={position ? 16 : 13} 
+          style={{ height: '100%', width: '100%' }}
+        >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <LocationMarker position={position} setPosition={setPosition} updateAddress={updateAddress} />
+          <LocationMarker 
+            position={position} 
+            onMapClick={handleMapClick}
+            skipMapMove={skipMapMove}
+          />
         </LeafletMapContainer>
       </MapContainerStyled>
 
@@ -183,6 +399,7 @@ const Map = ({ position, setPosition, address, updateAddress, height = '300px', 
     </>
   );
 };
+
 // מחשבת את המרחק בין שתי נקודות גאוגרפיות (בקו אווירי, בק"מ)
 const calculateDistance = (coord1, coord2) => {
   const toRad = (value) => (value * Math.PI) / 180;
@@ -201,15 +418,24 @@ const calculateDistance = (coord1, coord2) => {
   return R * c;
 };
 
-// ממיר כתובת למיקום גאוגרפי (latitude, longitude)
+// ממיר כתובת למיקום גאוגרפי (latitude, longitude) - משופר
 const geocodeAddress = async (address) => {
   if (!address || address.trim().length < 2) return null;
 
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', ישראל')}&limit=1&accept-language=he`;
+  const trimmed = address.trim();
 
   try {
-    const res = await fetch(url);
-    const data = await res.json();
+    // חיפוש ראשון עם "ישראל"
+    let url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmed + ', ישראל')}&limit=1&accept-language=he`;
+    let res = await fetch(url);
+    let data = await res.json();
+
+    // אם לא מצא, מחפש בלי "ישראל" אבל עם קוד מדינה
+    if (!data.length) {
+      url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmed)}&limit=1&accept-language=he&countrycodes=il`;
+      res = await fetch(url);
+      data = await res.json();
+    }
 
     if (data && data.length > 0) {
       const { lat, lon } = data[0];
@@ -223,7 +449,5 @@ const geocodeAddress = async (address) => {
   }
 };
 
-// ייצוא של הפונקציות הנוספות
 export { reverseGeocode, geocodeAddress, calculateDistance };
-
 export default Map;
