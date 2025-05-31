@@ -13,14 +13,14 @@ import {
   InputRow,
   HeaderContainer,
   FieldGroup,
-FieldValue,
-    ImageContainer,
+  FieldValue,
+  ImageContainer,
   GenresListItem,
   GenreIcon,
 } from '../styles/UserProfile.styles';
 import API_BASE_URL from '../config';
 import GenresSelect from '../components/GenresSelect';
-
+import Map from '../components/Map';
 
 
 function UserProfile() {
@@ -41,6 +41,8 @@ function UserProfile() {
     favorite_genres: false,
   });
 
+  // הוספת state למפה
+  const [mapPosition, setMapPosition] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -117,6 +119,9 @@ function UserProfile() {
 
       if (!res.ok) throw new Error('עדכון נכשל');
       alert('הפרופיל נשמר בהצלחה!');
+      
+      // סגירת מצב עריכה אחרי שמירה מוצלחת
+      setEditMode(prev => ({ ...prev, address: false }));
     } catch (err) {
       console.error(err);
       alert(err.message);
@@ -124,105 +129,128 @@ function UserProfile() {
   };
 
   return (
-   <Wrapper>
-    
-  <ProfileCard>
-    <HeaderContainer>
-  <Title>הפרופיל שלי</Title>
+    <Wrapper>
+      <ProfileCard>
+        <HeaderContainer>
+          <Title>הפרופיל שלי</Title>
           <ImageContainer>
-        <ProfileImage
-          src={previewImage || '/default-profile.png'}
-          alt="Profile"
-        />
-        <EditButton onClick={handleUploadClick}>✏️</EditButton>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          style={{ display: 'none' }}
-          onChange={handleImageChange}
-        />
-      </ImageContainer>
-    </HeaderContainer>
-<InputContainer>
-     <InputRow>
-        <EditButton onClick={() => toggleEdit('full_name')}>✏️</EditButton>
-        <FieldGroup>
-          <Label>שם מלא:</Label>
-          {editMode.full_name ? (
-            <input name="full_name" value={profile.full_name} onChange={handleChange} />
+            <ProfileImage
+              src={previewImage || '/default-profile.png'}
+              alt="Profile"
+            />
+            <EditButton onClick={handleUploadClick}>✏️</EditButton>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={handleImageChange}
+            />
+          </ImageContainer>
+        </HeaderContainer>
+
+        <InputContainer>
+          <InputRow>
+            <EditButton onClick={() => toggleEdit('full_name')}>✏️</EditButton>
+            <FieldGroup>
+              <Label>שם מלא:</Label>
+              {editMode.full_name ? (
+                <input name="full_name" value={profile.full_name} onChange={handleChange} />
+              ) : (
+                <FieldValue>{profile.full_name}</FieldValue>
+              )}
+            </FieldGroup>
+          </InputRow>
+
+          <InputRow>
+            <EditButton onClick={() => toggleEdit('phone_number')}>✏️</EditButton>
+            <FieldGroup>
+              <Label>טלפון:</Label>
+              {editMode.phone_number ? (
+                <input name="phone_number" value={profile.phone_number} onChange={handleChange} />
+              ) : (
+                <FieldValue>{profile.phone_number}</FieldValue>
+              )}
+            </FieldGroup>
+          </InputRow>
+
+          <InputRow>
+            <EditButton onClick={() => toggleEdit('address')}>✏️</EditButton>
+            <FieldGroup>
+              <Label>כתובת:</Label>
+              {editMode.address ? (
+                <div style={{ width: '100%' }}>
+                  <input 
+                    name="address" 
+                    value={profile.address} 
+                    onChange={handleChange} 
+                    placeholder="הזן כתובת או לחץ על המפה"
+                    style={{ marginBottom: '10px', width: '100%' }}
+                  />
+                  <Map
+                    position={mapPosition}
+                    setPosition={setMapPosition}
+                    address={profile.address}
+                    updateAddress={(addr) => setProfile(prev => ({ ...prev, address: addr }))}
+                    userProfileAddress={profile.address}
+                    autoLocate={true}
+                    height="250px"
+                    helpText="לחץ על המפה כדי לשנות את המיקום או הקלד כתובת חדשה"
+                    onPositionChange={(coords, info) => {
+                      console.log('מיקום עודכן:', coords, info);
+                    }}
+                    onAddressValidationChange={(status) => {
+                      console.log('סטטוס וולידציה:', status);
+                    }}
+                  />
+                </div>
+              ) : (
+                <FieldValue>{profile.address || 'לא הוגדרה כתובת'}</FieldValue>
+              )}
+            </FieldGroup>
+          </InputRow>
+        </InputContainer>
+
+        <GenreList>
+          <InputRow>
+            <EditButton onClick={() => toggleEdit('favorite_genres')}>✏️</EditButton>
+            <FieldGroup>
+              <Label>ז'אנרים אהובים:</Label>
+            </FieldGroup>
+          </InputRow>
+
+          {editMode.favorite_genres ? (
+            <GenresSelect
+              selectedGenres={profile.favorite_genres}
+              onChange={(e) => {
+                const { value, checked } = e.target;
+                setProfile((prev) => {
+                  const updatedGenres = checked
+                    ? [...prev.favorite_genres, value]
+                    : prev.favorite_genres.filter((g) => g !== value);
+                  return { ...prev, favorite_genres: updatedGenres };
+                });
+              }}
+            />
+          ) : profile.favorite_genres.length > 0 ? (
+            <ul>
+              {profile.favorite_genres.map((genre, i) => (
+                <GenresListItem key={i}>
+                  <GenreIcon>📚</GenreIcon>
+                  {genre}
+                </GenresListItem>
+              ))}
+            </ul>
           ) : (
-            <FieldValue>{profile.full_name}</FieldValue>
+            <p>אין ז'אנרים אהובים</p>
           )}
-        </FieldGroup>
-      </InputRow>
-<InputRow>
-  <EditButton onClick={() => toggleEdit('phone_number')}>✏️</EditButton>
-  <FieldGroup>
-    <Label>טלפון:</Label>
-    {editMode.phone_number ? (
-      <input name="phone_number" value={profile.phone_number} onChange={handleChange} />
-    ) : (
-      <FieldValue>{profile.phone_number}</FieldValue>
-    )}
-  </FieldGroup>
-</InputRow>
+        </GenreList>
 
-<InputRow>
-  <EditButton onClick={() => toggleEdit('address')}>✏️</EditButton>
-  <FieldGroup>
-    <Label>כתובת:</Label>
-    {editMode.address ? (
-      <input name="address" value={profile.address} onChange={handleChange} />
-    ) : (
-      <FieldValue>{profile.address}</FieldValue>
-    )}
-  </FieldGroup>
-</InputRow>
-  </InputContainer>  
+        <PointsText>🪙 נקודות: {profile.points}</PointsText>
 
-    <GenreList>
-   <InputRow>
-  <EditButton onClick={() => toggleEdit('favorite_genres')}>✏️</EditButton>
-  <FieldGroup>
-    <Label>ז'אנרים אהובים:</Label>
-  </FieldGroup>
-</InputRow>
-
-
-      {editMode.favorite_genres ? (
-        <GenresSelect
-          selectedGenres={profile.favorite_genres}
-          onChange={(e) => {
-            const { value, checked } = e.target;
-            setProfile((prev) => {
-              const updatedGenres = checked
-                ? [...prev.favorite_genres, value]
-                : prev.favorite_genres.filter((g) => g !== value);
-              return { ...prev, favorite_genres: updatedGenres };
-            });
-          }}
-        />
-      ) : profile.favorite_genres.length > 0 ? (
-        <ul>
-          {profile.favorite_genres.map((genre, i) => (
-            <GenresListItem key={i}>
-              <GenreIcon>📚</GenreIcon>
-              {genre}
-            </GenresListItem>
-          ))}
-        </ul>
-      ) : (
-        <p>אין ז'אנרים אהובים</p>
-      )}
-    </GenreList>
-
-    <PointsText>🪙 נקודות: {profile.points}</PointsText>
-
-    <SaveButton onClick={handleSave}>שמור פרופיל</SaveButton>
-  </ProfileCard>
-</Wrapper>
-
+        <SaveButton onClick={handleSave}>שמור פרופיל</SaveButton>
+      </ProfileCard>
+    </Wrapper>
   );
 }
 
