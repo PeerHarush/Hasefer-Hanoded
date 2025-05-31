@@ -6,7 +6,7 @@ import {
   MapHelpText, MapContainer, ActionButton
 } from '../styles/AddBookPage.styles';
 import GenresSelect from "../components/GenresSelect";
-import Map, { geocodeAddress } from '../components/Map'; // ייבוא geocodeAddress מהמפה
+import Map from '../components/Map'; // הסרת ייבוא geocodeAddress - המפה תטפל בזה
 
 const AddBookPage = () => {
   const [form, setForm] = useState({
@@ -23,32 +23,11 @@ const AddBookPage = () => {
 
   const [bookSuggestions, setBookSuggestions] = useState([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
-  const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [userAddress, setUserAddress] = useState('');
   const [previewImage, setPreviewImage] = useState(null);
   const [showAutoFillButton, setShowAutoFillButton] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(null);
-  const [addressValidation, setAddressValidation] = useState(null); // הוספת state חסר
-
-  // פונקציה להמרת כתובת משתמש לקואורדינטות
-  const geocodeUserAddress = useCallback(async (address) => {
-    if (!address) return;
-    
-    try {
-      const coords = await geocodeAddress(address);
-      if (coords) {
-        setCurrentPosition(coords);
-      }
-    } catch (err) {
-      console.error('שגיאה בהמרת כתובת משתמש:', err);
-    }
-  }, []);
-
-  // פונקציה לטיפול בשינוי כתובת
-  const handleAddressChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-  };
+  const [addressValidation, setAddressValidation] = useState(null);
 
   // טעינת פרופיל המשתמש (רק לכתובת)
   useEffect(() => {
@@ -62,18 +41,16 @@ const AddBookPage = () => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || 'בעיה בפרופיל');
         setUserAddress(data.address || '');
-        // אם יש כתובת משתמש, נגדיר אותה כברירת מחדל
+        // אם יש כתובת משתמש ואין כתובת בטופס, נגדיר אותה כברירת מחדל
         if (data.address && !form.location) {
           setForm(prev => ({ ...prev, location: data.address }));
-          // נמיר אותה לקואורדינטות
-          geocodeUserAddress(data.address);
         }
       })
       .catch(err => {
         console.error('❌ שגיאה:', err.message);
         alert('לא ניתן לטעון את הפרופיל.');
       });
-  }, [geocodeUserAddress, form.location]);
+  }, []); // הסרת dependencies שגורמים לloop
 
   const handleAutoFillBook = async () => {
     const title = form.bookTitle.trim();
@@ -352,8 +329,8 @@ const AddBookPage = () => {
             <Input
               name="location"
               value={form.location}
-              onChange={handleAddressChange}
-              placeholder="הקלד כתובת מלאה (לדוגמה: תל אביב, רחוב הרצל 5 או רחוב הרצל 5, תל אביב)"
+              onChange={handleChange}
+              placeholder="הקלד כתובת מלאה (לדוגמה: הרצל 5, תל אביב)"
             />
 
             <MapContainer>
@@ -365,7 +342,7 @@ const AddBookPage = () => {
                   setForm(prev => ({ ...prev, location: newAddress }));
                 }}
                 userProfileAddress={userAddress}
-                autoLocate={!currentPosition}
+                autoLocate={true} // תמיד ננסה לאתר מיקום נוכחי
                 helpText="לחץ על המפה לעדכון המיקום או הקלד כתובת למעלה"
                 onAddressValidationChange={(status) => {
                   setAddressValidation(status);
