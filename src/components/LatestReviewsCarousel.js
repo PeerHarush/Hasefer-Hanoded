@@ -26,6 +26,7 @@ const LatestReviewsCarousel = ({ reviews }) => {
   const location = useLocation();
 
   if (!reviews || reviews.length === 0) return null;
+console.log('🧾 ביקורות שהתקבלו לקרוסלה:', reviews);
 
   return (
     <>
@@ -44,44 +45,52 @@ const LatestReviewsCarousel = ({ reviews }) => {
           }}
           observer
           observeParents
-          breakpoints={{
-            1255: { slidesPerView: 4, spaceBetween: 8 },
-            1024: { slidesPerView: 3, spaceBetween: 30 },
-            768:  { slidesPerView: 3, spaceBetween: 20 },
-            480:  { slidesPerView: 2, spaceBetween: 15 },
-            0:    { slidesPerView: 1, spaceBetween: 10 },
-          }}
+         breakpoints={{
+              1255: { slidesPerView: 4, spaceBetween: 30 },
+              1024: { slidesPerView: 3, spaceBetween: 20 },
+              768:  { slidesPerView: 2, spaceBetween: 20 },
+              600:  { slidesPerView: 1, spaceBetween: 15 },
+              0:    { slidesPerView: 1, spaceBetween: 10 },
+            }}
+
         >
           {reviews.map((review) => (
-            <SwiperSlide key={review.id}>
-  <HorizontalReviewCard dir="rtl">
-   <BookThumbnail
-        src={
-          review.book?.image_url
-            ? review.book.image_url.startsWith('http')
-              ? review.book.image_url
-              : `${API_BASE_URL}/${review.book.image_url}`
-            : '/default-book.jpg' // ברירת מחדל במקרה שהתמונה חסרה
-        }
-        alt={review.book?.title || 'עטיפת ספר'}
-      />
+      <SwiperSlide key={review.id}>
+  <div style={{ padding: '0 8px' }}>
+        <HorizontalReviewCard dir="rtl">
+          <Link to={`/book/${encodeURIComponent(review.book?.title || '')}`}>
+            <BookThumbnail
+              src={
+                review.book?.image_url
+                  ? (review.book.image_url.startsWith('http')
+                      ? review.book.image_url
+                      : `${API_BASE_URL}/${review.book.image_url}`)
+                  : '/default-book.jpg'
+              }
+              alt={review.book?.title || 'עטיפת ספר'}
+            />
+          </Link>
 
     <ReviewContent>
       <BookHeader>
-        <BookTitle>{review.book?.title}</BookTitle>
+        <BookTitle>{review.book?.title || 'שם ספר לא זמין'}</BookTitle>
         <BookAuthor>{review.book?.authors || 'מחבר לא ידוע'}</BookAuthor>
       </BookHeader>
+
       <ReviewerName>{review.user?.full_name || 'אנונימי'}</ReviewerName>
+
       <ReviewText>
-          {review.text ? (
-            review.text.length > 180
-              ? `${review.text.slice(0, 180)}...`
-              : review.text
-          ) : 'לא קיימת ביקורת'}
+        {review.comment_text ? (
+          review.comment_text.length > 180
+            ? `${review.comment_text.slice(0, 180)}...`
+            : review.comment_text
+        ) : 'לא קיימת ביקורת'}
       </ReviewText>
     </ReviewContent>
   </HorizontalReviewCard>
+   </div>
 </SwiperSlide>
+
 
           ))}
         </Swiper>

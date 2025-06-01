@@ -6,8 +6,7 @@ import {
   MapHelpText, MapContainer, ActionButton
 } from '../styles/AddBookPage.styles';
 import GenresSelect from "../components/GenresSelect";
-import Map, { reverseGeocode, geocodeAddress, calculateDistance } from '../components/Map';
-
+import Map from '../components/Map'; // הסרת ייבוא geocodeAddress - המפה תטפל בזה
 
 const AddBookPage = () => {
   const [form, setForm] = useState({
@@ -20,17 +19,17 @@ const AddBookPage = () => {
     location: '',
     bookImage: null,
   });
-const fileInputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const [bookSuggestions, setBookSuggestions] = useState([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
-  const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [userAddress, setUserAddress] = useState('');
   const [previewImage, setPreviewImage] = useState(null);
   const [showAutoFillButton, setShowAutoFillButton] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(null);
+  const [addressValidation, setAddressValidation] = useState(null);
 
- 
+  // טעינת פרופיל המשתמש (רק לכתובת)
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) return;
@@ -41,33 +40,17 @@ const fileInputRef = useRef(null);
       .then(async res => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || 'בעיה בפרופיל');
-        setUserAddress(data.address);
-        setForm(prev => ({ ...prev, location: data.address }));
-
-       
+        setUserAddress(data.address || '');
+        // אם יש כתובת משתמש ואין כתובת בטופס, נגדיר אותה כברירת מחדל
+        if (data.address && !form.location) {
+          setForm(prev => ({ ...prev, location: data.address }));
+        }
       })
       .catch(err => {
         console.error('❌ שגיאה:', err.message);
         alert('לא ניתן לטעון את הפרופיל.');
       });
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          const coords = [pos.coords.latitude, pos.coords.longitude];
-          setCurrentPosition(coords);
-        },
-        err => {
-          console.error('שגיאה באחזור מיקום:', err.message);
-          setCurrentPosition([32.0853, 34.7818]);
-        }
-      );
-    } else {
-      setCurrentPosition([32.0853, 34.7818]);
-    }
-
-   
-  }, []);
+  }, []); // הסרת dependencies שגורמים לloop
 
   const handleAutoFillBook = async () => {
     const title = form.bookTitle.trim();
@@ -157,11 +140,15 @@ const fileInputRef = useRef(null);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-  
-
     const token = localStorage.getItem('access_token');
     if (!token) {
       alert('יש להתחבר כדי להעלות ספר');
+      return;
+    }
+
+    // וידוא שהכתובת תקינה
+    if (addressValidation === 'invalid') {
+      alert('נא לוודא שהכתובת שהוזנה תקינה');
       return;
     }
 
@@ -211,7 +198,9 @@ const fileInputRef = useRef(null);
         bookId: null,
       });
       setPreviewImage(null);
-     
+      setAddressValidation(null);
+      setCurrentPosition(null);
+
     } catch (err) {
       alert(`❌ שגיאה: ${err.message}`);
       console.error('Upload error:', err);
@@ -262,15 +251,6 @@ const fileInputRef = useRef(null);
     }
   };
 
-  const handleAddressChange = (e) => {
-    const address = e.target.value;
-    setForm(prev => ({ ...prev, location: address }));
-
-   
-  };
-
-  
-
   return (
     <Wrapper>
       <Card>
@@ -296,9 +276,11 @@ const fileInputRef = useRef(null);
             <Input name="bookAuthor" value={form.bookAuthor} onChange={handleChange} required />
           </FormGroup>
 
-          {/* {showAutoFillButton && (
-            <Button type="button" onClick={handleAutoFillBook}>מצא את הספר ומלא אוטומטית</Button>
-          )} */}
+          {showAutoFillButton && (
+            <ActionButton type="button" onClick={handleAutoFillBook}>
+              🔄 מלא פרטים אוטומטית
+            </ActionButton>
+          )}
 
           <FormGroup>
             <Label>תקציר</Label>
@@ -343,33 +325,31 @@ const fileInputRef = useRef(null);
           </FormGroup>
 
           <FormGroup>
-            <FormGroup>
-              <Label>מיקום</Label>
-              <Input
-                name="location"
-                value={form.location}
-                onChange={handleChange}
-                placeholder="הקלד כתובת מלאה עם רחוב ועיר (לדוגמה: רחוב הרצל 5, תל אביב)"
+            <Label>מיקום</Label>
+            <Input
+              name="location"
+              value={form.location}
+              onChange={handleChange}
+              placeholder="הקלד כתובת מלאה (לדוגמה: הרצל 5, תל אביב)"
+            />
+
+            <MapContainer>
+              <Map
+                position={currentPosition}
+                setPosition={setCurrentPosition}
+                address={form.location}
+                updateAddress={(newAddress) => {
+                  setForm(prev => ({ ...prev, location: newAddress }));
+                }}
+                userProfileAddress={userAddress}
+                autoLocate={true} // תמיד ננסה לאתר מיקום נוכחי
+                helpText="לחץ על המפה לעדכון המיקום או הקלד כתובת למעלה"
+                onAddressValidationChange={(status) => {
+                  setAddressValidation(status);
+                }}
               />
-            </FormGroup>
-
-            {currentPosition && (
-              <MapContainer>
-                <Map
-                  position={currentPosition}
-                  setPosition={setCurrentPosition}
-                  address={form.location}
-                  updateAddress={(address) =>
-                    setForm((prev) => ({ ...prev, location: address }))
-                  }
-                  helpText="לחץ על המפה לעדכון המיקום או הקלד כתובת למעלה"
-                />
-              </MapContainer>
-            )}
-
+            </MapContainer>
           </FormGroup>
-
-        
 
           <Button type="submit" style={{ marginTop: '1rem' }}>הוסף ספר</Button>
         </form>

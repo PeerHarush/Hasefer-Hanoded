@@ -22,7 +22,7 @@ import {
   SmallButton,
 } from '../styles/BookDetailsPage.styles';
 
-import Table from 'react-bootstrap/Table'; 
+import Table from 'react-bootstrap/Table';
 import BookReviews from '../components/BookReviews.js'; // ייבוא קומפוננטת הביקורות
 import Map, { geocodeAddress, calculateDistance } from '../components/Map'; // ייבוא קומפוננטת המפה וחישוב מרחק
 
@@ -41,7 +41,7 @@ const BookDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-const [showAddressInput, setShowAddressInput] = useState(false);
+  const [showAddressInput, setShowAddressInput] = useState(false);
 
 
   // משתנים חדשים למיקום המשתמש וחישוב מרחקים
@@ -65,10 +65,10 @@ const [showAddressInput, setShowAddressInput] = useState(false);
     'Used - Poor': 'משומש',
   };
   useEffect(() => {
-  if (book && copies.length > 0 && !userPosition) {
-    getCurrentPosition();
-  }
-}, [book, copies]);
+    if (book && copies.length > 0 && !userPosition) {
+      getCurrentPosition();
+    }
+  }, [book, copies]);
 
 
   useEffect(() => {
@@ -287,7 +287,7 @@ const [showAddressInput, setShowAddressInput] = useState(false);
         <Wrapper>
           <BookInfo>
             <h1>{errorMessage}</h1>
-            </BookInfo>
+          </BookInfo>
         </Wrapper>
       </PageContainer>
     );
@@ -307,13 +307,13 @@ const [showAddressInput, setShowAddressInput] = useState(false);
 
   // סינון העותקים שקשורים רק לספר הזה
   const relevantCopies = copies.filter(copy => copy.book?.id === book.id);
-const sortedCopies = [...relevantCopies].sort((a, b) => {
-  const distA = parseFloat(distanceMap[a.id]) || Infinity;
-  const distB = parseFloat(distanceMap[b.id]) || Infinity;
-  return distA - distB; // מהקרוב לרחוק
-});
+  const sortedCopies = [...relevantCopies].sort((a, b) => {
+    const distA = parseFloat(distanceMap[a.id]) || Infinity;
+    const distB = parseFloat(distanceMap[b.id]) || Infinity;
+    return distA - distB; // מהקרוב לרחוק
+  });
 
-  
+
   return (
     <PageContainer>
 
@@ -333,73 +333,96 @@ const sortedCopies = [...relevantCopies].sort((a, b) => {
             </MobileButtonsContainer>
           )}
 
-         {relevantCopies.length > 0 && (
-  <>
-            <h3>עותקים זמינים</h3>
-            <Table striped bordered hover responsive>
-              <thead>
-                <tr>
-                  <th>מצב הספר</th>
-                  <th>מחיר</th>
-                  <th>מיקום</th>
-                  <th>מרחק</th>
-                  <th>שריון</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedCopies.map(copy => (
-                  <tr key={copy.id}>
-                    <td>{conditionTranslations[copy.condition]}</td>
-                    <td>{copy.price ? `${copy.price} ₪` : 'חינם'}</td>
-                    <td>{copy.location}</td>
-                    <td>{`${distanceMap[copy.id]} ק"מ`}</td>
-                    <td>
-                      {reservedCopies.has(copy.id) ? (
-                        <span style={{ textDecoration: 'underline' }}>נשמר 📌</span>
-                      ) : (
-                        <span
-                          onClick={() => handleReserveAndStartChat(copy)}
-                          style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}
-                        >
-                          לשריון ✅
-                        </span>
-                      )}
-                    </td>
+          {relevantCopies.length > 0 && (
+            <>
+              <h3>עותקים זמינים</h3>
+              <Table striped bordered hover responsive>
+                <thead>
+                  <tr>
+                    <th>מצב הספר</th>
+                    <th>מחיר</th>
+                    <th>מיקום</th>
+                    <th>מרחק</th>
+                    <th>שריון</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
+                </thead>
+                <tbody>
+                  {sortedCopies.map(copy => (
+                    <tr key={copy.id}>
+                      <td>{conditionTranslations[copy.condition]}</td>
+                      <td>{copy.price ? `${copy.price} ₪` : 'חינם'}</td>
+                      <td>{copy.location}</td>
+                    <td>
+                    {distanceMap[copy.id] !== undefined
+                      ? `${distanceMap[copy.id]} ק"מ`
+                      : '—'}
+                  </td>
 
-            {/* כפתורים לחישוב מרחק */}
-<MapControlsWrapper>
-  <ControlsContainer>
-   {!showAddressInput && (
-  <SmallButton onClick={() => setShowAddressInput(true)}>
-    חיפוש לפי מרחק ממיקום שונה
-  </SmallButton>
-)}
 
-{showAddressInput && (
-  <InputRow>
-    <AddressInput
-      type="text"
-      value={userAddress}
-      onChange={(e) => setUserAddress(e.target.value)}
-      placeholder="הזן כתובת"
-    />
-    <SmallButton onClick={handleAddressSearch}>חפש</SmallButton>
-    <SmallButton onClick={() => setShowAddressInput(false)}>סגור חיפוש</SmallButton>
-  </InputRow>
-)}
+                      <td>
+                        {reservedCopies.has(copy.id) ? (
+                          <span style={{ textDecoration: 'underline' }}>נשמר 📌</span>
+                        ) : (
+                          <span
+                            onClick={() => handleReserveAndStartChat(copy)}
+                            style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}
+                          >
+                            לשריון ✅
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
 
-  
-    <SmallButton onClick={() => setShowMap(!showMap)}>
-      {showMap ? 'הסתר מפה' : 'הצג מפה'}
-    </SmallButton>
-  </ControlsContainer>
-</MapControlsWrapper>
-         </>
-        )}
+              {/* כפתורים לחישוב מרחק */}
+              <MapControlsWrapper>
+                <ControlsContainer>
+                  {!showAddressInput && (
+                    <SmallButton onClick={() => setShowAddressInput(true)}>
+                      חיפוש לפי מרחק ממיקום שונה
+                    </SmallButton>
+                  )}
+
+                  {showAddressInput && (
+                    <InputRow>
+                      <AddressInput
+                        type="text"
+                        value={userAddress}
+                        onChange={(e) => setUserAddress(e.target.value)}
+                        placeholder="הזן כתובת"
+                      />
+                      <SmallButton onClick={handleAddressSearch}>חפש</SmallButton>
+                      <SmallButton onClick={() => setShowAddressInput(false)}>סגור חיפוש</SmallButton>
+                    </InputRow>
+                  )}
+
+
+                  <SmallButton onClick={() => setShowMap(!showMap)}>
+                    {showMap ? 'הסתר מפה' : 'הצג מפה'}
+                  </SmallButton>
+                </ControlsContainer>
+                {showMap && (
+                  <MapWrapper>
+                    <Map
+                      position={userPosition}
+                      setPosition={(pos) => {
+                        setUserPosition(pos);
+                        updateDistances(pos); // חישוב מחודש של המרחקים
+                      }}
+                      address={userAddress}
+                      updateAddress={(newAddress) => setUserAddress(newAddress)}
+                      userProfileAddress={userAddress} // משמש כברירת מחדל אם אין מיקום
+                      autoLocate={!userPosition && !userAddress}
+                      helpText="לחץ על המפה לעדכון המיקום או הקלד כתובת"
+                    />
+                  </MapWrapper>
+                )}
+
+              </MapControlsWrapper>
+            </>
+          )}
 
           {/* הוספת ביקורות */}
           <h3> ביקורות </h3>

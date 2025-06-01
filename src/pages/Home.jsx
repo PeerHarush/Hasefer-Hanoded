@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomeBookGallery from '../components/HomeBookGallery';
+import TopUsersLeaderboard from '../components/TopUsersLeaderboard';
 import API_BASE_URL from '../config';
 import LatestReviewsCarousel from '../components/LatestReviewsCarousel.js';
+import UserProgressBar from '../components/UserProgressBar';
 
 import {
   PageWrapper,
@@ -12,18 +14,18 @@ import {
   NotificationBadge,
   BannerText,
   Banner,
-  SectionTitle,
   BookSection,
   ReviewSection,
   NotificationsWrapper,
-  MarkAsReadIcon,
   MarkAllAsReadButton,
   NotificationsBox, 
   NotificationItem,
   NotificationTitle, 
-  NotificationsScroll, 
+  NotificationsScroll,
+  PointsText,
 } from '../styles/Home.styles';
-import BackButton from '../components/BackButton.js'
+
+import PointsInfoPopup from '../components/PointsInfoPopup';
 import RecommendedBooksCarousel from '../components/RecommendedBooksCarousel';
 
 
@@ -31,6 +33,8 @@ import RecommendedBooksCarousel from '../components/RecommendedBooksCarousel';
 
 
 function Home() {
+  const [userPoints, setUserPoints] = useState(0);
+
   const navigate = useNavigate();
   const [userName, setUserName] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,46 +46,33 @@ function Home() {
   const [favoriteGenres, setFavoriteGenres] = useState([]);
 
 useEffect(() => {
-  const fetchLatestReviewsWithBookImages = async () => {
+  const fetchLatestReviewsWithBookData = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/comments/latest`);
       const reviews = await res.json();
 
-      const enhancedReviews = await Promise.all(
-        reviews.map(async (review) => {
-          const bookId = review.book?.id;
-          if (!bookId) return review;
+      // שליפת כל הספרים בבת אחת
+      const booksRes = await fetch(`${API_BASE_URL}/books`);
+      const allBooks = await booksRes.json();
 
-          try {
-            const bookRes = await fetch(`${API_BASE_URL}/books/${bookId}`);
-            const bookData = await bookRes.json();
+      const enhancedReviews = reviews.map((review) => {
+        const bookData = allBooks.find(book => book.id === review.book_id);
 
-            return {
-              ...review,
-              book: {
-                ...review.book,
-                title: bookData.title,
-                authors: bookData.authors,
-                image_url: bookData.image_url,
-              }
-            };
-          } catch (err) {
-            console.error(`שגיאה בטעינת ספר ${bookId}:`, err);
-            return review;
-          }
-        })
-      );
+        return {
+          ...review,
+          book: bookData // יכול להיות undefined אם לא נמצא
+        };
+      });
 
       setLatestReviews(enhancedReviews);
     } catch (err) {
-      console.error('שגיאה בטעינת ביקורות אחרונות:', err);
-      
+      console.error('שגיאה בטעינת ביקורות או ספרים:', err);
     }
-    
   };
 
-  fetchLatestReviewsWithBookImages();
+  fetchLatestReviewsWithBookData();
 }, []);
+
 
 useEffect(() => {
   const token = localStorage.getItem('access_token');
@@ -96,8 +87,8 @@ useEffect(() => {
 
       localStorage.setItem('user_id', data.id);
       setUserName(data.full_name);
+      setUserPoints(data.points || 0);  
 
-      // 💡 כאן שמרי את הז'אנרים האהובים
       const genres = Array.isArray(data.favorite_genres)
         ? data.favorite_genres
         : data.favorite_genres?.split(',') || [];
@@ -107,6 +98,7 @@ useEffect(() => {
       console.error('❌ שגיאה:', err.message);
     });
 }, []);
+
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -182,13 +174,6 @@ useEffect(() => {
 
   const [latestReviews, setLatestReviews] = useState([]);
 
-useEffect(() => {
-  fetch(`${API_BASE_URL}/comments/latest`)
-    .then(res => res.json())
-    .then(data => setLatestReviews(data))
-    .catch(err => console.error('שגיאה בטעינת ביקורות אחרונות:', err));
-}, []);
-
 
 
   useEffect(() => {
@@ -244,72 +229,86 @@ useEffect(() => {
 };
 return (
   <PageWrapper>
-    <TopBar>
-      <UserGreeting>
-        {userName ? `שלום, ${userName}! 🌸` : 'שלום אורח 🌸'}
-      </UserGreeting>
+   <TopBar>
+  <UserGreeting>
+    {userName ? `שלום, ${userName}! 🌸` : 'שלום אורח 🌸'}
+  </UserGreeting>
 
-        {userName && (
-          <NotificationsWrapper>
-            <NotificationIcon onClick={() => setShowNotifications(prev => !prev)}>
-              🔔
-              {unreadNotifications > 0 && (
-                <NotificationBadge>{unreadNotifications}</NotificationBadge>
-              )}
-            </NotificationIcon>
+  {userName && (
+    <NotificationsWrapper>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+       <PointsText>
+        {userPoints} נקודות 🪙
+          <PointsInfoPopup />
 
-            {showNotifications && (
-              <NotificationsBox>
-                <NotificationTitle>📬 ההתראות שלך:</NotificationTitle>
-                
-                <NotificationsScroll>
-                  {notifications.length === 0 ? (
-                    <NotificationItem>אין התראות כרגע</NotificationItem>
-                  ) : (
-                    notifications.map((note) => (
-                        <NotificationItem
-  key={note.id}
-  $isUnread={note.isUnread}
-  $type={note.type}
-  onClick={() => {
-    // נווט קודם
-    navigate(note.link);
+      </PointsText>
+      
 
-    if (note.isUnread) {
-      setTimeout(() => markAsRead(note.id), 300);
-    }
-  }}
-  style={{ cursor: 'pointer' }}
->
-  <div style={{ flex: 1 }}>
-    {note.message}
-  </div>
-</NotificationItem>
 
-                    ))
-                  )}
-                </NotificationsScroll>
+        <NotificationIcon onClick={() => setShowNotifications(prev => !prev)}>
+          🔔
+          {unreadNotifications > 0 && (
+            <NotificationBadge>{unreadNotifications}</NotificationBadge>
+          )}
+        </NotificationIcon>
+      </div>
 
-                {unreadNotifications > 2 && (
-                  <MarkAllAsReadButton onClick={markAllAsRead}>
-                    ✔️ סמן את כל ההתראות כנקראו
-                  </MarkAllAsReadButton>
-                )}
-              </NotificationsBox>
+      {showNotifications && (
+        <NotificationsBox>
+          <NotificationTitle>📬 ההתראות שלך:</NotificationTitle>
+          <NotificationsScroll>
+            {notifications.length === 0 ? (
+              <NotificationItem>אין התראות כרגע</NotificationItem>
+            ) : (
+              notifications.map((note) => (
+                <NotificationItem
+                  key={note.id}
+                  $isUnread={note.isUnread}
+                  $type={note.type}
+                  onClick={() => {
+                    navigate(note.link);
+                    if (note.isUnread) {
+                      setTimeout(() => markAsRead(note.id), 300);
+                    }
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div style={{ flex: 1 }}>{note.message}</div>
+                </NotificationItem>
+              ))
             )}
-          </NotificationsWrapper>
-        )}
-      </TopBar>
+          </NotificationsScroll>
+
+          {unreadNotifications > 2 && (
+            <MarkAllAsReadButton onClick={markAllAsRead}>
+              ✔️ סמן את כל ההתראות כנקראו
+            </MarkAllAsReadButton>
+          )}
+        </NotificationsBox>
+      )}
+    </NotificationsWrapper>
+  )}
+</TopBar>
+
 
       <Banner>
         <BannerText>
           עד כה הצלחנו להעביר הלאה {recycledCount} ספרים! תודה שאתם חלק מהקהילה 💛
         </BannerText>
       </Banner>
+    <BookSection>
+      <TopUsersLeaderboard />
+    </BookSection>
+    <BookSection>
+    {userName && (
+      <UserProgressBar userPoints={userPoints} />
+    )}</BookSection>
+    
 
 <BookSection>
   <HomeBookGallery />
 </BookSection>
+
 
 {favoriteGenres.length > 0 && (
   <BookSection>

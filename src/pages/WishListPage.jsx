@@ -78,54 +78,55 @@ const renderTooltip = (props) => (
     return copies.some(copy => copy.book?.id === bookId);
   };
 
-  return (
-    <Wrapper>
+ return (
+  <Wrapper>
+    <Title>רשימת המשאלות שלי</Title>
 
-  <Title>רשימת המשאלות שלי</Title>
-  <CardsContainer>
-
+    {books.length === 0 ? (
+      <p >
+        עוד לא הוספת ספרים לרשימת המשאלות, <Link to="/AllBooks">עיין בספרים</Link>
+      </p>
+    ) : (
+      <CardsContainer>
         {books.map((book) => (
-<Link 
-  to={`/book/${encodeURIComponent(book.title)}`} 
-  style={{ textDecoration: 'none', color: 'inherit' }}
-  key={book.id}
->
-  <BookCard>
-<OverlayTrigger placement="top" overlay={renderTooltip}>
-  <FavoriteButton
-    $isFavorite={true}
-    onClick={(e) => {
-      e.preventDefault(); 
-      handleDelete(book.id); 
-    }}
-  >
-    <FaHeart />
-  </FavoriteButton>
-</OverlayTrigger>
+          <Link 
+            to={`/book/${encodeURIComponent(book.title)}`} 
+            style={{ textDecoration: 'none', color: 'inherit' }}
+            key={book.id}
+          >
+            <BookCard>
+              <OverlayTrigger placement="top" overlay={renderTooltip}>
+                <FavoriteButton
+                  $isFavorite={true}
+                  onClick={(e) => {
+                    e.preventDefault(); 
+                    handleDelete(book.id); 
+                  }}
+                >
+                  <FaHeart />
+                </FavoriteButton>
+              </OverlayTrigger>
 
-
-    <img
-      src={book.image_url}
-      alt={book.title}
-      onError={(e) => { e.target.src = '/images/default-book.png'; }}
-    />
-    <div className="book-details">
-      <h3>{book.title}</h3>
-      <p>{book.authors}</p>
-      <StockTag $inStock={isInStock(book.id)}>
-        {isInStock(book.id) ? 'במלאי' : 'לא במלאי'}
-      </StockTag>
-      {/* את זה אפשר למחוק או להשאיר */}
-      {/* <div className="view-link">לפרטי הספר</div> */}
-    </div>
-  </BookCard>
-</Link>
-
-
+              <img
+                src={book.image_url}
+                alt={book.title}
+                onError={(e) => { e.target.src = '/images/default-book.png'; }}
+              />
+              <div className="book-details">
+                <h3>{book.title}</h3>
+                <p>{book.authors}</p>
+                <StockTag $inStock={isInStock(book.id)}>
+                  {isInStock(book.id) ? 'במלאי' : 'לא במלאי'}
+                </StockTag>
+              </div>
+            </BookCard>
+          </Link>
         ))}
       </CardsContainer>
-    </Wrapper>
-  );
+    )}
+  </Wrapper>
+);
+
 }
 
 export default WishList;
