@@ -353,10 +353,10 @@ const BookDetails = () => {
                       <td>{copy.price ? `${copy.price} ₪` : 'חינם'}</td>
                       <td>{copy.location}</td>
                     <td>
-  {distanceMap[copy.id] !== undefined
-    ? `${distanceMap[copy.id]} ק"מ`
-    : '—'}
-</td>
+                    {distanceMap[copy.id] !== undefined
+                      ? `${distanceMap[copy.id]} ק"מ`
+                      : '—'}
+                  </td>
 
 
                       <td>

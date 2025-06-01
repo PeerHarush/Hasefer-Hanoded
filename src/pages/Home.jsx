@@ -43,46 +43,33 @@ function Home() {
   const [favoriteGenres, setFavoriteGenres] = useState([]);
 
 useEffect(() => {
-  const fetchLatestReviewsWithBookImages = async () => {
+  const fetchLatestReviewsWithBookData = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/comments/latest`);
       const reviews = await res.json();
 
-      const enhancedReviews = await Promise.all(
-        reviews.map(async (review) => {
-          const bookId = review.book?.id;
-          if (!bookId) return review;
+      // שליפת כל הספרים בבת אחת
+      const booksRes = await fetch(`${API_BASE_URL}/books`);
+      const allBooks = await booksRes.json();
 
-          try {
-            const bookRes = await fetch(`${API_BASE_URL}/books/${bookId}`);
-            const bookData = await bookRes.json();
+      const enhancedReviews = reviews.map((review) => {
+        const bookData = allBooks.find(book => book.id === review.book_id);
 
-            return {
-              ...review,
-              book: {
-                ...review.book,
-                title: bookData.title,
-                authors: bookData.authors,
-                image_url: bookData.image_url,
-              }
-            };
-          } catch (err) {
-            console.error(`שגיאה בטעינת ספר ${bookId}:`, err);
-            return review;
-          }
-        })
-      );
+        return {
+          ...review,
+          book: bookData // יכול להיות undefined אם לא נמצא
+        };
+      });
 
       setLatestReviews(enhancedReviews);
     } catch (err) {
-      console.error('שגיאה בטעינת ביקורות אחרונות:', err);
-      
+      console.error('שגיאה בטעינת ביקורות או ספרים:', err);
     }
-    
   };
 
-  fetchLatestReviewsWithBookImages();
+  fetchLatestReviewsWithBookData();
 }, []);
+
 
 useEffect(() => {
   const token = localStorage.getItem('access_token');
@@ -182,13 +169,6 @@ useEffect(() => {
   }, []);
 
   const [latestReviews, setLatestReviews] = useState([]);
-
-useEffect(() => {
-  fetch(`${API_BASE_URL}/comments/latest`)
-    .then(res => res.json())
-    .then(data => setLatestReviews(data))
-    .catch(err => console.error('שגיאה בטעינת ביקורות אחרונות:', err));
-}, []);
 
 
 
