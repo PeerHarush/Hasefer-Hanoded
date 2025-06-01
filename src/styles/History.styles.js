@@ -5,8 +5,14 @@ import styled from "styled-components";
 export const PageContainer = styled.div`
   max-width: 700px;
   margin: 0 auto;
-  
+  padding: 1rem;
+
+  @media (max-width: 768px) {
+    max-width: 400px;
+    padding: 0.5rem;
+  }
 `;
+
 
 export const Title = styled.h2`
   text-align: center;
@@ -39,6 +45,11 @@ export const ActivityItem = styled.li`
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   direction: rtl;
   line-height: 1.6;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
 `;
 
 export const ActivityDate = styled.div`

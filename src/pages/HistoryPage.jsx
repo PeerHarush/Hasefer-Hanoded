@@ -23,92 +23,105 @@ const UserActivityPage = () => {
   const token = localStorage.getItem('access_token');
   const userId = localStorage.getItem('user_id');
 
-  useEffect(() => {
-    const fetchActivities = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const [transactionsRes, listingsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/transactions`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_BASE_URL}/book-listings`, { headers: { Authorization: `Bearer ${token}` } }),
+useEffect(() => {
+  const fetchActivities = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        ]);
-
-        const [transactions, listings] = await Promise.all([
-          transactionsRes.json(),
-          listingsRes.json(),
-        ]);
-
-        const activity = [];
-
-        // עסקאות
-       transactions.forEach(tx => {
-  const isUserBuyer = String(tx.buyer?.id) === userId;
-  const isUserSeller = String(tx.seller?.id) === userId;
-
-  if (isUserBuyer && tx.status === 'pending') {
-    activity.push({
-      type: 'reserve',
-      description: `📌 שריינת את הספר "${tx.listing.book.title}"`,
-      date: tx.created_at
-    });
-  }
-
-  if (isUserBuyer && tx.status === 'completed') {
-    activity.push({
-      type: 'purchase',
-      description: `✅ השלמת רכישה של "${tx.listing.book.title}"`,
-      date: tx.created_at
-    });
-  }
-
-  // 👇 כאן התוספת:
-  if (isUserSeller && tx.status === 'completed') {
-    activity.push({
-      type: 'sold',
-      description: `💰 מכרת את הספר "${tx.listing.book.title}"`,
-     date: tx.created_at
-
-    });
-  }
+      const userRes = await fetch(`${API_BASE_URL}/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const reviewsRes = await fetch(`${API_BASE_URL}/reviews`, {
+  headers: { Authorization: `Bearer ${token}` },
 });
+const reviews = await reviewsRes.json();
 
 
-    
+      if (!userRes.ok) throw new Error('שגיאה בטעינת פרטי המשתמש');
+      const userData = await userRes.json();
 
-        // ספרים שהוספת
-        listings.forEach(listing => {
-          if (String(listing.owner?.id) === userId) {
-            activity.push({
-              type: 'add_book',
-              description: `📚 הוספת את הספר "${listing.book.title}" למכירה`,
-              date: listing.created_at
-            });
-          }
-        });
+      const [transactionsRes, listingsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/transactions`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_BASE_URL}/book-listings`, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
 
-       
+      const [transactions, listings] = await Promise.all([
+        transactionsRes.json(),
+        listingsRes.json(),
+      ]);
 
-    
+      const activity = [];
 
-        activity.sort((a, b) => new Date(b.date) - new Date(a.date));
-        setActivities(activity);
-        setVisibleActivities(activity.slice(0, PAGE_SIZE));
-      } catch (err) {
-        console.error('שגיאה בטעינת פעילויות:', err);
-        setError('אירעה שגיאה בטעינת הפעילויות');
-      } finally {
-        setLoading(false);
-      }
-    };
+      // 📝 הרשמה למערכת
+      activity.push({
+        type: 'signup',
+        description: '🎉 נרשמת למערכת!',
+        date: null,
+      });
 
-    if (token && userId) {
-      fetchActivities();
-    } else {
-      setError('לא נמצא טוקן או מזהה משתמש');
+      // עסקאות
+      transactions.forEach(tx => {
+        const isUserBuyer = String(tx.buyer?.id) === userId;
+        const isUserSeller = String(tx.seller?.id) === userId;
+
+        if (isUserBuyer && tx.status === 'pending') {
+          activity.push({
+            type: 'reserve',
+            description: `📌 שריינת את הספר "${tx.listing.book.title}"`,
+            date: tx.created_at
+          });
+        }
+
+        if (isUserBuyer && tx.status === 'completed') {
+          activity.push({
+            type: 'purchase',
+            description: `✅ השלמת רכישה של "${tx.listing.book.title}"`,
+            date: tx.created_at
+          });
+        }
+
+        if (isUserSeller && tx.status === 'completed') {
+          activity.push({
+            type: 'sold',
+            description: `💰 מכרת את הספר "${tx.listing.book.title}"`,
+            date: tx.created_at
+          });
+        }
+      });
+
+      // ספרים שהוספת
+      listings.forEach(listing => {
+        if (String(listing.seller?.id) === String(userId)) {
+          activity.push({
+            type: 'add_book',
+            description: `📚 הוספת את הספר "${listing.book.title}" למכירה`,
+            date: listing.created_at
+          });
+        }
+      });
+      
+
+      // מיון לפי תאריך מהחדש לישן
+      activity.sort((b, a) => new Date(a.date) - new Date(b.date));
+      setActivities(activity);
+      setVisibleActivities(activity.slice(0, PAGE_SIZE));
+    } catch (err) {
+      console.error('שגיאה בטעינת פעילויות:', err);
+      setError('אירעה שגיאה בטעינת הפעילויות');
+    } finally {
       setLoading(false);
     }
-  }, [token, userId]);
+  };
+
+  if (token && userId) {
+    fetchActivities();
+  } else {
+    setError('לא נמצא טוקן או מזהה משתמש');
+    setLoading(false);
+  }
+}, [token, userId]);
+
 
   // טעינת עוד עמוד כשמגיעים לתחתית
   useEffect(() => {
@@ -143,8 +156,9 @@ const UserActivityPage = () => {
       {visibleActivities.map((act, index) => (
         <ActivityItem key={index}>
           <ActivityDate>
-            🕓 {new Date(act.date).toLocaleString('he-IL')}
-          </ActivityDate>
+          {act.date ? `🕓 ${new Date(act.date).toLocaleString('he-IL')}` : ''}
+        </ActivityDate>
+
           <ActivityDescription>{act.description}</ActivityDescription>
         </ActivityItem>
       ))}
