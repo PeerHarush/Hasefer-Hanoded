@@ -9,35 +9,36 @@ export const PodiumWrapper = styled.div`
   padding: 20px;
   align-items: flex-end;
 `;
-
 export const PodiumBlock = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #f9f9f9;
   padding: 15px 20px;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  width: 110px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: ${({ position }) => (position === 1 ? '130px' : '110px')};
   cursor: default;
   position: relative;
-  
-  ${({ position }) =>
-    position === 1 && `
-      margin-top: -30px;
-      background: linear-gradient(135deg, #ffd700, #ffa500);
-      box-shadow: 0 4px 12px rgba(255, 165, 0, 0.7);
-      width: 130px;
-  `}
-  ${({ position }) =>
-    position === 2 && `
-        background: linear-gradient(135deg, #dcdcdc, #b0b0b0);
-  `}
-  ${({ position }) =>
-    position === 3 && `
-  
-        background: linear-gradient(135deg,rgb(222, 172, 122), #b87333);
-  `}
+  margin-top: ${({ position }) => (position === 1 ? '-30px' : '0')};
+
+ background: ${({ position }) => {
+  if (position === 1) {
+    // Gold
+    return 'radial-gradient(circle at center, #FFB300 0%, #FFD700 70%)';
+  }
+  if (position === 2) {
+    // Silver
+    return 'radial-gradient(circle at center, #B0B0B0 0%, #D9D9D9 70%)';
+  }
+  // Bronze
+  return 'radial-gradient(circle at center, #CD7F32 0%, #E5A07F 70%)';
+}};
+
+  box-shadow: ${({ position }) => {
+    if (position === 1) return '0 8px 12px rgba(255, 200, 0, 0.6)';
+    if (position === 2) return '0 4px 12px rgba(160, 160, 160, 0.4)';
+    return '0 4px 12px rgba(205, 127, 50, 0.4)';
+  }};
 `;
 
  export const UserImage = styled.img`

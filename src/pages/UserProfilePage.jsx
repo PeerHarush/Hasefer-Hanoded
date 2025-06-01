@@ -246,7 +246,7 @@ function UserProfile() {
           )}
         </GenreList>
 
-        <PointsText>🪙 נקודות: {profile.points}</PointsText>
+        <PointsText> נקודות: {profile.points}🪙</PointsText>
 
         <SaveButton onClick={handleSave}>שמור פרופיל</SaveButton>
       </ProfileCard>

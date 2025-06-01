@@ -17,10 +17,12 @@ export const TopBar = styled.div`
 
 /* טקסט שלום למשתמש */
 export const UserGreeting = styled.div`
-  font-size: 1.1rem;
+  font-size: 1.6rem; 
   font-weight: bold;
   color: #7a4a16;
+
 `;
+
 
 /* אייקון פעמון */
 export const NotificationIcon = styled.div`
@@ -78,15 +80,16 @@ export const BannerText = styled.div`
   display: inline-block;
   position: absolute;
   white-space: nowrap;
-  animation: scrollText 25s linear infinite;
+  animation: scrollText 40s linear infinite;
 
   @keyframes scrollText {
-    0% {
+  100% {
       transform: translateX(100%);
     }
-    100% {
+    0% {
       transform: translateX(-100%);
     }
+    
   }
 `;
 

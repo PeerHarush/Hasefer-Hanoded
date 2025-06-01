@@ -25,7 +25,7 @@ import {
   PointsText,
 } from '../styles/Home.styles';
 
-import BackButton from '../components/BackButton.js'
+import PointsInfoPopup from '../components/PointsInfoPopup';
 import RecommendedBooksCarousel from '../components/RecommendedBooksCarousel';
 
 
@@ -87,7 +87,7 @@ useEffect(() => {
 
       localStorage.setItem('user_id', data.id);
       setUserName(data.full_name);
-      setUserPoints(data.points || 0); // ✅ שליפת הנקודות
+      setUserPoints(data.points || 0);  
 
       const genres = Array.isArray(data.favorite_genres)
         ? data.favorite_genres
@@ -239,7 +239,10 @@ return (
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
        <PointsText>
         {userPoints} נקודות 🪙
+          <PointsInfoPopup />
+
       </PointsText>
+      
 
 
         <NotificationIcon onClick={() => setShowNotifications(prev => !prev)}>
@@ -300,6 +303,7 @@ return (
     {userName && (
       <UserProgressBar userPoints={userPoints} />
     )}</BookSection>
+    
 
 <BookSection>
   <HomeBookGallery />
