@@ -448,3 +448,10 @@ export const ReviewCard = styled.div`
   text-align: center;
 `;
 
+export const PointsText = styled.div`
+  font-size: 1rem;
+  font-weight: bold;
+  color: #7a4a16;
+  display: flex;
+  align-items: center;
+`;

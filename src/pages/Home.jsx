@@ -4,6 +4,7 @@ import HomeBookGallery from '../components/HomeBookGallery';
 import TopUsersLeaderboard from '../components/TopUsersLeaderboard';
 import API_BASE_URL from '../config';
 import LatestReviewsCarousel from '../components/LatestReviewsCarousel.js';
+import UserProgressBar from '../components/UserProgressBar';
 
 import {
   PageWrapper,
@@ -13,17 +14,17 @@ import {
   NotificationBadge,
   BannerText,
   Banner,
-  SectionTitle,
   BookSection,
   ReviewSection,
   NotificationsWrapper,
-  MarkAsReadIcon,
   MarkAllAsReadButton,
   NotificationsBox, 
   NotificationItem,
   NotificationTitle, 
-  NotificationsScroll, 
+  NotificationsScroll,
+  PointsText,
 } from '../styles/Home.styles';
+
 import BackButton from '../components/BackButton.js'
 import RecommendedBooksCarousel from '../components/RecommendedBooksCarousel';
 
@@ -32,6 +33,8 @@ import RecommendedBooksCarousel from '../components/RecommendedBooksCarousel';
 
 
 function Home() {
+  const [userPoints, setUserPoints] = useState(0);
+
   const navigate = useNavigate();
   const [userName, setUserName] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -84,8 +87,8 @@ useEffect(() => {
 
       localStorage.setItem('user_id', data.id);
       setUserName(data.full_name);
+      setUserPoints(data.points || 0); // ✅ שליפת הנקודות
 
-      // 💡 כאן שמרי את הז'אנרים האהובים
       const genres = Array.isArray(data.favorite_genres)
         ? data.favorite_genres
         : data.favorite_genres?.split(',') || [];
@@ -95,6 +98,7 @@ useEffect(() => {
       console.error('❌ שגיאה:', err.message);
     });
 }, []);
+
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -225,74 +229,82 @@ useEffect(() => {
 };
 return (
   <PageWrapper>
-    <TopBar>
-      <UserGreeting>
-        {userName ? `שלום, ${userName}! 🌸` : 'שלום אורח 🌸'}
-      </UserGreeting>
+   <TopBar>
+  <UserGreeting>
+    {userName ? `שלום, ${userName}! 🌸` : 'שלום אורח 🌸'}
+  </UserGreeting>
 
-        {userName && (
-          <NotificationsWrapper>
-            <NotificationIcon onClick={() => setShowNotifications(prev => !prev)}>
-              🔔
-              {unreadNotifications > 0 && (
-                <NotificationBadge>{unreadNotifications}</NotificationBadge>
-              )}
-            </NotificationIcon>
+  {userName && (
+    <NotificationsWrapper>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+       <PointsText>
+        {userPoints} נקודות 🪙
+      </PointsText>
 
-            {showNotifications && (
-              <NotificationsBox>
-                <NotificationTitle>📬 ההתראות שלך:</NotificationTitle>
-                
-                <NotificationsScroll>
-                  {notifications.length === 0 ? (
-                    <NotificationItem>אין התראות כרגע</NotificationItem>
-                  ) : (
-                    notifications.map((note) => (
-                        <NotificationItem
-  key={note.id}
-  $isUnread={note.isUnread}
-  $type={note.type}
-  onClick={() => {
-    // נווט קודם
-    navigate(note.link);
 
-    if (note.isUnread) {
-      setTimeout(() => markAsRead(note.id), 300);
-    }
-  }}
-  style={{ cursor: 'pointer' }}
->
-  <div style={{ flex: 1 }}>
-    {note.message}
-  </div>
-</NotificationItem>
+        <NotificationIcon onClick={() => setShowNotifications(prev => !prev)}>
+          🔔
+          {unreadNotifications > 0 && (
+            <NotificationBadge>{unreadNotifications}</NotificationBadge>
+          )}
+        </NotificationIcon>
+      </div>
 
-                    ))
-                  )}
-                </NotificationsScroll>
-
-                {unreadNotifications > 2 && (
-                  <MarkAllAsReadButton onClick={markAllAsRead}>
-                    ✔️ סמן את כל ההתראות כנקראו
-                  </MarkAllAsReadButton>
-                )}
-              </NotificationsBox>
+      {showNotifications && (
+        <NotificationsBox>
+          <NotificationTitle>📬 ההתראות שלך:</NotificationTitle>
+          <NotificationsScroll>
+            {notifications.length === 0 ? (
+              <NotificationItem>אין התראות כרגע</NotificationItem>
+            ) : (
+              notifications.map((note) => (
+                <NotificationItem
+                  key={note.id}
+                  $isUnread={note.isUnread}
+                  $type={note.type}
+                  onClick={() => {
+                    navigate(note.link);
+                    if (note.isUnread) {
+                      setTimeout(() => markAsRead(note.id), 300);
+                    }
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div style={{ flex: 1 }}>{note.message}</div>
+                </NotificationItem>
+              ))
             )}
-          </NotificationsWrapper>
-        )}
-      </TopBar>
+          </NotificationsScroll>
+
+          {unreadNotifications > 2 && (
+            <MarkAllAsReadButton onClick={markAllAsRead}>
+              ✔️ סמן את כל ההתראות כנקראו
+            </MarkAllAsReadButton>
+          )}
+        </NotificationsBox>
+      )}
+    </NotificationsWrapper>
+  )}
+</TopBar>
+
 
       <Banner>
         <BannerText>
           עד כה הצלחנו להעביר הלאה {recycledCount} ספרים! תודה שאתם חלק מהקהילה 💛
         </BannerText>
       </Banner>
-<BookSection>
-  <TopUsersLeaderboard />
-</BookSection>
+    <BookSection>
+      <TopUsersLeaderboard />
+    </BookSection>
+    <BookSection>
+    {userName && (
+      <UserProgressBar userPoints={userPoints} />
+    )}</BookSection>
+
 <BookSection>
   <HomeBookGallery />
 </BookSection>
+
 
 {favoriteGenres.length > 0 && (
   <BookSection>

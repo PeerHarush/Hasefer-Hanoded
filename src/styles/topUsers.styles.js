@@ -31,11 +31,12 @@ export const PodiumBlock = styled.div`
   `}
   ${({ position }) =>
     position === 2 && `
-      background:rgb(199, 145, 29);
+        background: linear-gradient(135deg, #dcdcdc, #b0b0b0);
   `}
   ${({ position }) =>
     position === 3 && `
-      background:rgb(224, 172, 119);
+  
+        background: linear-gradient(135deg,rgb(222, 172, 122), #b87333);
   `}
 `;
 
