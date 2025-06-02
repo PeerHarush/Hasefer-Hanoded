@@ -13,6 +13,12 @@ export const TopBar = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
 `;
 
 /* טקסט שלום למשתמש */
@@ -97,11 +103,11 @@ export const BookSection = styled.div`
   margin-bottom: 3rem;
 `;
 
-export const SectionTitle = styled.h2`
-  font-size: 1.4rem;
-  margin-bottom: 1rem;
-  color: #8d572a;
-`;
+// export const SectionTitle = styled.h2`
+//   font-size: 1.4rem;
+//   margin-bottom: 1rem;
+//   color: #8d572a;
+// `;
 
 export const ReviewSection = styled.div`
   margin-top: 2rem;
@@ -457,4 +463,18 @@ export const PointsText = styled.div`
   color: #7a4a16;
   display: flex;
   align-items: center;
+`;
+
+
+export const SectionTitleCenter = styled.h2`
+  font-size: 1.4rem;
+  margin-bottom: 2rem;
+  color: #8d572a;
+  text-align: center;
+`;
+
+export const SectionTitle = styled.h2`
+  font-size: 1.4rem;
+  margin-bottom: 2rem;
+  color: #8d572a;
 `;

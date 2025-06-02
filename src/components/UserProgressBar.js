@@ -4,7 +4,6 @@ import {
   ProgressBarBackground,
   ProgressBarFill,
   RankLabels,
-  UserMarker,
   TooltipWrapper,
   TooltipText,
 } from '../styles/UserProgressBar.styles';
@@ -47,7 +46,6 @@ const UserProgressBar = ({ userPoints }) => {
         <ProgressBarFill percentage={getPercentage()} />
            <TooltipWrapper>
             <TooltipText>{getTooltipText(userPoints)}</TooltipText>
-            <UserMarker percentage={getPercentage()} />
             </TooltipWrapper>
 
       </ProgressBarBackground>
