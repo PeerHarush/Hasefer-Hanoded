@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 export const ProgressContainer = styled.div`
-  margin: 1rem auto 2rem;
+  margin: -1rem auto 2rem;
   max-width: 600px;
   position: relative;
 `;
@@ -33,21 +33,12 @@ export const RankLabels = styled.div`
    direction: ltr;
 `;
 
-export const UserMarker = styled.div`
-  position: absolute;
-  top: 42px;
-  left: ${({ percentage }) => `calc(${percentage}% + 10px)`};
-  width: 25px;
-  height: 25px;
-  background-color: #333;
-  border: 3px solid gold;
-  border-radius: 50%;
-`;
+
 
 export const TooltipWrapper = styled.div`
   position: absolute;
+  
   left: ${({ percentage }) => `calc(${percentage}% - 8px)`};
-  top: -45px;
   display: flex;
   flex-direction: column;
   align-items: center;

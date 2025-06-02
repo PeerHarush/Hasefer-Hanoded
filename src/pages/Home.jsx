@@ -14,6 +14,7 @@ import {
   NotificationBadge,
   BannerText,
   Banner,
+  SectionTitleCenter,
   BookSection,
   ReviewSection,
   NotificationsWrapper,
@@ -23,6 +24,7 @@ import {
   NotificationTitle, 
   NotificationsScroll,
   PointsText,
+  SectionTitle,
 } from '../styles/Home.styles';
 
 import PointsInfoPopup from '../components/PointsInfoPopup';
@@ -291,18 +293,24 @@ return (
 </TopBar>
 
 
-      <Banner>
-        <BannerText>
-          עד כה הצלחנו להעביר הלאה {recycledCount} ספרים! תודה שאתם חלק מהקהילה 💛
-        </BannerText>
-      </Banner>
-    <BookSection>
-      <TopUsersLeaderboard />
-    </BookSection>
-    <BookSection>
-    {userName && (
+     <Banner>
+  <BannerText>
+    עד כה הצלחנו להעביר הלאה {recycledCount} ספרים! תודה שאתם חלק מהקהילה 💛
+  </BannerText>
+</Banner>
+
+<SectionTitleCenter>
+  <SectionTitle>המשתמשים המובילים באתר 🏆</SectionTitle>
+  <TopUsersLeaderboard />
+
+  {userName && (
+    <>
+      <SectionTitle>ההתקדמות שלך 📈</SectionTitle>
       <UserProgressBar userPoints={userPoints} />
-    )}</BookSection>
+    </>
+  )}
+</SectionTitleCenter>
+
     
 
 <BookSection>

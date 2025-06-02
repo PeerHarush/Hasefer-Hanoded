@@ -8,12 +8,24 @@ export const PodiumWrapper = styled.div`
   gap: 40px;
   padding: 20px;
   align-items: flex-end;
+
+  @media (max-width: 768px) {
+    gap: 24px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 2px;
+
+  }
 `;
+
+
 export const PodiumBlock = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 15px 20px;
+  margin-bottom: 20px;
   border-radius: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   width: ${({ position }) => (position === 1 ? '130px' : '110px')};
