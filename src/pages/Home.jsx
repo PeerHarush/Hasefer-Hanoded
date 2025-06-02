@@ -161,7 +161,7 @@ useEffect(() => {
           }));
 
         const allNotifications = [...unreadMessages, ...completedTx, ...reservedTx]
-          .sort((a, b) => b.timestamp - a.timestamp);
+          .sort((b, a) => a.timestamp - b.timestamp);
           // הסרנו את ה-slice כדי לאפשר את כל ההתראות
 
         setNotifications(allNotifications);
