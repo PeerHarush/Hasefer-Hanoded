@@ -79,8 +79,7 @@ const renderDeleteTooltip = (props) => (
   }, []);
 
   const handleDelete = async (listingId) => {
-    const confirm = window.confirm('למחוק את הספר הזה?');
-    if (!confirm) return;
+    
 
     try {
       const token = localStorage.getItem('access_token');
