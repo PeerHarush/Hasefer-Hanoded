@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 
+
 export const HorizontalReviewCard = styled.div`
   display: flex;
   flex-direction: row-reverse;
@@ -8,20 +9,25 @@ export const HorizontalReviewCard = styled.div`
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   padding: 1rem;
-  max-width: 420px;
   width: 100%;
   height: 210px; 
   box-sizing: border-box;
   overflow: hidden;
 
+  width: 420px;
+
+  @media (max-width: 1024px) {
+    max-width: 360px;
+  }
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    height: 280px; 
+    height: 280px;
+    max-width: 100%; // מאפשר לכרטיס להיות מלא רוחב בתוך Slide
   }
 `;
-
 
 
 
@@ -31,12 +37,12 @@ export const BookThumbnail = styled.img`
   object-fit: cover;
   border-radius: 12px;
   margin-right: 1rem;
+  align-self: center;
 
   @media (max-width: 768px) {
     width: 80px;
     height: 110px;
-    margin-left: 0;
-    margin-bottom: 0.5rem;
+    margin: 0 auto 0.5rem auto; // ממרכז גם אנכית וגם אופקית
   }
 
   @media (max-width: 480px) {
@@ -44,6 +50,7 @@ export const BookThumbnail = styled.img`
     height: 100px;
   }
 `;
+
 
 
 

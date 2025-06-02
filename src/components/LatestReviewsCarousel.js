@@ -45,13 +45,13 @@ console.log('🧾 ביקורות שהתקבלו לקרוסלה:', reviews);
           }}
           observer
           observeParents
-         breakpoints={{
-              1255: { slidesPerView: 4, spaceBetween: 30 },
-              1024: { slidesPerView: 3, spaceBetween: 20 },
-              768:  { slidesPerView: 2, spaceBetween: 20 },
-              600:  { slidesPerView: 1, spaceBetween: 15 },
-              0:    { slidesPerView: 1, spaceBetween: 10 },
-            }}
+       breakpoints={{
+          1600: { slidesPerView: 4, spaceBetween: 30 }, 
+          1100: { slidesPerView: 3, spaceBetween: 20 },
+          1024: { slidesPerView: 3, spaceBetween: 10 }, 
+          768:  { slidesPerView: 2, spaceBetween: 20 }, 
+          0:    { slidesPerView: 1, spaceBetween: 15 },
+        }}
 
         >
           {reviews.map((review) => (

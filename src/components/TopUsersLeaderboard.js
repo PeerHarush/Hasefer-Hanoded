@@ -43,7 +43,7 @@ const TopUsersLeaderboard = () => {
               position={position}
             />
             <UserName position={position}>{user.full_name}</UserName>
-            <UserPoints position={position}>⭐ {user.points}</UserPoints>
+            <UserPoints position={position}> {user.points}🪙</UserPoints>
           </PodiumBlock>
         );
       })}
