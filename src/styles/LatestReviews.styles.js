@@ -1,16 +1,16 @@
 import styled from 'styled-components';
-
+  
 
 export const HorizontalReviewCard = styled.div`
   display: flex;
   flex-direction: row-reverse;
-  align-items: flex-start;
+align-items: center;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   padding: 1rem;
   width: 100%;
-  height: 210px; 
+  height: 230px; 
   box-sizing: border-box;
   overflow: hidden;
 
@@ -113,18 +113,31 @@ export const ReviewText = styled.p`
   color: #333;
   margin: 0;
   line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 5;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  max-height: 6.5rem; /* בערך 5 שורות בגובה רגיל */
+  overflow-y: auto;
   text-overflow: ellipsis;
+  padding-right: 4px; /* רווח קטן עבור הסקרול */
+
+  /* חבילה של עיצוב סקרול יפה */
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 3px;
+  }
 
   @media (max-width: 768px) {
     font-size: 0.8rem;
+    max-height: 6rem;
   }
 
   @media (max-width: 480px) {
     font-size: 0.75rem;
+    max-height: 5.5rem;
   }
 `;
-
