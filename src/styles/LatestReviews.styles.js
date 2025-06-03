@@ -14,7 +14,8 @@ export const HorizontalReviewCard = styled.div`
   box-sizing: border-box;
   overflow: hidden;
 
-  width: 420px;
+width: 100%;
+max-width: 420px;
 
   @media (max-width: 1024px) {
     max-width: 360px;
