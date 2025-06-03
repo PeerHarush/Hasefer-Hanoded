@@ -18,6 +18,7 @@ export const TopBar = styled.div`
     flex-direction: column;
     gap: 0.5rem;
     align-items: flex-start;
+    
   }
 `;
 
@@ -103,11 +104,6 @@ export const BookSection = styled.div`
   margin-bottom: 3rem;
 `;
 
-// export const SectionTitle = styled.h2`
-//   font-size: 1.4rem;
-//   margin-bottom: 1rem;
-//   color: #8d572a;
-// `;
 
 export const ReviewSection = styled.div`
   margin-top: 2rem;
@@ -151,6 +147,10 @@ export const NotificationsBox = styled.div`
     border-width: 6px;
     border-style: solid;
     border-color: transparent transparent #fff transparent;
+  }
+      @media (max-width: 500px) {
+    width: 70vw;
+    right: 10px;
   }
 `;
 

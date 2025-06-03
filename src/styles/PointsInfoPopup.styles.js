@@ -27,7 +27,13 @@ export const PopupBox = styled.div`
   z-index: 100;
   font-size: 0.9rem;
   direction: rtl;
+
+  @media (max-width: 500px) {
+    width: 70vw;
+    right: -80px;
+  }
 `;
+
 
 export const SectionTitle = styled.h4`
   margin: 0.5rem 0;

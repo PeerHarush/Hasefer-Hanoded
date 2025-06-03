@@ -4,7 +4,7 @@ import styled from 'styled-components';
 export const HorizontalReviewCard = styled.div`
   display: flex;
   flex-direction: row-reverse;
-align-items: center;
+  align-items: center;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -14,8 +14,8 @@ align-items: center;
   box-sizing: border-box;
   overflow: hidden;
 
-width: 100%;
-max-width: 420px;
+  width: 100%;
+  max-width: 420px;
 
   @media (max-width: 1024px) {
     max-width: 360px;
@@ -26,8 +26,8 @@ max-width: 420px;
     align-items: center;
     text-align: center;
     height: 280px;
-    max-width: 100%; // מאפשר לכרטיס להיות מלא רוחב בתוך Slide
-  }
+    max-width: 100%; 
+      }
 `;
 
 
@@ -58,8 +58,11 @@ export const BookThumbnail = styled.img`
 export const ReviewContent = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: center; /* מרכז את כל הבלוק אנכית */
   flex: 1;
+  overflow: hidden; /* חשוב כדי שהגלילה תישאר רק על ReviewText */
 `;
+
 
 export const BookHeader = styled.div`
   margin-bottom: 0.5rem;
@@ -113,12 +116,11 @@ export const ReviewText = styled.p`
   color: #333;
   margin: 0;
   line-height: 1.4;
-  max-height: 6.5rem; /* בערך 5 שורות בגובה רגיל */
+  height: 6.5rem;
   overflow-y: auto;
-  text-overflow: ellipsis;
-  padding-right: 4px; /* רווח קטן עבור הסקרול */
-
-  /* חבילה של עיצוב סקרול יפה */
+  padding-right: 4px;
+  text-align: start;
+  
   scrollbar-width: thin;
   scrollbar-color: #ccc transparent;
 
@@ -133,11 +135,11 @@ export const ReviewText = styled.p`
 
   @media (max-width: 768px) {
     font-size: 0.8rem;
-    max-height: 6rem;
+    height: 6rem;
   }
 
   @media (max-width: 480px) {
     font-size: 0.75rem;
-    max-height: 5.5rem;
+    height: 5.5rem;
   }
 `;
