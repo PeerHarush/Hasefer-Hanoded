@@ -162,7 +162,6 @@ useEffect(() => {
 
         const allNotifications = [...unreadMessages, ...completedTx, ...reservedTx]
           .sort((b, a) => a.timestamp - b.timestamp);
-          // הסרנו את ה-slice כדי לאפשר את כל ההתראות
 
         setNotifications(allNotifications);
         setUnreadNotifications(allNotifications.filter(note => note.isUnread).length);
@@ -299,17 +298,6 @@ return (
   </BannerText>
 </Banner>
 
-<SectionTitleCenter>
-  <SectionTitle>המשתמשים המובילים באתר 🏆</SectionTitle>
-  <TopUsersLeaderboard />
-
-  {userName && (
-    <>
-      <SectionTitle>ההתקדמות שלך 📈</SectionTitle>
-      <UserProgressBar userPoints={userPoints} />
-    </>
-  )}
-</SectionTitleCenter>
 
     
 
@@ -330,6 +318,17 @@ return (
 
 
 
+<SectionTitleCenter>
+  <SectionTitle>המשתמשים המובילים באתר 🏆</SectionTitle>
+  <TopUsersLeaderboard />
+
+  {userName && (
+    <>
+      <SectionTitle>ההתקדמות שלך 📈</SectionTitle>
+      <UserProgressBar userPoints={userPoints} />
+    </>
+  )}
+</SectionTitleCenter>
       
     </PageWrapper>
     
