@@ -17,7 +17,7 @@ export const ProgressBarBackground = styled.div`
 
 export const ProgressBarFill = styled.div`
   height: 100%;
-  background-color:rgb(231, 196, 115);
+  background-color:rgb(245, 219, 159);
   width: ${({ percentage }) => percentage}%;
   border-radius: 10px;
   transition: width 0.5s ease-in-out;
