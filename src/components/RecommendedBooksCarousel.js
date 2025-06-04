@@ -50,7 +50,7 @@ const RecommendedBooksCarousel = ({ userGenres }) => {
   return (
     <>
       <GlobalSwiperStyle />
-      <SectionTitle>📖 המלצות לפי הטעם שלך</SectionTitle>
+      <SectionTitle> המלצות לפי הטעם שלך📖</SectionTitle>
       <CarouselWrapper>
         <SwiperNavButton className="prev" onClick={() => swiperRef.current?.slidePrev()}>
           <FiChevronRight />
