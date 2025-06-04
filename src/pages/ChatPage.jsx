@@ -12,6 +12,7 @@ import {
     InputArea,
     Input,
     SendButton,
+    ReadIndicator,
     CalendarButton,
 } from '../styles/ChatPage.styles';
 import {createClient} from '@supabase/supabase-js';
@@ -370,22 +371,28 @@ const detectTimeInText = (text) => {
                 {/* Removed messagesContainerRef from here as it's only for auto-scroll logic */}
                 {/* Issue 2 Fix: Display messages as they are, from top-to-bottom. */}
                 <Messages>
-                    {displayedMessages.map(msg => (
-                        <Message key={msg.id} isMine={msg.is_from_user}>
-                            <div>{msg.message}</div>
-                            {msg.created_at && (
-                                <MessageTime isMine={msg.is_from_user}>
-                                    {new Date(msg.created_at).toLocaleString('he-IL', {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric',
-                                    })}
-                                </MessageTime>
+                   {displayedMessages.map(msg => (
+                    <Message key={msg.id} isMine={msg.is_from_user}>
+                        <div>{msg.message}</div>
+                        {msg.created_at && (
+                        <MessageTime isMine={msg.is_from_user}>
+                            {msg.is_from_user && (
+                            <ReadIndicator isRead={msg.is_read}>
+                                {msg.is_read ? '✔✔' : '✔'}
+                            </ReadIndicator>
                             )}
-                        </Message>
+                            {new Date(msg.created_at).toLocaleString('he-IL', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            })}
+                        </MessageTime>
+                        )}
+                    </Message>
                     ))}
+
                     <div ref={messagesEndRef}/>
                     {/* This element is scrolled into view */}
                 </Messages>

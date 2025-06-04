@@ -24,6 +24,7 @@ import AboutUsPage from './pages/aboutUsPage.jsx';
 import ChatPage from './pages/ChatPage';
 import MyAddedBooks from './pages/MyAddedBooks.jsx';
 import BackButton from './components/BackButton';
+
 function AppContent() {
   const location = useLocation();
   const isHomePage = location.pathname === '/';

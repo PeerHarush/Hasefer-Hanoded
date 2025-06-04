@@ -478,3 +478,4 @@ export const SectionTitle = styled.h2`
   margin-bottom: 2rem;
   color: #8d572a;
 `;
+
