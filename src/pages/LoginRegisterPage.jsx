@@ -135,19 +135,19 @@ const LoginRegisterPage = () => {
                 <Input name="phonenum" value={form.phonenum} onChange={handleChange} required />
                 {errors.phonenum && <div style={{ color: 'red' }}>{errors.phonenum}</div>}
               </FormGroup>
-              <FormGroup>
-                <Label>כתובת</Label>
-                <Input name="address" value={form.address} onChange={handleChange} required />
-                {errors.address && <div style={{ color: 'red' }}>{errors.address}</div>}
-                <Map
-                  position={mapPosition}
-                  setPosition={setMapPosition}
-                  address={form.address}
-                  updateAddress={(addr) => setForm(prev => ({ ...prev, address: addr }))}
-                  showValidation={true}
-                  helpText="לחץ על המפה או הקלד כתובת"
-                />
-              </FormGroup>
+                <FormGroup>
+                  <Label>כתובת</Label>
+                  <Input name="address" value={form.address} onChange={handleChange} required />
+                  {errors.address && <div style={{ color: 'red' }}>{errors.address}</div>}
+                  <Map
+                    position={mapPosition}
+                    setPosition={setMapPosition}
+                    address={form.address}
+                    updateAddress={(addr) => setForm(prev => ({ ...prev, address: addr }))}
+                    showValidation={true}
+                    helpText="לחץ על המפה או הקלד כתובת"
+                  />
+                </FormGroup>
               <FormGroup>
                 <Label>תמונה</Label>
                 <ImageUploadContainer onClick={handleUploadClick}>
