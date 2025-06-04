@@ -36,55 +36,68 @@ const LatestReviewsCarousel = ({ reviews }) => {
           <FiChevronRight />
         </SwiperNavButton>
 
-        <Swiper
-          className="custom-swiper"
-          modules={[Navigation]}
-          onBeforeInit={(swiper) => {
-            swiperRef.current = swiper;
-          }}
-          observer
-          observeParents
-          breakpoints={{
-            1255: { slidesPerView: 4, spaceBetween: 8 },
-            1024: { slidesPerView: 3, spaceBetween: 30 },
-            768:  { slidesPerView: 3, spaceBetween: 20 },
-            480:  { slidesPerView: 2, spaceBetween: 15 },
-            0:    { slidesPerView: 1, spaceBetween: 10 },
-          }}
-        >
-          {reviews.map((review) => (
-            <SwiperSlide key={review.id}>
-  <HorizontalReviewCard dir="rtl">
-   <BookThumbnail
+       <Swiper
+  className="custom-swiper"
+  modules={[Navigation]}
+  onBeforeInit={(swiper) => {
+    swiperRef.current = swiper;
+  }}
+  observer
+  observeParents
+  breakpoints={{
+    1255: { slidesPerView: 4, spaceBetween: 8 },
+    1024: { slidesPerView: 3, spaceBetween: 20 },
+    768:  { slidesPerView: 2, spaceBetween: 20 },
+    480:  { slidesPerView: 1, spaceBetween: 15 },
+    0:    { slidesPerView: 1, spaceBetween: 10 },
+  }}
+>
+  {reviews.map((review) => (
+<SwiperSlide key={review.id}>
+  <Link
+  to={`/book/${encodeURIComponent(review.book?.title || '')}`}
+    state={{ from: location.pathname }}
+    style={{ textDecoration: 'none', color: 'inherit' }}
+    onClick={() => {
+      console.log('📘 מעבר לפרטי הספר:', review.book?.title);
+    }}
+  >
+    <HorizontalReviewCard dir="rtl">
+      <BookThumbnail
         src={
           review.book?.image_url
-            ? review.book.image_url.startsWith('http')
-              ? review.book.image_url
-              : `${API_BASE_URL}/${review.book.image_url}`
-            : '/default-book.jpg' // ברירת מחדל במקרה שהתמונה חסרה
+            ? (review.book.image_url.startsWith('http')
+                ? review.book.image_url
+                : `${API_BASE_URL}/${review.book.image_url}`)
+            : '/default-book.jpg'
         }
         alt={review.book?.title || 'עטיפת ספר'}
       />
 
-    <ReviewContent>
-      <BookHeader>
-        <BookTitle>{review.book?.title}</BookTitle>
-        <BookAuthor>{review.book?.authors || 'מחבר לא ידוע'}</BookAuthor>
-      </BookHeader>
-      <ReviewerName>{review.user?.full_name || 'אנונימי'}</ReviewerName>
-      <ReviewText>
-          {review.text ? (
-            review.text.length > 180
-              ? `${review.text.slice(0, 180)}...`
-              : review.text
+      <ReviewContent>
+        <BookHeader>
+          <BookTitle>{review.book?.title || 'שם ספר לא זמין'}</BookTitle>
+          <BookAuthor>{review.book?.authors || 'מחבר לא ידוע'}</BookAuthor>
+        </BookHeader>
+
+        <ReviewerName>{review.user?.full_name || 'אנונימי'}</ReviewerName>
+
+        <ReviewText>
+          {review.comment_text ? (
+            review.comment_text.length > 180
+              ? `${review.comment_text.slice(0, 180)}...`
+              : review.comment_text
           ) : 'לא קיימת ביקורת'}
-      </ReviewText>
-    </ReviewContent>
-  </HorizontalReviewCard>
+        </ReviewText>
+      </ReviewContent>
+    </HorizontalReviewCard>
+  </Link>
 </SwiperSlide>
 
-          ))}
-        </Swiper>
+
+  ))}
+</Swiper>
+
 
         <SwiperNavButton onClick={() => swiperRef.current?.slideNext()}>
           <FiChevronLeft />

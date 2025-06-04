@@ -194,3 +194,10 @@
       padding: 7px 10px;
     }
   `;
+
+  export const ReadIndicator = styled.span`
+  font-size: 0.8em;
+  color: ${props => (props.isRead ? '#4caf50' : '#999')}; // ירוק אם נקראה, אפור אם לא
+  margin-left: 6px;
+
+`;

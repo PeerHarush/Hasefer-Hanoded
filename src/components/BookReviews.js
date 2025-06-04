@@ -23,7 +23,7 @@ import {
 
 import API_BASE_URL from '../config';
 
-const BookReviews = ({ bookId, userId }) => {
+const BookReviews = ({ bookId, userId, onSuccess }) => {
   const [reviews, setReviews] = useState([]);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -44,7 +44,9 @@ const BookReviews = ({ bookId, userId }) => {
       console.error(error);
       setErrorMessage('לא הצלחנו לטעון את הביקורות');
     }
+
   };
+  
 
   useEffect(() => {
     fetchReviews();
@@ -86,11 +88,12 @@ const BookReviews = ({ bookId, userId }) => {
         throw new Error(errorData.detail || 'לא הצלחנו לשלוח את הביקורת');
       }
 
-      await response.json(); 
-      await fetchReviews();
-      setRating(0);
-      setComment('');
-      setErrorMessage('');
+    await response.json(); 
+    await fetchReviews();
+    setRating(0);
+    setComment('');
+    setErrorMessage('');
+    if (onSuccess) onSuccess(); 
     } catch (error) {
       console.error('Error submitting review:', error);
       setErrorMessage(`לא הצלחנו לשלוח את הביקורת: ${error.message}`);
@@ -135,7 +138,7 @@ const BookReviews = ({ bookId, userId }) => {
 
       <ReviewFormHeader>
         <ReviewFormTitle>הוספת ביקורת</ReviewFormTitle>
-        <CoinReward>🪙 30 מטבעות</CoinReward>
+        <CoinReward>🪙 50 נקודות</CoinReward>
       </ReviewFormHeader>
 
       <form onSubmit={postReview}>

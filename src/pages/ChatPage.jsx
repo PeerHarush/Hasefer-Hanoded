@@ -12,6 +12,7 @@ import {
     InputArea,
     Input,
     SendButton,
+    ReadIndicator,
     CalendarButton,
 } from '../styles/ChatPage.styles';
 import {createClient} from '@supabase/supabase-js';
@@ -28,12 +29,14 @@ const ChatPage = () => {
     const location = useLocation();
     const token = localStorage.getItem('access_token');
     const currentUserId = localStorage.getItem('user_id');
+    const [detectedDate, setDetectedDate] = useState(null);
 
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [otherUser, setOtherUser] = useState(null);
     const [bookTitle, setBookTitle] = useState('');
     const [lastDetectedTime, setLastDetectedTime] = useState(null);
+    const [detectedForTomorrow, setDetectedForTomorrow] = useState(false);
 
     const messagesEndRef = useRef(null); // Used for auto-scrolling to the bottom
 
@@ -181,22 +184,84 @@ const ChatPage = () => {
 
     }, [chatRoomId, token, currentUserId]);
 
+const formatForGoogleCalendar = (date) => {
+  const pad = (n) => String(n).padStart(2, '0');
+  return (
+    date.getFullYear().toString() +
+    pad(date.getMonth() + 1) +
+    pad(date.getDate()) +
+    'T' +
+    pad(date.getHours()) +
+    pad(date.getMinutes()) +
+    '00'
+  );
+};
 
-    const detectTimeInText = (text) => {
-        const timeRegex = /(\d{1,2})(:\d{2})?/g;
-        const match = [...text.matchAll(timeRegex)].find(m => {
-            const hour = parseInt(m[1]);
-            return hour >= 0 && hour <= 23;
-        });
+const detectTimeInText = (text) => {
+  const timeRegex = /(?:ב-)?(\d{1,2})(?::(\d{2}))?/; // שעה: ב-13:30
+  const dateRegex = /(?:ב-)?(\d{1,2})[./](\d{1,2})/; // תאריך: 7.6 או 7/6
+  const weekDayRegex = /(?:ביום |יום )?(ראשון|שני|שלישי|רביעי|חמישי|שישי|שבת)/;
 
-        if (match) {
-            const hour = match[1];
-            const minutes = match[2] ? match[2].slice(1) : '00';
-            setLastDetectedTime(`${hour}:${minutes}`);
-        } else {
-            setLastDetectedTime(null);
-        }
-    };
+  // שעה
+  const timeMatch = text.match(timeRegex);
+  if (timeMatch) {
+    const hour = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2] || '0', 10);
+    setLastDetectedTime(`${hour}:${String(minutes).padStart(2, '0')}`);
+  } else {
+    setLastDetectedTime(null);
+  }
+
+  // תאריך מדויק
+  const dateMatch = text.match(dateRegex);
+  if (dateMatch) {
+    const day = parseInt(dateMatch[1], 10);
+    const month = parseInt(dateMatch[2], 10);
+    const year = new Date().getFullYear();
+    const date = new Date(year, month - 1, day);
+    setDetectedDate(date);
+    setDetectedForTomorrow(false);
+    return;
+  }
+
+  // מחר
+  if (text.includes('מחר')) {
+    setDetectedForTomorrow(true);
+    setDetectedDate(null);
+    return;
+  }
+
+  // יום בשבוע
+  const dayNames = {
+    ראשון: 0,
+    שני: 1,
+    שלישי: 2,
+    רביעי: 3,
+    חמישי: 4,
+    שישי: 5,
+    שבת: 6,
+  };
+  const weekDayMatch = text.match(weekDayRegex);
+  if (weekDayMatch) {
+    const targetDay = dayNames[weekDayMatch[1]];
+    const today = new Date();
+    const todayDay = today.getDay();
+    let daysUntil = targetDay - todayDay;
+    if (daysUntil <= 0) daysUntil += 7; // אם עבר כבר השבוע, קח את הבא
+    const targetDate = new Date();
+    targetDate.setDate(today.getDate() + daysUntil);
+    setDetectedDate(targetDate);
+    setDetectedForTomorrow(false);
+    return;
+  }
+
+  // ברירת מחדל: לא זוהה תאריך
+  setDetectedDate(null);
+  setDetectedForTomorrow(false);
+};
+
+
+
 
     const handleSend = useCallback(async () => {
         if (!input.trim()) return;
@@ -238,29 +303,45 @@ const ChatPage = () => {
     }, [input, chatRoomId, token]);
 
 
-    const openGoogleCalendar = () => { // existing functionality
-        if (!lastDetectedTime) return;
+ const openGoogleCalendar = () => {
+  const title = `פגישה עם ${otherUser?.full_name || 'המשתמש'}`;
+  const url = new URL('https://calendar.google.com/calendar/render?action=TEMPLATE');
+  url.searchParams.set('text', title);
+  url.searchParams.set('details', 'תיאום פגישה דרך אפליקציית הצ׳אט');
+  url.searchParams.set('sf', 'true');
+  url.searchParams.set('output', 'xml');
 
-        const today = new Date();
-        const [hourStr, minuteStr] = lastDetectedTime.split(':');
-        const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hourStr), parseInt(minuteStr || '0'));
-        const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+  if (lastDetectedTime) {
+    const baseDate = detectedDate
+      ? new Date(detectedDate)
+      : (() => {
+          const today = new Date();
+          if (detectedForTomorrow) {
+            today.setDate(today.getDate() + 1);
+          }
+          return today;
+        })();
 
-        const toISOStringNoSeconds = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, '');
+    const [hourStr, minuteStr] = lastDetectedTime.split(':');
+    const startDate = new Date(
+      baseDate.getFullYear(),
+      baseDate.getMonth(),
+      baseDate.getDate(),
+      parseInt(hourStr),
+      parseInt(minuteStr || '0')
+    );
 
-        const dates = `${toISOStringNoSeconds(startDate)}/${toISOStringNoSeconds(endDate)}`;
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
 
-        const title = `פגישה עם ${otherUser?.full_name || 'המשתמש'}`;
+    const toISOStringNoSeconds = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, '');
+    const dates = `${toISOStringNoSeconds(startDate)}/${toISOStringNoSeconds(endDate)}`;
 
-        const url = new URL('https://calendar.google.com/calendar/render?action=TEMPLATE');
-        url.searchParams.set('text', title);
-        url.searchParams.set('dates', dates);
-        url.searchParams.set('details', 'תיאום פגישה דרך אפליקציית הצ׳אט');
-        url.searchParams.set('sf', 'true');
-        url.searchParams.set('output', 'xml');
+    url.searchParams.set('dates', dates);
+  }
 
-        window.open(url.toString(), '_blank');
-    };
+  window.open(url.toString(), '_blank');
+};
+
 
     const handleKeyPress = (e) => { // existing functionality
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -290,22 +371,28 @@ const ChatPage = () => {
                 {/* Removed messagesContainerRef from here as it's only for auto-scroll logic */}
                 {/* Issue 2 Fix: Display messages as they are, from top-to-bottom. */}
                 <Messages>
-                    {displayedMessages.map(msg => (
-                        <Message key={msg.id} isMine={msg.is_from_user}>
-                            <div>{msg.message}</div>
-                            {msg.created_at && (
-                                <MessageTime isMine={msg.is_from_user}>
-                                    {new Date(msg.created_at).toLocaleString('he-IL', {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric',
-                                    })}
-                                </MessageTime>
+                   {displayedMessages.map(msg => (
+                    <Message key={msg.id} isMine={msg.is_from_user}>
+                        <div>{msg.message}</div>
+                        {msg.created_at && (
+                        <MessageTime isMine={msg.is_from_user}>
+                            {msg.is_from_user && (
+                            <ReadIndicator isRead={msg.is_read}>
+                                {msg.is_read ? '✔✔' : '✔'}
+                            </ReadIndicator>
                             )}
-                        </Message>
+                            {new Date(msg.created_at).toLocaleString('he-IL', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            })}
+                        </MessageTime>
+                        )}
+                    </Message>
                     ))}
+
                     <div ref={messagesEndRef}/>
                     {/* This element is scrolled into view */}
                 </Messages>
@@ -318,9 +405,10 @@ const ChatPage = () => {
                         placeholder="כתוב הודעה..."
                         rows={2}
                     />
-                    {lastDetectedTime && (
-                        <CalendarButton onClick={openGoogleCalendar}>הוסף ליומן</CalendarButton>
-                    )}
+                  
+                    
+<CalendarButton onClick={openGoogleCalendar}>הוסף ליומן</CalendarButton>
+
                     <SendButton onClick={handleSend}>שלח</SendButton>
                 </InputArea>
             </ChatContainer>

@@ -7,9 +7,12 @@ export const Wrapper = styled.div`
   align-items: center;
   direction: rtl;
   padding-top: ${({ isRegister }) => (isRegister ? "60px" : "20px")};
-     @media (max-width: 768px) {
-    margin-top: 0px;
+
+  @media (max-width: 768px) {
+  padding-top: 0; 
+   }
 `;
+
 
 export const Card = styled.div`
   background: #fff;

@@ -13,14 +13,23 @@ export const TopBar = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+    
+  }
 `;
 
 /* טקסט שלום למשתמש */
 export const UserGreeting = styled.div`
-  font-size: 1.1rem;
+  font-size: 1.6rem; 
   font-weight: bold;
   color: #7a4a16;
+
 `;
+
 
 /* אייקון פעמון */
 export const NotificationIcon = styled.div`
@@ -78,15 +87,16 @@ export const BannerText = styled.div`
   display: inline-block;
   position: absolute;
   white-space: nowrap;
-  animation: scrollText 25s linear infinite;
+  animation: scrollText 40s linear infinite;
 
   @keyframes scrollText {
-    0% {
+  100% {
       transform: translateX(100%);
     }
-    100% {
+    0% {
       transform: translateX(-100%);
     }
+    
   }
 `;
 
@@ -94,11 +104,6 @@ export const BookSection = styled.div`
   margin-bottom: 3rem;
 `;
 
-export const SectionTitle = styled.h2`
-  font-size: 1.4rem;
-  margin-bottom: 1rem;
-  color: #8d572a;
-`;
 
 export const ReviewSection = styled.div`
   margin-top: 2rem;
@@ -142,6 +147,10 @@ export const NotificationsBox = styled.div`
     border-width: 6px;
     border-style: solid;
     border-color: transparent transparent #fff transparent;
+  }
+      @media (max-width: 500px) {
+    width: 70vw;
+    right: 10px;
   }
 `;
 
@@ -446,5 +455,27 @@ export const ReviewCard = styled.div`
   padding: 1rem;
   width: 220px;
   text-align: center;
+`;
+
+export const PointsText = styled.div`
+  font-size: 1rem;
+  font-weight: bold;
+  color: #7a4a16;
+  display: flex;
+  align-items: center;
+`;
+
+
+export const SectionTitleCenter = styled.h2`
+  font-size: 1.4rem;
+  margin-bottom: 2rem;
+  color: #8d572a;
+  text-align: center;
+`;
+
+export const SectionTitle = styled.h2`
+  font-size: 1.4rem;
+  margin-bottom: 2rem;
+  color: #8d572a;
 `;
 

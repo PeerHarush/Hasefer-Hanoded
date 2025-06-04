@@ -21,6 +21,7 @@ import API_BASE_URL from '../config';
 
 const RecommendedBooksCarousel = ({ userGenres }) => {
   const [recommendedBooks, setRecommendedBooks] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(10);
   const swiperRef = useRef();
   const location = useLocation();
 
@@ -29,11 +30,13 @@ const RecommendedBooksCarousel = ({ userGenres }) => {
       try {
         const res = await fetch(`${API_BASE_URL}/books`);
         const books = await res.json();
+
         const filtered = books.filter(book =>
           Array.isArray(book.genres) && book.genres.some(genre => userGenres.includes(genre))
         );
-          const shuffled = filtered.sort(() => Math.random() - 0.5);
-          setRecommendedBooks(shuffled.slice(0, 10));
+
+        const shuffled = filtered.sort(() => Math.random() - 0.5);
+        setRecommendedBooks(shuffled);
       } catch (err) {
         console.error('שגיאה בטעינת המלצות:', err);
       }
@@ -47,7 +50,7 @@ const RecommendedBooksCarousel = ({ userGenres }) => {
   return (
     <>
       <GlobalSwiperStyle />
-      <SectionTitle>📖 המלצות לפי הטעם שלך</SectionTitle>
+      <SectionTitle> המלצות לפי הטעם שלך📖</SectionTitle>
       <CarouselWrapper>
         <SwiperNavButton className="prev" onClick={() => swiperRef.current?.slidePrev()}>
           <FiChevronRight />
@@ -69,7 +72,7 @@ const RecommendedBooksCarousel = ({ userGenres }) => {
             0:    { slidesPerView: 1, spaceBetween: 10 },
           }}
         >
-          {recommendedBooks.map(book => (
+          {recommendedBooks.slice(0, visibleCount).map(book => (
             <SwiperSlide key={book.id}>
               <HomeBookCard>
                 <Link
@@ -93,6 +96,7 @@ const RecommendedBooksCarousel = ({ userGenres }) => {
           <FiChevronLeft />
         </SwiperNavButton>
       </CarouselWrapper>
+
     </>
   );
 };

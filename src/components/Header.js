@@ -120,11 +120,12 @@ function Header() {
               <>
                 <li className="nav-item"><NavItemLink to="/wishlist" $active={currentPath === "/wishlist"}>רשימת משאלות</NavItemLink></li>
                 <li className="nav-item"><NavItemLink to="/MessagesPage" $active={currentPath === "/MessagesPage"}>הודעות</NavItemLink></li>
-                <li className="nav-item"><NavItemLink to="/History" $active={currentPath === "/History"}>היסטוריית פעולות</NavItemLink></li>
+                <li className="nav-item"><NavItemLink to="/History" $active={currentPath === "/History"}>היסטוריה</NavItemLink></li>
                 <li className="nav-item"><NavItemLink to="/Transaction" $active={currentPath === "/Transaction"}>עסקאות</NavItemLink></li>
-                <li className="nav-item"><NavItemLink to="/Profile" $active={currentPath === "/Profile"}>לפרופיל שלי</NavItemLink></li>
-                <li className="nav-item"><NavItemLink to="/AddBook" $active={currentPath === "/AddBook"}>הוספת ספר</NavItemLink></li>
                 <li className="nav-item"><NavItemLink to="/my-books" $active={currentPath === "/my-books"}>הספרים שלי</NavItemLink></li>
+                <li className="nav-item"><NavItemLink to="/AddBook" $active={currentPath === "/AddBook"}>הוספת ספר</NavItemLink></li>
+                <li className="nav-item"><NavItemLink to="/Profile" $active={currentPath === "/Profile"}>לפרופיל שלי</NavItemLink></li>
+
               </>
             )}
 
