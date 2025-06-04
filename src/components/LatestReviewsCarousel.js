@@ -54,39 +54,48 @@ console.log('🧾 ביקורות שהתקבלו לקרוסלה:', reviews);
   }}
 >
   {reviews.map((review) => (
-    <SwiperSlide key={review.id}>
-      <HorizontalReviewCard dir="rtl">
-        <Link to={`/book/${encodeURIComponent(review.book?.title || '')}`}>
-          <BookThumbnail
-            src={
-              review.book?.image_url
-                ? (review.book.image_url.startsWith('http')
-                    ? review.book.image_url
-                    : `${API_BASE_URL}/${review.book.image_url}`)
-                : '/default-book.jpg'
-            }
-            alt={review.book?.title || 'עטיפת ספר'}
-          />
-        </Link>
+<SwiperSlide key={review.id}>
+  <Link
+  to={`/book/${encodeURIComponent(review.book?.title || '')}`}
+    state={{ from: location.pathname }}
+    style={{ textDecoration: 'none', color: 'inherit' }}
+    onClick={() => {
+      console.log('📘 מעבר לפרטי הספר:', review.book?.title);
+    }}
+  >
+    <HorizontalReviewCard dir="rtl">
+      <BookThumbnail
+        src={
+          review.book?.image_url
+            ? (review.book.image_url.startsWith('http')
+                ? review.book.image_url
+                : `${API_BASE_URL}/${review.book.image_url}`)
+            : '/default-book.jpg'
+        }
+        alt={review.book?.title || 'עטיפת ספר'}
+      />
 
-        <ReviewContent>
-          <BookHeader>
-            <BookTitle>{review.book?.title || 'שם ספר לא זמין'}</BookTitle>
-            <BookAuthor>{review.book?.authors || 'מחבר לא ידוע'}</BookAuthor>
-          </BookHeader>
+      <ReviewContent>
+        <BookHeader>
+          <BookTitle>{review.book?.title || 'שם ספר לא זמין'}</BookTitle>
+          <BookAuthor>{review.book?.authors || 'מחבר לא ידוע'}</BookAuthor>
+        </BookHeader>
 
-          <ReviewerName>{review.user?.full_name || 'אנונימי'}</ReviewerName>
+        <ReviewerName>{review.user?.full_name || 'אנונימי'}</ReviewerName>
 
-          <ReviewText>
-            {review.comment_text ? (
-              review.comment_text.length > 180
-                ? `${review.comment_text.slice(0, 180)}...`
-                : review.comment_text
-            ) : 'לא קיימת ביקורת'}
-          </ReviewText>
-        </ReviewContent>
-      </HorizontalReviewCard>
-    </SwiperSlide>
+        <ReviewText>
+          {review.comment_text ? (
+            review.comment_text.length > 180
+              ? `${review.comment_text.slice(0, 180)}...`
+              : review.comment_text
+          ) : 'לא קיימת ביקורת'}
+        </ReviewText>
+      </ReviewContent>
+    </HorizontalReviewCard>
+  </Link>
+</SwiperSlide>
+
+
   ))}
 </Swiper>
 

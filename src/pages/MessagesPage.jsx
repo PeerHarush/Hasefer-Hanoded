@@ -22,29 +22,22 @@ const MessagesPage = () => {
         });
         const data = await res.json();
 
-        const uniqueChatsMap = new Map();
+        const uniqueChats = Object.values(
+  data.reduce((acc, room) => {
+    const userId = room.other_user?.id;
+    const bookId = room.listing?.book?.id;
+    const key = `${userId}-${bookId}`;
 
-        data.forEach((room) => {
-          const userId = room.other_user?.id;
-          const bookId = room.listing?.book?.id;
-          const key = `${userId}-${bookId}`;
+    if (!acc[key] || new Date(room.created_at) > new Date(acc[key].created_at)) {
+      acc[key] = room;
+    }
 
-          if (!uniqueChatsMap.has(key)) {
-            uniqueChatsMap.set(key, room);
-          } else {
-            const existingRoom = uniqueChatsMap.get(key);
-            const newerRoom =
-              new Date(existingRoom.created_at) < new Date(room.created_at)
-                ? room
-                : existingRoom;
-            uniqueChatsMap.set(key, newerRoom);
-          }
-        });
+    return acc;
+  }, {})
+).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-        const uniqueChats = Array.from(uniqueChatsMap.values());
-        uniqueChats.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+setChatRooms(uniqueChats);
 
-        setChatRooms(uniqueChats);
       } catch (err) {
         console.error('שגיאה בהבאת שיחות:', err);
       }
