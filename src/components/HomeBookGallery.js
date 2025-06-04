@@ -44,8 +44,11 @@ const HomeBookGallery = () => {
         const booksData = await booksRes.json();
         const copiesData = await copiesRes.json();
 
-        const bookIdsWithCopies = new Set(copiesData.map(copy => copy.book?.id));
-        const filteredBooks = booksData.filter(book => bookIdsWithCopies.has(book.id));
+       const availableCopies = copiesData.filter(copy => !copy.is_sold); // או copy.status !== 'sold'
+        const bookIdsWithAvailableCopies = new Set(
+          availableCopies.map(copy => copy.book?.id));
+        const filteredBooks = booksData.filter(book => bookIdsWithAvailableCopies.has(book.id));
+
 
         const shuffledBooks = [...booksData].sort(() => Math.random() - 0.5);
         const shuffledWithCopies = [...filteredBooks].sort(() => Math.random() - 0.5);

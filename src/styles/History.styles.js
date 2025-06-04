@@ -13,6 +13,16 @@ export const PageContainer = styled.div`
   }
 `;
 
+export const ButtonsContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin: 1rem auto;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: fit-content;
+`;
+
+
 
 export const Title = styled.h2`
   text-align: center;
@@ -59,4 +69,25 @@ export const ActivityDate = styled.div`
 
 export const ActivityDescription = styled.div`
   font-weight: 500;
+`;
+
+export const Button = styled.button`
+  color: #252525;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 1rem;
+  background-color: ${({ $active }) => ($active ? '#e6b676' : 'rgb(233, 181, 114)')};
+
+  &:hover {
+    background-color: ${({ $active }) => ($active ? '#d89e52' : '#f1d9bc')};
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 `;

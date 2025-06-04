@@ -26,6 +26,7 @@ const TransactionsPage = () => {
   const [loading, setLoading] = useState(true);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedTransactionId, setSelectedTransactionId] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const navigate = useNavigate();
   const token = localStorage.getItem('access_token');
@@ -57,7 +58,6 @@ const TransactionsPage = () => {
       alert("העסקה בוטלה בהצלחה.");
       setShowCancelModal(false);
       setSelectedTransactionId(null);
-      window.location.reload();
     } catch (err) {
       alert("שגיאה בביטול העסקה");
       console.error(err);
@@ -97,26 +97,51 @@ const TransactionsPage = () => {
     }
   }, [token]);
 
-  const confirmTransaction = async (transactionId) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/transactions/${transactionId}`, {
-        method: 'PUT',
+ const confirmTransaction = async (transactionId) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/transactions/${transactionId}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status: 'completed' }),
+    });
+
+    if (!res.ok) throw new Error("עדכון סטטוס נכשל");
+
+    // שלוף את העותק (listing) לפי העסקה
+    const transaction = transactions.find(tx => tx.id === transactionId);
+    const listingId = transaction?.listing?.id;
+
+    if (listingId) {
+      // מחיקת העותק או סימון כלא זמין:
+      await fetch(`${API_BASE_URL}/book-listings/${listingId}`, {
+        method: 'DELETE', // אם אתה מעדיף למחוק ממש
         headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: 'completed' }),
+          Authorization: `Bearer ${token}`
+        }
       });
 
-      if (!res.ok) throw new Error("עדכון סטטוס נכשל");
-
-      alert("העסקה סומנה כהושלמה!");
-      window.location.reload();
-    } catch (err) {
-      alert("שגיאה באישור העסקה");
-      console.error(err);
+      // או לחילופין, עדכון זמינות:
+      // await fetch(`${API_BASE_URL}/book-listings/${listingId}`, {
+      //   method: 'PUT',
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({ is_available: false }),
+      // });
     }
-  };
+
+    setShowSuccessModal(true);
+  } catch (err) {
+    alert("שגיאה באישור העסקה");
+    console.error(err);
+  }
+};
+
+
 
   const groupedTransactions = transactions.reduce((acc, tx) => {
     const key = `${tx.seller.id}-${tx.buyer.id}-${tx.listing.book.title}`;
@@ -210,6 +235,7 @@ const TransactionsPage = () => {
       {transactionsWithChat.length === 0 ? (
         <p style={{ textAlign: 'center' }}>אין עסקאות תואמות לסינון הנבחר.</p>
       ) : (
+        
         <TransactionsGrid>
           {transactionsWithChat.map(tx => (
             <TransactionBox key={tx.groupedIds.join('-')} status={tx.status}>
@@ -268,8 +294,28 @@ const TransactionsPage = () => {
               </InfoSection>
             </TransactionBox>
           ))}
+          
         </TransactionsGrid>
-      )}
+        
+     )}
+
+<Modal show={showSuccessModal} onHide={() => setShowSuccessModal(false)} centered>
+  <Modal.Header>
+    <Modal.Title>העסקה הושלמה ✅</Modal.Title>
+  </Modal.Header>
+  <Modal.Body style={{ textAlign: 'center' }}>
+    סימנת בהצלחה שהעסקה הושלמה! 🎉<br />
+    קיבלת על כך 30 נקודות 🪙
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="success" onClick={() => {
+      setShowSuccessModal(false);
+      window.location.reload();
+    }}>
+      סגור
+    </Button>
+  </Modal.Footer>
+</Modal>
     </PageContainer>
   );
 };

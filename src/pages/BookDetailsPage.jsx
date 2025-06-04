@@ -21,6 +21,7 @@ import {
   MapWrapper,
   SmallButton,
 } from '../styles/BookDetailsPage.styles';
+import { Modal, Button as BootstrapButton } from 'react-bootstrap';
 
 import Table from 'react-bootstrap/Table';
 import BookReviews from '../components/BookReviews.js'; // ייבוא קומפוננטת הביקורות
@@ -29,6 +30,7 @@ import Map, { geocodeAddress, calculateDistance } from '../components/Map'; // �
 
 
 const BookDetails = () => {
+  const [showReviewSuccess, setShowReviewSuccess] = useState(false);
   const { bookTitle } = useParams();
   const [book, setBook] = useState(null);
   const [favorites, setFavorites] = useState(new Set());
@@ -365,7 +367,7 @@ const BookDetails = () => {
                         ) : (
                           <span
                             onClick={() => handleReserveAndStartChat(copy)}
-                            style={{ cursor: 'pointer', color: '#007bff', textDecoration: 'underline' }}
+                            style={{ cursor: 'pointer', color: '#007bff' }}
                           >
                             לשריון ✅
                           </span>
@@ -426,8 +428,26 @@ const BookDetails = () => {
 
           {/* הוספת ביקורות */}
           <h3> ביקורות </h3>
-          <BookReviews bookId={book.id} />
+        <BookReviews
+          bookId={book.id}
+          onSuccess={() => setShowReviewSuccess(true)}
+        />
         </BookInfo>
+        <Modal show={showReviewSuccess} onHide={() => setShowReviewSuccess(false)} centered>
+            <Modal.Header>
+              <Modal.Title> ביקורת נשלחה בהצלחה!🎉</Modal.Title>
+            </Modal.Header>
+            <Modal.Body style={{ textAlign: 'center' }}>
+              תודה על הביקורת!<br />
+               קיבלת 50 נקודות🪙
+            </Modal.Body>
+            <Modal.Footer>
+              <BootstrapButton variant="success" onClick={() => setShowReviewSuccess(false)}>
+                סגור
+              </BootstrapButton>
+            </Modal.Footer>
+          </Modal>
+
 
         <Sidebar>
           <BookImage src={book.image_url} alt={book.title} />

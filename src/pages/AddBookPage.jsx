@@ -6,7 +6,9 @@ import {
   MapHelpText, MapContainer, ActionButton
 } from '../styles/AddBookPage.styles';
 import GenresSelect from "../components/GenresSelect";
-import Map from '../components/Map'; // הסרת ייבוא geocodeAddress - המפה תטפל בזה
+import Map from '../components/Map';
+import { Modal, Button as BootstrapButton } from 'react-bootstrap';
+
 
 const AddBookPage = () => {
   const [form, setForm] = useState({
@@ -20,6 +22,7 @@ const AddBookPage = () => {
     bookImage: null,
   });
   const fileInputRef = useRef(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [bookSuggestions, setBookSuggestions] = useState([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
@@ -185,7 +188,7 @@ const AddBookPage = () => {
         throw new Error(message);
       }
 
-      alert('📚 הספר נוסף בהצלחה!');
+setShowSuccessModal(true);
       setForm({
         bookTitle: '',
         bookAuthor: '',
@@ -276,11 +279,7 @@ const AddBookPage = () => {
             <Input name="bookAuthor" value={form.bookAuthor} onChange={handleChange} required />
           </FormGroup>
 
-          {showAutoFillButton && (
-            <ActionButton type="button" onClick={handleAutoFillBook}>
-              🔄 מלא פרטים אוטומטית
-            </ActionButton>
-          )}
+          
 
           <FormGroup>
             <Label>תקציר</Label>
@@ -354,7 +353,24 @@ const AddBookPage = () => {
           <Button type="submit" style={{ marginTop: '1rem' }}>הוסף ספר</Button>
         </form>
       </Card>
+      <Modal show={showSuccessModal} onHide={() => setShowSuccessModal(false)} centered>
+          <Modal.Header>
+            <Modal.Title> הספר נוסף!📚</Modal.Title>
+          </Modal.Header>
+          <Modal.Body style={{ textAlign: 'center' }}>
+            הוספת ספר בהצלחה! 🎉<br />
+            קיבלת על זה 50 נקודות 🪙
+          </Modal.Body>
+          <Modal.Footer>
+            <BootstrapButton variant="success" onClick={() => setShowSuccessModal(false)}>
+          סגור
+        </BootstrapButton>
+
+          </Modal.Footer>
+        </Modal>
+
     </Wrapper>
+    
   );
 };
 

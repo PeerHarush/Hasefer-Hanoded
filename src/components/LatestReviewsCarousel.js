@@ -26,7 +26,6 @@ const LatestReviewsCarousel = ({ reviews }) => {
   const location = useLocation();
 
   if (!reviews || reviews.length === 0) return null;
-console.log('🧾 ביקורות שהתקבלו לקרוסלה:', reviews);
 
   return (
     <>

@@ -121,7 +121,7 @@ export const Title = styled.h2`
     `;
 
     export const ConfirmButton = styled.button`
-      background: rgb(215, 184, 146);
+      
       color: white;
       border: none;
       border-radius: 6px;
@@ -130,9 +130,11 @@ export const Title = styled.h2`
       cursor: pointer;
       margin-top: 10px;
 
-      &:hover {
-        background: rgb(241, 206, 162);
-      }
+        background-color: rgb(241, 206, 162);
+
+  &:hover {
+     background-color: rgb(247, 192, 126);
+  }
     `;
 
 
