@@ -250,3 +250,15 @@ export const SimilarBooksSection = styled.div`
     padding: 30px 15px 0 15px;
   }
 `;
+
+export const GenreLink = styled(Link)`
+  color:rgb(0, 1, 1);
+  text-decoration: underline;
+  font-weight: 500;
+  margin: 0 5px;
+  cursor: pointer;
+
+ 
+}
+`;
+

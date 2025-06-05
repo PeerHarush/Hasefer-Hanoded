@@ -20,12 +20,16 @@ import {
   AddressInput,
   MapWrapper,
   SmallButton,
+  SimilarBooksSection,
+  GenreLink
 } from '../styles/BookDetailsPage.styles';
 import { Modal, Button as BootstrapButton } from 'react-bootstrap';
 
 import Table from 'react-bootstrap/Table';
 import BookReviews from '../components/BookReviews.js'; // ייבוא קומפוננטת הביקורות
 import Map, { geocodeAddress, calculateDistance } from '../components/Map'; // ייבוא קומפוננטת המפה וחישוב מרחק
+import SimilarBooksList from '../components/SimilarBooksList';
+import { genresList } from "../components/GenresSelect";
 
 
 
@@ -104,6 +108,12 @@ const BookDetails = () => {
 
     fetchBook();
   }, [bookTitle]);
+
+  useEffect(() => {
+    if (book) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [book]);
 
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -317,12 +327,37 @@ const BookDetails = () => {
 
 
   return (
+  <>
     <PageContainer>
-
       <Wrapper>
         <BookInfo>
           <h1 ref={titleRef}>{book.title}</h1>
           <h3>{book.authors}</h3>
+          
+          {/* ✅ ז׳אנרים לחיץ */}
+          {book.genres && book.genres.length > 0 && (
+            <div style={{ fontSize: '1rem', margin: '10px 0', color: '#555' }}>
+               ז׳אנר:{' '}
+              {book.genres.map((genre) => {
+                const genreObj = genresList.find(g => g.name === genre);
+                const genreId = genreObj ? genreObj.id : null;
+                
+                return genreId ? (
+                  <GenreLink
+                    key={genre}
+                    to={`/AllBooks?genre=${encodeURIComponent(genreId)}`}
+                  >
+                    {genre}
+                  </GenreLink>
+                ) : (
+                  <span key={genre} style={{ marginLeft: '5px', marginRight: '5px' }}>
+                    {genre}
+                  </span>
+                  );
+              })}
+            </div>
+          )}
+
           <BookImageMobile src={book.image_url} alt={book.title} />
           <BookDescription>{book.book_description || book.description}</BookDescription>
 
@@ -354,13 +389,11 @@ const BookDetails = () => {
                       <td>{conditionTranslations[copy.condition]}</td>
                       <td>{copy.price ? `${copy.price} ₪` : 'חינם'}</td>
                       <td>{copy.location}</td>
-                    <td>
-                    {distanceMap[copy.id] !== undefined
-                      ? `${distanceMap[copy.id]} ק"מ`
-                      : '—'}
-                  </td>
-
-
+                      <td>
+                        {distanceMap[copy.id] !== undefined
+                          ? `${distanceMap[copy.id]} ק"מ`
+                          : '—'}
+                      </td>
                       <td>
                         {reservedCopies.has(copy.id) ? (
                           <span style={{ textDecoration: 'underline' }}>נשמר 📌</span>
@@ -400,11 +433,11 @@ const BookDetails = () => {
                     </InputRow>
                   )}
 
-
                   <SmallButton onClick={() => setShowMap(!showMap)}>
                     {showMap ? 'הסתר מפה' : 'הצג מפה'}
                   </SmallButton>
                 </ControlsContainer>
+                
                 {showMap && (
                   <MapWrapper>
                     <Map
@@ -421,33 +454,32 @@ const BookDetails = () => {
                     />
                   </MapWrapper>
                 )}
-
               </MapControlsWrapper>
             </>
           )}
 
           {/* הוספת ביקורות */}
           <h3> ביקורות </h3>
-        <BookReviews
-          bookId={book.id}
-          onSuccess={() => setShowReviewSuccess(true)}
-        />
+          <BookReviews
+            bookId={book.id}
+            onSuccess={() => setShowReviewSuccess(true)}
+          />
         </BookInfo>
+        
         <Modal show={showReviewSuccess} onHide={() => setShowReviewSuccess(false)} centered>
-            <Modal.Header>
-              <Modal.Title> ביקורת נשלחה בהצלחה!🎉</Modal.Title>
-            </Modal.Header>
-            <Modal.Body style={{ textAlign: 'center' }}>
-              תודה על הביקורת!<br />
-               קיבלת 50 נקודות🪙
-            </Modal.Body>
-            <Modal.Footer>
-              <BootstrapButton variant="success" onClick={() => setShowReviewSuccess(false)}>
-                סגור
-              </BootstrapButton>
-            </Modal.Footer>
-          </Modal>
-
+          <Modal.Header>
+            <Modal.Title> ביקורת נשלחה בהצלחה!🎉</Modal.Title>
+          </Modal.Header>
+          <Modal.Body style={{ textAlign: 'center' }}>
+            תודה על הביקורת!<br />
+            קיבלת 50 נקודות🪙
+          </Modal.Body>
+          <Modal.Footer>
+            <BootstrapButton variant="success" onClick={() => setShowReviewSuccess(false)}>
+              סגור
+            </BootstrapButton>
+          </Modal.Footer>
+        </Modal>
 
         <Sidebar>
           <BookImage src={book.image_url} alt={book.title} />
@@ -472,7 +504,10 @@ const BookDetails = () => {
         </Sidebar>
       </Wrapper>
     </PageContainer>
-  );
+    
+    {book && <SimilarBooksList currentBook={book} />}
+  </>
+);
 };
 
 export default BookDetails;
