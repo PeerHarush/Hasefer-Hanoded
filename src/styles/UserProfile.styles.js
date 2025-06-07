@@ -13,7 +13,6 @@ export const Wrapper = styled.div`
   }
 `;
 
-
 export const ProfileCard = styled.div`
   background: #fff;
   border-radius: 12px;
@@ -61,7 +60,6 @@ export const InputContainer = styled.div`
   flex-direction: column;
   gap: 20px;
   width: 100%;
-
 `;
 
 export const InputRow = styled.div`
@@ -70,7 +68,6 @@ export const InputRow = styled.div`
   justify-content: space-between;
   gap: 10px;
 `;
-
 
 export const Label = styled.label`
   font-weight: bold;
@@ -140,3 +137,97 @@ export const FieldValue = styled.span`
   color: #000;
 `;
 
+/* סטיילים להגדרות התראות */
+export const NotificationSection = styled.div`
+  margin: 25px 0;
+  padding: 0;
+  background: transparent;
+`;
+
+export const NotificationTitle = styled.h3`
+  color: rgb(144, 83, 8);
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const NotificationRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 0;
+  border-bottom: 1px solid #f0f0f0;
+`;
+
+export const NotificationInfo = styled.div`
+  flex: 1;
+`;
+
+export const NotificationLabel = styled.h4`
+  margin: 0 0 5px 0;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 600;
+`;
+
+export const NotificationDescription = styled.p`
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+`;
+
+export const SwitchContainer = styled.div`
+  position: relative;
+  display: inline-block;
+  width: 54px;
+  height: 28px;
+`;
+
+export const SwitchInput = styled.input`
+  opacity: 0;
+  width: 0;
+  height: 0;
+`;
+
+export const SwitchSlider = styled.span`
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: ${props => props.$isEnabled ? 'rgb(241, 206, 162)' : '#ccc'};
+  border-radius: 28px;
+  transition: 0.3s ease;
+  
+  &:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: ${props => props.$isEnabled ? '29px' : '3px'};
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  
+  &:hover {
+    background-color: ${props => props.$isEnabled ? 'rgb(247, 192, 126)' : '#bbb'};
+  }
+`;
+
+export const NotificationMessage = styled.div`
+  margin-top: 12px;
+  padding: 12px;
+  background-color: ${props => props.$isSuccess ? '#e8f5e8' : '#fee'};
+  color: ${props => props.$isSuccess ? '#2d5a2d' : '#8b2635'};
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+  border-left: 4px solid ${props => props.$isSuccess ? '#4CAF50' : '#f44336'};
+`;
