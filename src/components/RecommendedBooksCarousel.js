@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FavoriteButton } from '../styles/Home.styles';
 
 import {
   HomeBookCard,
@@ -24,7 +26,60 @@ const RecommendedBooksCarousel = ({ userGenres }) => {
   const [visibleCount, setVisibleCount] = useState(10);
   const swiperRef = useRef();
   const location = useLocation();
+  const [favorites, setFavorites] = useState(new Set());
+  const isLoggedIn = !!localStorage.getItem('access_token');
 
+  // --- useEffect לטעינת רשימת המועדפים ---
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/wishlist`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error('שגיאה בטעינת מועדפים');
+
+        const data = await res.json();
+        const favoritesSet = new Set(data.map(item => item.book.id));
+        setFavorites(favoritesSet);
+      } catch (err) {
+        console.error(err.message);
+      }
+    };
+
+    fetchFavorites();
+  }, []);
+
+  // --- toggleFavorite ---
+  const toggleFavorite = async (book) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return alert('יש להתחבר');
+
+    const id = book.id;
+
+    try {
+      const method = favorites.has(id) ? 'DELETE' : 'POST';
+      const res = await fetch(`${API_BASE_URL}/wishlist/${id}`, {
+        method,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error('שגיאה בשרת');
+
+      setFavorites((prev) => {
+        const newSet = new Set(prev);
+        method === 'POST' ? newSet.add(id) : newSet.delete(id);
+        return newSet;
+      });
+    } catch (err) {
+      console.error(err.message);
+    }
+  };
+
+  // --- useEffect לטעינת הספרים ---
   useEffect(() => {
     const fetchBooks = async () => {
       try {
@@ -67,12 +122,12 @@ const RecommendedBooksCarousel = ({ userGenres }) => {
             1800: { slidesPerView: 6, spaceBetween: 20 },
             1255: { slidesPerView: 5, spaceBetween: 20 },
             1024: { slidesPerView: 4, spaceBetween: 30 },
-            768:  { slidesPerView: 3, spaceBetween: 20 },
-            480:  { slidesPerView: 2, spaceBetween: 15 },
-            0:    { slidesPerView: 1, spaceBetween: 10 },
+            768: { slidesPerView: 3, spaceBetween: 20 },
+            480: { slidesPerView: 2, spaceBetween: 15 },
+            0: { slidesPerView: 1, spaceBetween: 10 },
           }}
         >
-          {recommendedBooks.slice(0, visibleCount).map(book => (
+          {recommendedBooks.slice(0, visibleCount).map((book) => (
             <SwiperSlide key={book.id}>
               <HomeBookCard>
                 <Link
@@ -87,6 +142,18 @@ const RecommendedBooksCarousel = ({ userGenres }) => {
                   <HomeBookTitle>{book.title}</HomeBookTitle>
                   <HomeBookAuthor>{book.authors || 'לא ידוע'}</HomeBookAuthor>
                 </Link>
+
+                {isLoggedIn && (
+                  <FavoriteButton
+                    $isFavorite={favorites.has(book.id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleFavorite(book);
+                    }}
+                  >
+                    {favorites.has(book.id) ? <FaHeart /> : <FaRegHeart />}
+                  </FavoriteButton>
+                )}
               </HomeBookCard>
             </SwiperSlide>
           ))}
@@ -96,7 +163,6 @@ const RecommendedBooksCarousel = ({ userGenres }) => {
           <FiChevronLeft />
         </SwiperNavButton>
       </CarouselWrapper>
-
     </>
   );
 };

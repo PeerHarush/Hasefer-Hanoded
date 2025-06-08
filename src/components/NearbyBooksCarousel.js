@@ -225,9 +225,6 @@ const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
         background: '#f9f9f9'
       }}>
         <div style={{ fontSize: '18px', marginBottom: '10px' }}>🔍 מחפש ספרים בקרבתך...</div>
-        <div style={{ fontSize: '14px', color: '#888' }}>
-          DEBUG: {debugInfo || 'מקבל מיקום...'}
-        </div>
       </div>
     );
   }
@@ -245,9 +242,6 @@ const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
         background: '#ffebee'
       }}>
         <div style={{ fontSize: '18px', marginBottom: '10px' }}>❌ {error}</div>
-        <div style={{ fontSize: '14px', color: '#666' }}>
-          DEBUG: {debugInfo}
-        </div>
       </div>
     );
   }
@@ -268,9 +262,7 @@ const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
         <div style={{ fontSize: '14px' }}>
           אנא אפשר גישה למיקום או וודא שיש לך כתובת בפרופיל
         </div>
-        <div style={{ fontSize: '12px', color: '#888', marginTop: '10px' }}>
-          DEBUG: {debugInfo}
-        </div>
+       
       </div>
     );
   }
@@ -290,9 +282,8 @@ const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
         <div style={{ fontSize: '14px' }}>
           נסה לחפש בעיר הגדולה הקרובה או הרחב את החיפוש
         </div>
-        <div style={{ fontSize: '12px', color: '#888', marginTop: '10px' }}>
-          DEBUG: {debugInfo}
-        </div>
+        
+        
       </div>
     );
   }
@@ -301,14 +292,13 @@ const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
     <>
       <GlobalSwiperStyle />
       <SectionTitle>
-        <FiMapPin style={{ marginLeft: '8px', color: '#28a745' }} />
+       
         ספרים זמינים בקרבתך (עד 10 ק"מ)
+         <FiMapPin style={{ marginLeft: '8px', color: '#28a745' }} />
         <div style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'normal', marginTop: '5px' }}>
           {nearbyBooks.length} ספרים נמצאו • לפי {locationSource}
         </div>
-        <div style={{ fontSize: '0.7rem', color: '#888', fontWeight: 'normal', marginTop: '3px' }}>
-          DEBUG: {debugInfo}
-        </div>
+       
       </SectionTitle>
       
       <CarouselWrapper>

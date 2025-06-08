@@ -317,10 +317,7 @@ function Home() {
       {/* סקשן ספרים בקרבתך - רק למשתמשים מחוברים */}
       {userName && (
         <BookSection>
-          {/* הדפסת debug - תוכלי למחוק אחר כך */}
-          <div style={{ background: '#f0f0f0', padding: '10px', margin: '10px 0', fontSize: '12px' }}>
-            DEBUG: userName={userName}, userProfileAddress="{userProfileAddress}", userPosition={userPosition ? `[${userPosition}]` : 'null'}
-          </div>
+          
           
           <NearbyBooksCarousel 
             userPosition={userPosition} 
