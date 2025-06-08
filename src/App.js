@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
@@ -29,8 +29,22 @@ function AppContent() {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
 
+  //Insert Chatbase script on load
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://www.chatbase.co/embed.min.js';
+    script.defer = true;
+    script.setAttribute('chatbotId', '6ceWUMKzaeQPxohY6xLct');
+    script.setAttribute('domain', 'www.chatbase.co');
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
   return (
-    <div style={{ position: 'relative'}}>
+    <div style={{ position: 'relative' }}>
       <Header />
 
       {!isHomePage && <BackButton />}
@@ -56,11 +70,8 @@ function AppContent() {
   );
 }
 
-
 function App() {
-  return (
-      <AppContent />
-  );
+  return <AppContent />;
 }
 
 export default App;

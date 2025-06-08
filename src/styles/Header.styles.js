@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { Link } from "react-router-dom";
 
 export const Wrapper = styled.div`
-  background-color: rgba(243, 227, 195, 1);
+  background-color: rgba(243, 227, 195);
 `;
 
 export const StyledNavbar = styled.nav`
