@@ -25,6 +25,7 @@ function AllBooksPage() {
 const [allBooks, setAllBooks] = useState([]);
 const [filteredBooks, setFilteredBooks] = useState([]);
 
+
   const selectedGenreName = selectedCategory
     ? genresList.find((genre) => genre.id === selectedCategory)?.name
     : null;
@@ -45,6 +46,13 @@ useEffect(() => {
 
   fetchBooks();
 }, []);
+
+
+if (window.location.pathname.toLowerCase().includes('allbooks') && allBooks.length > 0) {
+  console.log("📚 כל הספרים (allBooks) בפורמט JSON:");
+  console.log(`סה"כ ספרים: ${allBooks.length}`);
+  console.log(JSON.stringify(allBooks, null, 2));
+}
 
   useEffect(() => {
   const fetchBooks = async () => {
