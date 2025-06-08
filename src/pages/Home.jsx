@@ -203,27 +203,20 @@ function Home() {
     fetchNotifications();
   }, []);
 
-  useEffect(() => {
-    const fetchCompletedTransactions = async () => {
-      const token = localStorage.getItem('access_token');
-      if (!token) return;
+    useEffect(() => {
+  const fetchCompletedTransactions = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/transactions/completed`);
+      const data = await res.json();
+      setRecycledCount(Array.isArray(data) ? data.length : 0);
+    } catch (err) {
+      console.error('שגיאה בטעינת עסקאות שהושלמו:', err);
+    }
+  };
 
-      try {
-        const res = await fetch(`${API_BASE_URL}/transactions/completed`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+  fetchCompletedTransactions();
+}, []);
 
-        const data = await res.json();
-
-        // נניח ש־data הוא מערך של עסקאות שהושלמו
-        setRecycledCount(Array.isArray(data) ? data.length : 0);
-      } catch (err) {
-        console.error('שגיאה בטעינת עסקאות שהושלמו:', err);
-      }
-    };
-
-    fetchCompletedTransactions();
-  }, []);
 
   const markAsRead = (notificationId) => {
     const updatedNotifications = notifications.map(note =>
