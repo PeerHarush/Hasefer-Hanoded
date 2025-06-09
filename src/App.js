@@ -29,19 +29,19 @@ function AppContent() {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
 
-  //Insert Chatbase script on load
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://www.chatbase.co/embed.min.js';
-    script.defer = true;
-    script.setAttribute('chatbotId', '6ceWUMKzaeQPxohY6xLct');
-    script.setAttribute('domain', 'www.chatbase.co');
-    document.body.appendChild(script);
+ // Insert Chatbase script on load
+useEffect(() => {
+  const script = document.createElement('script');
+  script.src = 'https://www.chatbase.co/embed.min.js';
+  script.defer = true;
+  script.id = 'PDeSZzqzH4IfjLVuxt782';
+  script.setAttribute('domain', 'www.chatbase.co');
+  document.body.appendChild(script);
 
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
+  return () => {
+    document.body.removeChild(script);
+  };
+}, []);
 
   return (
     <div style={{ position: 'relative' }}>

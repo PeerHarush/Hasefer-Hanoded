@@ -17,11 +17,20 @@ import {
   ImageContainer,
   GenresListItem,
   GenreIcon,
+  NotificationSection,
+  NotificationTitle,
+  NotificationRow,
+  NotificationInfo,
+  NotificationLabel,
+  NotificationDescription,
+  SwitchContainer,
+  SwitchInput,
+  SwitchSlider,
+  NotificationMessage,
 } from '../styles/UserProfile.styles';
 import API_BASE_URL from '../config';
 import GenresSelect from '../components/GenresSelect';
 import Map from '../components/Map';
-
 
 function UserProfile() {
   const [profile, setProfile] = useState({
@@ -32,6 +41,7 @@ function UserProfile() {
     favorite_genres: [],
     avatar: null,
     points: 0,
+    email_notifications_enabled: true,
   });
 
   const [editMode, setEditMode] = useState({
@@ -41,7 +51,9 @@ function UserProfile() {
     favorite_genres: false,
   });
 
-  // הוספת state למפה
+  const [notificationLoading, setNotificationLoading] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  
   const [mapPosition, setMapPosition] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const fileInputRef = useRef(null);
@@ -64,6 +76,7 @@ function UserProfile() {
           favorite_genres: Array.isArray(data.favorite_genres)
             ? data.favorite_genres
             : data.favorite_genres?.split(',') || [],
+          email_notifications_enabled: data.email_notifications_enabled ?? true,
         });
 
         if (data.avatar_url) {
@@ -75,6 +88,46 @@ function UserProfile() {
         alert('לא ניתן לטעון את הפרופיל. ודאי שאת מחוברת ושהשרת פעיל.');
       });
   }, []);
+
+  const handleNotificationToggle = async () => {
+    if (notificationLoading) return;
+    
+    setNotificationLoading(true);
+    const newValue = !profile.email_notifications_enabled;
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      
+      const res = await fetch(`${API_BASE_URL}/users/notifications`, {
+        method: 'PUT',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ enabled: newValue })
+      });
+
+      if (res.ok) {
+        setProfile(prev => ({ 
+          ...prev, 
+          email_notifications_enabled: newValue 
+        }));
+        
+        setNotificationMessage(newValue ? 
+          '✅ התראות מייל הופעלו בהצלחה!' : 
+          '❌ התראות מייל הושבתו'
+        );
+      } else {
+        throw new Error('שגיאה בעדכון ההגדרות');
+      }
+    } catch (err) {
+      setNotificationMessage('❌ שגיאה בעדכון ההגדרות');
+      console.error('שגיאה:', err);
+    } finally {
+      setNotificationLoading(false);
+      setTimeout(() => setNotificationMessage(''), 3000);
+    }
+  };
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -120,7 +173,6 @@ function UserProfile() {
       if (!res.ok) throw new Error('עדכון נכשל');
       alert('הפרופיל נשמר בהצלחה!');
       
-      // סגירת מצב עריכה אחרי שמירה מוצלחת
       setEditMode(prev => ({ ...prev, address: false }));
     } catch (err) {
       console.error(err);
@@ -245,6 +297,42 @@ function UserProfile() {
             <p>אין ז'אנרים אהובים</p>
           )}
         </GenreList>
+
+        <NotificationSection>
+          <NotificationTitle>
+            📧 הגדרות התראות
+          </NotificationTitle>
+          
+          <NotificationRow>
+            <NotificationInfo>
+              <NotificationLabel>
+                התראות בדואר אלקטרוני
+              </NotificationLabel>
+              <NotificationDescription>
+                קבל התראות על הודעות חדשות ועסקאות במייל
+              </NotificationDescription>
+            </NotificationInfo>
+            
+            <SwitchContainer>
+              <SwitchInput
+                type="checkbox"
+                checked={profile.email_notifications_enabled}
+                onChange={handleNotificationToggle}
+                disabled={notificationLoading}
+              />
+              <SwitchSlider 
+                $isEnabled={profile.email_notifications_enabled}
+                onClick={handleNotificationToggle}
+              />
+            </SwitchContainer>
+          </NotificationRow>
+
+          {notificationMessage && (
+            <NotificationMessage $isSuccess={notificationMessage.includes('✅')}>
+              {notificationMessage}
+            </NotificationMessage>
+          )}
+        </NotificationSection>
 
         <PointsText> נקודות: {profile.points}🪙</PointsText>
 
