@@ -301,7 +301,6 @@ const confirmTransaction = async (transactionId) => {
   <Modal.Footer>
     <Button variant="success" onClick={() => {
       setShowSuccessModal(false);
-      window.location.reload();
     }}>
       סגור
     </Button>
