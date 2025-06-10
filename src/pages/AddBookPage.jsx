@@ -341,7 +341,7 @@ setShowSuccessModal(true);
                   setForm(prev => ({ ...prev, location: newAddress }));
                 }}
                 userProfileAddress={userAddress}
-                autoLocate={true} // תמיד ננסה לאתר מיקום נוכחי
+                autoLocate={true}  
                 helpText="לחץ על המפה לעדכון המיקום או הקלד כתובת למעלה"
                 onAddressValidationChange={(status) => {
                   setAddressValidation(status);

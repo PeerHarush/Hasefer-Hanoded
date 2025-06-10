@@ -130,3 +130,32 @@ export const LoadingSpinner = styled.div`
     100% { transform: rotate(360deg); }
   }
 `;
+
+
+export const CenteredLoadingBox = styled.div`
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+`;
+
+export const StyledLoadingSpinner = styled.div`
+  width: 24px;
+  height: 24px;
+  margin: 0 auto 10px;
+  border: 3px solid #ccc;
+  border-top: 3px solid #333;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+export const LoadingText = styled.div`
+  font-size: 16px;
+  color: #666;
+`;

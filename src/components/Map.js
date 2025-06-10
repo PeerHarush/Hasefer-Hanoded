@@ -13,7 +13,10 @@ import {
   SuggestedAddress,
   ButtonGroup,
   ValidationButton,
-  LoadingSpinner
+  LoadingSpinner,
+   CenteredLoadingBox,
+  StyledLoadingSpinner,
+  LoadingText
 } from '../styles/Map.styles';
 
 // הגדרת אייקונים של Leaflet
@@ -428,10 +431,11 @@ const Map = ({
   // מסך טעינה
   if (isLoadingLocation) {
     return (
-      <div style={{ textAlign: 'center', padding: '40px', color: '#666', fontSize: '16px' }}>
-        <LoadingSpinner style={{ marginBottom: '10px' }} />
-        <div>מאתר את המיקום הנוכחי...</div>
-      </div>
+      <CenteredLoadingBox>
+        <StyledLoadingSpinner />
+        <LoadingText>מאתר את המיקום הנוכחי...</LoadingText>
+      </CenteredLoadingBox>
+
     );
   }
 
