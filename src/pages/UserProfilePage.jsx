@@ -89,45 +89,22 @@ function UserProfile() {
       });
   }, []);
 
-  const handleNotificationToggle = async () => {
-    if (notificationLoading) return;
-    
-    setNotificationLoading(true);
-    const newValue = !profile.email_notifications_enabled;
-    
-    try {
-      const token = localStorage.getItem('access_token');
-      
-      const res = await fetch(`${API_BASE_URL}/users/notifications`, {
-        method: 'PUT',
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ enabled: newValue })
-      });
+ const handleNotificationToggle = () => {
+  if (notificationLoading) return;
 
-      if (res.ok) {
-        setProfile(prev => ({ 
-          ...prev, 
-          email_notifications_enabled: newValue 
-        }));
-        
-        setNotificationMessage(newValue ? 
-          '✅ התראות מייל הופעלו בהצלחה!' : 
-          '❌ התראות מייל הושבתו'
-        );
-      } else {
-        throw new Error('שגיאה בעדכון ההגדרות');
-      }
-    } catch (err) {
-      setNotificationMessage('❌ שגיאה בעדכון ההגדרות');
-      console.error('שגיאה:', err);
-    } finally {
-      setNotificationLoading(false);
-      setTimeout(() => setNotificationMessage(''), 3000);
-    }
-  };
+  const newValue = !profile.email_notifications_enabled;
+
+  setProfile(prev => ({ 
+    ...prev, 
+    email_notifications_enabled: newValue 
+  }));
+
+  setNotificationLoading(true);
+  setTimeout(() => {
+    setNotificationLoading(false);
+    setNotificationMessage('');
+  }, 2500);
+};
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -298,41 +275,41 @@ function UserProfile() {
           )}
         </GenreList>
 
-        <NotificationSection>
-          <NotificationTitle>
-            📧 הגדרות התראות
-          </NotificationTitle>
-          
-          <NotificationRow>
-            <NotificationInfo>
-              <NotificationLabel>
-                התראות בדואר אלקטרוני
-              </NotificationLabel>
-              <NotificationDescription>
-                קבל התראות על הודעות חדשות ועסקאות במייל
-              </NotificationDescription>
-            </NotificationInfo>
+          <NotificationSection>
+            <NotificationTitle>
+              📧 הגדרות התראות
+            </NotificationTitle>
             
-            <SwitchContainer>
-              <SwitchInput
-                type="checkbox"
-                checked={profile.email_notifications_enabled}
-                onChange={handleNotificationToggle}
-                disabled={notificationLoading}
-              />
-              <SwitchSlider 
-                $isEnabled={profile.email_notifications_enabled}
-                onClick={handleNotificationToggle}
-              />
-            </SwitchContainer>
-          </NotificationRow>
+            <NotificationRow>
+              <NotificationInfo>
+                <NotificationLabel>
+                  התראות בדואר אלקטרוני
+                </NotificationLabel>
+                <NotificationDescription>
+                  קבל התראות על הודעות חדשות ועסקאות במייל
+                </NotificationDescription>
+              </NotificationInfo>
+              
+              <SwitchContainer>
+                <SwitchInput
+                  type="checkbox"
+                  checked={profile.email_notifications_enabled}
+                  onChange={handleNotificationToggle}
+                  disabled={notificationLoading}
+                />
+                <SwitchSlider 
+                  $isEnabled={profile.email_notifications_enabled}
+                  onClick={handleNotificationToggle}
+                />
+              </SwitchContainer>
+            </NotificationRow>
 
-          {notificationMessage && (
-            <NotificationMessage $isSuccess={notificationMessage.includes('✅')}>
-              {notificationMessage}
-            </NotificationMessage>
-          )}
-        </NotificationSection>
+            {notificationMessage && (
+              <NotificationMessage $isSuccess={notificationMessage.includes('✅')}>
+                {notificationMessage}
+              </NotificationMessage>
+            )}
+          </NotificationSection>
 
         <PointsText> נקודות: {profile.points}🪙</PointsText>
 
