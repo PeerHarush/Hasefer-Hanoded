@@ -2,13 +2,12 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import API_BASE_URL from '../config';
 import {
   Wrapper, Card, Title, Subtitle, FormGroup, Label, Input, Button,
-  ImageUploadContainer, PreviewImage, EditAddressButton, Select, SuggestionsList,
-  MapHelpText, MapContainer, ActionButton
+  ImageUploadContainer, PreviewImage, Select, SuggestionsList, MapContainer,ModalFooter, ModalButton
 } from '../styles/AddBookPage.styles';
 import GenresSelect from "../components/GenresSelect";
 import Map from '../components/Map';
 import { Modal, Button as BootstrapButton } from 'react-bootstrap';
-
+import { useNavigate } from 'react-router-dom';
 
 const AddBookPage = () => {
   const [form, setForm] = useState({
@@ -23,6 +22,7 @@ const AddBookPage = () => {
   });
   const fileInputRef = useRef(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const navigate = useNavigate();
 
   const [bookSuggestions, setBookSuggestions] = useState([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
@@ -353,21 +353,24 @@ setShowSuccessModal(true);
           <Button type="submit" style={{ marginTop: '1rem' }}>הוסף ספר</Button>
         </form>
       </Card>
-      <Modal show={showSuccessModal} onHide={() => setShowSuccessModal(false)} centered>
-          <Modal.Header>
-            <Modal.Title> הספר נוסף!📚</Modal.Title>
-          </Modal.Header>
-          <Modal.Body style={{ textAlign: 'center' }}>
-            הוספת ספר בהצלחה! 🎉<br />
-            קיבלת על זה 50 נקודות 🪙
-          </Modal.Body>
-          <Modal.Footer>
-            <BootstrapButton variant="success" onClick={() => setShowSuccessModal(false)}>
-          סגור
-        </BootstrapButton>
+                <Modal show={showSuccessModal} onHide={() => setShowSuccessModal(false)} centered>
+        <Modal.Header>
+          <Modal.Title>הספר נוסף! 📚</Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ textAlign: 'center' }}>
+          הוספת ספר בהצלחה! 🎉<br />
+          קיבלת על זה 50 נקודות 🪙
+        </Modal.Body>
+<Modal.Footer as={ModalFooter}>
+  <ModalButton className="home" onClick={() => navigate('/')}>
+    חזרה לדף הבית
+  </ModalButton>
+  <ModalButton className="close" onClick={() => setShowSuccessModal(false)}>
+    סגור
+  </ModalButton>
+</Modal.Footer>
+      </Modal>
 
-          </Modal.Footer>
-        </Modal>
 
     </Wrapper>
     

@@ -27,107 +27,73 @@ const UserActivityPage = () => {
   const userId = localStorage.getItem('user_id');
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchActivityData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const [userRes, reviewsRes, transactionsRes, listingsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/users`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_BASE_URL}/reviews`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_BASE_URL}/transactions`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_BASE_URL}/book-listings`, { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
-
-        if (!userRes.ok) throw new Error('שגיאה בטעינת פרטי המשתמש');
-
-        const [transactions, listings, reviewsRaw] = await Promise.all([
-          transactionsRes.json(),
-          listingsRes.json(),
-          reviewsRes.json()
-        ]);
-
-        const reviews = Array.isArray(reviewsRaw) ? reviewsRaw : [];
-
-        const activity = [];
-        const points = [];
-
-        // הרשמה
-        activity.push({ type: 'signup', description: '🎉 נרשמת למערכת!', date: null });
-        points.push({ description: '🎉 קיבלת 10 נקודות על הרשמה', date: null, points: 10 });
-
-        transactions.forEach(tx => {
-          const isBuyer = String(tx.buyer?.id) === userId;
-          const isSeller = String(tx.seller?.id) === userId;
-
-          if (isBuyer && tx.status === 'completed') {
-            activity.push({
-              type: 'purchase',
-              description: `✅ השלמת רכישה של "${tx.listing.book.title}"`,
-              date: tx.created_at
-            });
-            points.push({
-              description: `✅ קיבלת 20 נקודות על רכישת "${tx.listing.book.title}"`,
-              date: tx.created_at,
-              points: 20
-            });
-          }
-
-          if (isSeller && tx.status === 'completed') {
-            activity.push({
-              type: 'sold',
-              description: `💰 מכרת את הספר "${tx.listing.book.title}"`,
-              date: tx.created_at
-            });
-            points.push({
-              description: `💰 קיבלת 30 נקודות על מכירת "${tx.listing.book.title}"`,
-              date: tx.created_at,
-              points: 30
-            });
-          }
-
-          if (isBuyer && tx.status === 'pending') {
-            activity.push({
-              type: 'reserve',
-              description: `📌 שריינת את הספר "${tx.listing.book.title}"`,
-              date: tx.created_at
-            });
-          }
+        const res = await fetch(`${API_BASE_URL}/users/activity`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        listings.forEach(listing => {
-          if (String(listing.seller?.id) === String(userId)) {
-            activity.push({
-              type: 'add_book',
-              description: `📚 הוספת את הספר "${listing.book.title}" למכירה`,
-              date: listing.created_at
-            });
-            points.push({
-              description: `📚 קיבלת 50 נקודות על הוספת "${listing.book.title}"`,
-              date: listing.created_at,
-              points: 50
-            });
+        if (!res.ok) throw new Error('שגיאה בשליפת היסטוריית פעילות');
+
+        const data = await res.json();
+        const allActivities = Array.isArray(data.activities) ? data.activities : [];
+
+        // נתרגם פעולות ונקודות לעברית
+const translated = allActivities
+  .filter(act =>
+    act.type !== 'message_sent' &&
+    !act.description?.toLowerCase().includes('sent a message')
+  )
+  .map((act) => {
+          const bookTitle = act.details?.book?.title || '';
+          
+          switch (act.type) {
+            case 'comment_created':
+              return { ...act, description: `✍️ כתבת ביקורת על "${bookTitle}"` };
+            case 'comment_updated':
+              return { ...act, description: `✏️ עדכנת ביקורת על "${bookTitle}"` };
+            case 'listing_created':
+              return { ...act, description: `📚 הוספת את הספר "${bookTitle}" למכירה` };
+            case 'transaction_buyer':
+              if (act.details.status === 'pending') return { ...act, description: `📌 שריינת את "${bookTitle}"` };
+              if (act.details.status === 'completed') return { ...act, description: `✅ השלמת רכישה של "${bookTitle}"` };
+              if (act.details.status === 'cancelled') return { ...act, description: `❌ הביטול שלך ל-"${bookTitle}" התקבל` };
+              break;
+            case 'transaction_seller':
+              if (act.details.status === 'pending') return { ...act, description: `📩 קיבלת בקשת שריון ל-"${bookTitle}"` };
+              if (act.details.status === 'completed') return { ...act, description: `💰 מכרת את הספר "${bookTitle}"` };
+              if (act.details.status === 'cancelled') return { ...act, description: `❌ ביטלת את העסקה עבור "${bookTitle}"` };
+              break;
+            case 'wishlist_added':
+              return { ...act, description: `💖 הוספת את "${bookTitle}" לרשימת המשאלות שלך` };
+           
+            case 'points_earned':
+              const points = act.details?.points || 0;
+              const reason = act.details?.reason || '';
+              return {
+                ...act,
+                description: `🪙 קיבלת ${points} נקודות - ${translateReason(reason, bookTitle)}`
+              };
+            default:
+              return act;
           }
+          return act;
         });
 
-        reviews.forEach(review => {
-          if (String(review.user_id) === userId) {
-            points.push({
-              description: `✍️ קיבלת 30 נקודות על כתיבת ביקורת על "${review.book_title}"`,
-              date: review.created_at,
-              points: 30
-            });
-          }
-        });
+        const actions = translated.filter(act => act.type !== 'points_earned');
+        const points = translated.filter(act => act.type === 'points_earned');
 
-        activity.sort((a, b) => new Date(b.date) - new Date(a.date));
-        points.sort((a, b) => new Date(b.date) - new Date(a.date));
+        actions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        points.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-        setActivities(activity);
+        setActivities(actions);
         setPointsHistory(points);
-        setVisibleActivities(activity.slice(0, PAGE_SIZE));
+        setVisibleActivities(actions.slice(0, PAGE_SIZE));
       } catch (err) {
-        console.error('שגיאה בטעינת פעילויות:', err);
+        console.error('שגיאה:', err);
         setError('אירעה שגיאה בטעינת הנתונים');
       } finally {
         setLoading(false);
@@ -135,15 +101,35 @@ const UserActivityPage = () => {
     };
 
     if (token && userId) {
-      fetchData();
+      fetchActivityData();
     } else {
       setError('לא נמצא טוקן או מזהה משתמש');
       setLoading(false);
     }
   }, [token, userId]);
 
+  const translateReason = (reason, bookTitle) => {
+    switch (reason) {
+      case 'Account registration':
+        return 'על הרשמה למערכת';
+      case 'Created listing':
+        return `על הוספת "${bookTitle}" למכירה`;
+      case 'Added comment':
+        return `על כתיבת ביקורת ל-"${bookTitle}"`;
+      case 'Added rating':
+        return `על דירוג של "${bookTitle}"`;
+      case 'Completed transaction as buyer':
+        return `על רכישת "${bookTitle}"`;
+      case 'Completed transaction as seller':
+        return `על מכירת "${bookTitle}"`;
+      default:
+        return reason;
+    }
+  };
+
   useEffect(() => {
     if (viewMode !== 'activity') return;
+
     const handleScroll = () => {
       const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 300;
       if (nearBottom && visibleActivities.length < activities.length) {
@@ -153,13 +139,14 @@ const UserActivityPage = () => {
         setPage(nextPage);
       }
     };
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [page, activities, visibleActivities, viewMode]);
 
   return (
     <PageContainer>
-      <Title> {viewMode === 'activity' ? 'היסטוריית הפעולות שלי' : 'היסטוריית הנקודות שלי'}</Title>
+      <Title>{viewMode === 'activity' ? 'היסטוריית הפעולות שלי' : 'היסטוריית הנקודות שלי'}</Title>
 
       <ButtonsContainer>
         <Button onClick={() => setViewMode('activity')} disabled={viewMode === 'activity'}>
@@ -184,7 +171,7 @@ const UserActivityPage = () => {
         <ActivityList>
           {visibleActivities.map((act, index) => (
             <ActivityItem key={index}>
-              <ActivityDate>{act.date ? `🕓 ${new Date(act.date).toLocaleString('he-IL')}` : ''}</ActivityDate>
+              <ActivityDate>{act.timestamp ? `🕓 ${new Date(act.timestamp).toLocaleString('he-IL')}` : ''}</ActivityDate>
               <ActivityDescription>{act.description}</ActivityDescription>
             </ActivityItem>
           ))}
@@ -195,7 +182,7 @@ const UserActivityPage = () => {
         <ActivityList>
           {pointsHistory.map((pt, index) => (
             <ActivityItem key={index}>
-              <ActivityDate>{pt.date ? `🕓 ${new Date(pt.date).toLocaleString('he-IL')}` : ''}</ActivityDate>
+              <ActivityDate>{pt.timestamp ? `🕓 ${new Date(pt.timestamp).toLocaleString('he-IL')}` : ''}</ActivityDate>
               <ActivityDescription>{pt.description}</ActivityDescription>
             </ActivityItem>
           ))}

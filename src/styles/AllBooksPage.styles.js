@@ -103,9 +103,10 @@ export const CategoryItem = styled.li`
   cursor: pointer;
   padding: 8px 12px;
   border-radius: 8px;
-  background-color: ${({ active }) => (active ? ' rgb(236, 216, 190)' : 'transparent')};
-  color: ${({ active }) => (active ? ' rgb(0, 0, 0)' : '#333')};
-  transition: background-color 0.2s, color 0.2s;
+  background-color: ${({ $active }) => ($active ? ' rgb(236, 216, 190)' : 'transparent')};
+  color: ${({ $active }) => ($active ? ' rgb(0, 0, 0)' : '#333')};
+  font-weight: ${({ $active }) => ($active ? 'bold' : 'normal')};
+  transition: background-color 0.2s, color 0.2s, font-weight 0.2s;
 
   &:hover {
     background-color: rgb(218, 195, 164);
@@ -113,7 +114,7 @@ export const CategoryItem = styled.li`
   }
 
   @media (max-width: 768px) {
-    margin-bottom: 0; // ביטול רווח אנכי
+    margin-bottom: 0;
     font-size: 0.85rem;
   }
 `;
@@ -142,5 +143,3 @@ export const Wrapper = styled.div`
     align-items: stretch; 
   }
 `;
-
-

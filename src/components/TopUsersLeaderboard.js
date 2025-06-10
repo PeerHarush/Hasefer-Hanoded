@@ -52,3 +52,4 @@ const TopUsersLeaderboard = () => {
 };
 
 export default TopUsersLeaderboard;
+

@@ -114,14 +114,14 @@ const TransactionsPage = () => {
     const transaction = transactions.find(tx => tx.id === transactionId);
     const listingId = transaction?.listing?.id;
 
-    if (listingId) {
-      // מחיקת העותק או סימון כלא זמין:
-      await fetch(`${API_BASE_URL}/book-listings/${listingId}`, {
-        method: 'DELETE', // אם אתה מעדיף למחוק ממש
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+    // if (listingId) {
+    //   // מחיקת העותק או סימון כלא זמין:
+    //   await fetch(`${API_BASE_URL}/book-listings/${listingId}`, {
+    //     method: 'DELETE', // אם אתה מעדיף למחוק ממש
+    //     headers: {
+    //       Authorization: `Bearer ${token}`
+    //     }
+    //   });
 
       // או לחילופין, עדכון זמינות:
       // await fetch(`${API_BASE_URL}/book-listings/${listingId}`, {
@@ -132,7 +132,7 @@ const TransactionsPage = () => {
       //   },
       //   body: JSON.stringify({ is_available: false }),
       // });
-    }
+    // }
 
     setShowSuccessModal(true);
   } catch (err) {
