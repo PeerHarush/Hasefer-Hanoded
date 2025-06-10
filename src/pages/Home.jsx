@@ -6,7 +6,7 @@ import API_BASE_URL from '../config';
 import LatestReviewsCarousel from '../components/LatestReviewsCarousel.js';
 import UserProgressBar from '../components/UserProgressBar';
 import CountdownTimer from '../components/CountdownTimer';
-import NearbyBooksCarousel from '../components/NearbyBooksCarousel';
+// import NearbyBooksCarousel from '../components/NearbyBooksCarousel';
 
 import {
   PageWrapper,
@@ -314,8 +314,7 @@ function Home() {
         </BannerText>
       </Banner>
 
-      {/* סקשן ספרים בקרבתך - רק למשתמשים מחוברים */}
-      {userName && (
+      {/* {userName && (
         <BookSection>
           
           
@@ -324,7 +323,7 @@ function Home() {
             userProfileAddress={userProfileAddress} 
           />
         </BookSection>
-      )}
+      )} */}
 
       {favoriteGenres.length > 0 && (
         <BookSection>

@@ -102,16 +102,7 @@ export const PreviewImage = styled.img`
   object-fit: cover;
 `;
 
-export const EditAddressButton = styled.button`
-  background: none;
-  border: none;
-  color:rgb(5, 93, 186);
-  text-decoration: underline;
-  cursor: pointer;
-  font-size: 0.9rem;
-  margin-top: 0.25rem;
-  padding: 0;
-`;
+
 
 export const Select = styled.select`
   padding: 1px;
@@ -150,12 +141,7 @@ export const SuggestionsList = styled.ul`
   }
 `;
 
-export const MapHelpText = styled.div`
-  text-align: center;
-  margin-top: 0.5rem;
-  font-size: 0.85rem;
-  color: #666;
-`;
+
 
 export const MapContainer = styled.div`
   height: 300px;
@@ -164,6 +150,39 @@ export const MapContainer = styled.div`
   overflow: hidden;
 `;
 
-export const ActionButton = styled(Button)`
-  margin-top: 0.5rem;
+
+export const ModalButton = styled.button`
+  min-width: 120px;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  margin: 0 0.5rem;
+  transition: background-color 0.3s ease;
+
+  &.home {
+    background-color: rgb(220, 173, 116);
+    color: #fff;
+
+    &:hover {
+      background-color: rgb(210, 147, 70);
+    }
+  }
+
+  &.close {
+    background-color:  rgb(140, 135, 129);
+    color: #fff;
+
+    &:hover {
+      background-color:  rgb(83, 79, 75);
+    }
+  }
+`;
+
+export const ModalFooter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem ;
 `;
