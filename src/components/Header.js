@@ -189,13 +189,19 @@ function Header() {
                     {searchResults.map((book, index) => {
                       const fullText = `${book.title}${book.authors ? " — " + (Array.isArray(book.authors) ? book.authors.join(", ") : book.authors) : ""}`;
                       return (
-                        <SearchSuggestionItem
-                          key={index}
-                          onClick={() => {
-                            setSearchTerm(fullText);
-                            setIsSuggestionsVisible(false);
-                          }}
-                        >
+                      <SearchSuggestionItem
+  key={index}
+  onClick={() => {
+    const titleOnly = book.title.trim();
+    setIsSuggestionsVisible(false);
+    navigate(`/book/${encodeURIComponent(titleOnly)}`);
+    setSearchTerm(''); // מנקה את תיבת החיפוש אחרי הניווט
+  }}
+>
+
+
+
+
                           <strong>{book.title}</strong>
                           {book.authors && (
                             <span>

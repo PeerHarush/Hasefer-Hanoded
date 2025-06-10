@@ -28,7 +28,6 @@ const PointsInfoPopup = () => {
     { label: 'הוספת ספר', points: 50 },
     { label: 'רכישת ספר', points: 50 },
     { label: 'הוספת ביקורת', points: 50 },
-    { label: 'הוספת ספר לרשימת המשאלות', points: 20 },
     { label: 'השלמת 3 עסקאות', points: 100 }
   ];
 
