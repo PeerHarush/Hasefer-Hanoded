@@ -44,17 +44,8 @@ const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
   const swiperRef = useRef();
   const location = useLocation();
 
-  // בדיקת תקינות מיקום בתוך useEffect ולא לפני הקריאה ל-hooks
-  useEffect(() => {
-    if (!userPosition || !Array.isArray(userPosition) || userPosition.length !== 2) {
-      setLoading(false);
-      return;
-    }
+  const latestRunIdRef = useRef(0); // מזהה ריצה אחרון
 
-    setUserLocation(userPosition);
-    setLocationSource('מיקום נוכחי');
-    setDebugInfo(`מיקום נוכחי: ${userPosition[0]}, ${userPosition[1]}`);
-  }, [userPosition]);
 
   // קבלת מיקום המשתמש
   useEffect(() => {
@@ -133,6 +124,8 @@ const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
   // חיפוש ספרים בקרבת המשתמש
 useEffect(() => {
  const fetchNearbyBooks = async () => {
+  const currentRunId = ++latestRunIdRef.current;
+
   if (!userLocation || !Array.isArray(userLocation) || userLocation.length !== 2) {
     console.log('❌ אין מיקום תקין לחיפוש ספרים');
     return;
@@ -141,14 +134,13 @@ useEffect(() => {
   setLoading(true);
   setError(null);
 
-  const cacheKey = `nearbyBooks_${userLocation[0]}_${userLocation[1]}`;
-  const cachedData = sessionStorage.getItem(cacheKey);
-  if (cachedData) {
-    console.log('⚡ טוען ספרים מה־sessionStorage');
-    setNearbyBooks(JSON.parse(cachedData));
-    setLoading(false);
-    return;
-  }
+  // const cacheKey = `nearbyBooks_${userLocation[0]}_${userLocation[1]}`;
+  // const cachedData = sessionStorage.getItem(cacheKey);
+  // if (cachedData) {
+  //   setNearbyBooks(JSON.parse(cachedData));
+  //   setLoading(false);
+  //   return;
+  // }
 
   try {
     const [listingsRes, booksRes] = await Promise.all([
@@ -166,7 +158,10 @@ useEffect(() => {
 
     // 2. נבחר רק 50 עם מידע בסיסי
     const listings = listingsRaw
-      .filter(listing => listing.location && listing.book && bookMap.has(listing.book.id));
+.filter(listing => {
+  const bookId = typeof listing.book === 'object' ? listing.book.id : listing.book;
+  return listing.location && bookId && bookMap.has(bookId);
+});
 
     const geocodeCache = new Map();
 
@@ -190,7 +185,7 @@ useEffect(() => {
 
           return {
             ...book,
-            distance: distance.toFixed(1),
+            distance: Number(distance.toFixed(1)),
             listingId: listing.id,
             price: listing.price,
             condition: listing.condition,
@@ -203,22 +198,33 @@ useEffect(() => {
     );
 
     // 3. סינון לפי מרחק
-    const nearby = processed.filter(Boolean).sort((a, b) => a.distance - b.distance);
+const nearby = processed
+  .filter(Boolean)
+  .sort((a, b) => a.distance - b.distance); // הכי קרובים קודם
 
-    // 4. רק ספר אחד לכל ID
-    const uniqueBooks = [];
-    const seen = new Set();
-    for (const book of nearby) {
-      if (!seen.has(book.id)) {
-        uniqueBooks.push(book);
-        seen.add(book.id);
-      }
-    }
+const uniqueBooks = [];
+const seen = new Set();
 
-    const final = uniqueBooks.slice(0, 20);
-    setNearbyBooks(final);
-    sessionStorage.setItem(cacheKey, JSON.stringify(final));
-    setDebugInfo(prev => `${prev} | נשמר ב־sessionStorage`);
+for (const book of nearby) {
+  if (!seen.has(book.id)) {
+    uniqueBooks.push(book);
+    seen.add(book.id);
+  }
+}
+
+// ⬅️ זה צריך לבוא **אחרי** הלולאה, לא בפנים!
+const final = uniqueBooks.slice(0, 6);
+
+// 🛡️ הגנה נגד תוצאות ישנות
+if (currentRunId !== latestRunIdRef.current) {
+  console.log('🚫 מתעלם מתוצאה ישנה של fetchNearbyBooks');
+  return;
+}
+
+setNearbyBooks(final);
+   
+    // sessionStorage.setItem(cacheKey, JSON.stringify(final));
+    // setDebugInfo(prev => `${prev} | נשמר ב־sessionStorage`);
   } catch (err) {
     console.error('❌ שגיאה בטעינת ספרים בקרבתך:', err);
     setError('שגיאה בטעינת ספרים בקרבתך');

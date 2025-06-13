@@ -225,7 +225,7 @@ const relevantCopies = book
       }
     }
 
-    setDistanceMap(distances);
+setDistanceMap(prev => ({ ...prev, ...distances }));
   };
 
   const handleAddToWishlist = async () => {
