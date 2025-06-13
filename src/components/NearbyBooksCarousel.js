@@ -74,7 +74,7 @@ const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
               reject,
               {
                 enableHighAccuracy: false,
-                timeout: 20000,  
+                timeout: 10000,  
                 maximumAge: 300000 // 5 דקות
               }
             );
