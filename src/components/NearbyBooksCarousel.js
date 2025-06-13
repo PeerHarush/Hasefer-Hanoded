@@ -246,7 +246,7 @@ useEffect(() => {
   if (!userLocation) {
     return (
      <NoLocationBox>
-            <MessageText>📍 לא הצלחנו לקבל את המיקום שלך</MessageText>
+            <MessageText> 📍לא הצלחנו לקבל את המיקום שלך</MessageText>
             <SubMessageText>
                 אנא אפשר גישה למיקום או וודא שיש לך כתובת בפרופיל
             </SubMessageText>
@@ -258,7 +258,7 @@ useEffect(() => {
   if (nearbyBooks.length === 0) {
     return (
       <NoResultsBox>
-        <MessageText>📚 אין ספרים באזורך כעת</MessageText>
+        <MessageText> 📚אין ספרים באזורך כעת</MessageText>
         <SubMessageText>
             אולי תהיה הראשון להוסיף? 😄
         </SubMessageText>

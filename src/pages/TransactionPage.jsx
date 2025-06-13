@@ -42,27 +42,34 @@ const TransactionsPage = () => {
     setShowCancelModal(true);
   };
 
-  const confirmCancelTransaction = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/transactions/${selectedTransactionId}`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: 'cancelled' }),
-      });
+const confirmCancelTransaction = async () => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/transactions/${selectedTransactionId}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status: 'cancelled' }),
+    });
 
-      if (!res.ok) throw new Error("ביטול העסקה נכשל");
+    if (!res.ok) throw new Error("ביטול העסקה נכשל");
 
-      alert("העסקה בוטלה בהצלחה.");
-      setShowCancelModal(false);
-      setSelectedTransactionId(null);
-    } catch (err) {
-      alert("שגיאה בביטול העסקה");
-      console.error(err);
-    }
-  };
+    setTransactions(prev =>
+      prev.map(tx =>
+        tx.id === selectedTransactionId ? { ...tx, status: 'cancelled' } : tx
+      )
+    );
+
+    setShowCancelModal(false);
+    setSelectedTransactionId(null);
+    alert("העסקה בוטלה בהצלחה.");
+  } catch (err) {
+    alert("שגיאה בביטול העסקה");
+    console.error(err);
+  }
+};
+
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -97,7 +104,7 @@ const TransactionsPage = () => {
     }
   }, [token]);
 
- const confirmTransaction = async (transactionId) => {
+const confirmTransaction = async (transactionId) => {
   try {
     const res = await fetch(`${API_BASE_URL}/transactions/${transactionId}`, {
       method: 'PUT',
@@ -110,29 +117,12 @@ const TransactionsPage = () => {
 
     if (!res.ok) throw new Error("עדכון סטטוס נכשל");
 
-    // שלוף את העותק (listing) לפי העסקה
-    const transaction = transactions.find(tx => tx.id === transactionId);
-    const listingId = transaction?.listing?.id;
-
-    // if (listingId) {
-    //   // מחיקת העותק או סימון כלא זמין:
-    //   await fetch(`${API_BASE_URL}/book-listings/${listingId}`, {
-    //     method: 'DELETE', // אם אתה מעדיף למחוק ממש
-    //     headers: {
-    //       Authorization: `Bearer ${token}`
-    //     }
-    //   });
-
-      // או לחילופין, עדכון זמינות:
-      // await fetch(`${API_BASE_URL}/book-listings/${listingId}`, {
-      //   method: 'PUT',
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({ is_available: false }),
-      // });
-    // }
+    // עדכן את הסטטוס בעסקאות
+    setTransactions(prev =>
+      prev.map(tx =>
+        tx.id === transactionId ? { ...tx, status: 'completed' } : tx
+      )
+    );
 
     setShowSuccessModal(true);
   } catch (err) {
@@ -140,6 +130,7 @@ const TransactionsPage = () => {
     console.error(err);
   }
 };
+
 
 
 
@@ -223,8 +214,8 @@ const TransactionsPage = () => {
           שים לב, ביטול העסקה לא ימחק את העותק של הספר
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowCancelModal(false)}>
-            ביטול
+         <Button variant="success" onClick={() => setShowSuccessModal(false)}>
+            סגור
           </Button>
           <Button variant="danger" onClick={confirmCancelTransaction}>
             כן, בטל
@@ -310,7 +301,6 @@ const TransactionsPage = () => {
   <Modal.Footer>
     <Button variant="success" onClick={() => {
       setShowSuccessModal(false);
-      window.location.reload();
     }}>
       סגור
     </Button>
