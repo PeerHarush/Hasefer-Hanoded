@@ -47,17 +47,6 @@ const ChatPage = () => {
     }, [messages]);
 
 
-    // useEffect(() => {
-    //     if (location.state?.sellerName && location.state?.bookTitle) {
-    //         const defaultMessage = `היי ${location.state.sellerName}, אני מעוניין בספר שלך "${location.state.bookTitle}".\nמתי ניתן לתאם?`;
-    //         setInput(defaultMessage);
-    //         if (location.state.autoSend) {
-    //             sendInitialMessage(defaultMessage);
-    //         }
-    //     }
-    // }, [location.state]);
-
-
     const formatMessage = (msgData, userId) => {
         return {
             id: msgData.id,
@@ -109,8 +98,7 @@ const ChatPage = () => {
     // Main useEffect for data fetching and Realtime subscription
     useEffect(() => {
         if (!token || !currentUserId) {
-            // Redirect to login or show error if not authenticated
-            // console.warn("User not authenticated or user ID missing. Cannot fetch chat or subscribe to realtime.");
+         
             return;
         }
 

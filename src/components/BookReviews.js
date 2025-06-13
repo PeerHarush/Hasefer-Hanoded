@@ -34,6 +34,10 @@ const BookReviews = ({ bookId, userId, onSuccess }) => {
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
     : 0;
 
+     useEffect(() => {
+    fetchReviews();
+  }, [bookId]);
+  
   const fetchReviews = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/books/${bookId}/comments`);
@@ -46,11 +50,8 @@ const BookReviews = ({ bookId, userId, onSuccess }) => {
     }
 
   };
-  
 
-  useEffect(() => {
-    fetchReviews();
-  }, [bookId]);
+ 
 
   const postReview = async (e) => {
     e.preventDefault();

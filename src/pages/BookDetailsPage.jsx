@@ -193,6 +193,13 @@ const BookDetails = () => {
       alert('אירעה שגיאה בחיפוש הכתובת');
     }
   };
+    // סינון העותקים שקשורים רק לספר הזה
+  const relevantCopies = copies.filter(copy => copy.book?.id === book.id);
+  const sortedCopies = [...relevantCopies].sort((a, b) => {
+    const distA = parseFloat(distanceMap[a.id]) || Infinity;
+    const distB = parseFloat(distanceMap[b.id]) || Infinity;
+    return distA - distB; // מהקרוב לרחוק
+  });
 
   // חישוב מרחקים לכל העותקים
   const updateDistances = async (userPos) => {
@@ -317,13 +324,7 @@ const BookDetails = () => {
     );
   }
 
-  // סינון העותקים שקשורים רק לספר הזה
-  const relevantCopies = copies.filter(copy => copy.book?.id === book.id);
-  const sortedCopies = [...relevantCopies].sort((a, b) => {
-    const distA = parseFloat(distanceMap[a.id]) || Infinity;
-    const distB = parseFloat(distanceMap[b.id]) || Infinity;
-    return distA - distB; // מהקרוב לרחוק
-  });
+
 
 
   return (

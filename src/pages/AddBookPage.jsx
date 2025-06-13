@@ -23,7 +23,6 @@ const AddBookPage = () => {
   const fileInputRef = useRef(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const navigate = useNavigate();
-
   const [bookSuggestions, setBookSuggestions] = useState([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
   const [userAddress, setUserAddress] = useState('');
