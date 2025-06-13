@@ -35,8 +35,7 @@ import RecommendedBooksCarousel from '../components/RecommendedBooksCarousel';
 function Home() {
   const [userPoints, setUserPoints] = useState(0);
   const [userPosition, setUserPosition] = useState(null);
-  const [userProfileAddress, setUserProfileAddress] = useState('');
-
+  
   const navigate = useNavigate();
   const [userName, setUserName] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -121,7 +120,6 @@ function Home() {
         localStorage.setItem('user_id', data.id);
         setUserName(data.full_name);
         setUserPoints(data.points || 0);  
-        setUserProfileAddress(data.address || ''); // שמירת כתובת פרופיל
 
         const genres = Array.isArray(data.favorite_genres)
           ? data.favorite_genres
@@ -319,10 +317,8 @@ function Home() {
         <BookSection>
           
           
-          <NearbyBooksCarousel 
-            userPosition={userPosition} 
-            userProfileAddress={userProfileAddress} 
-          />
+          <NearbyBooksCarousel userPosition={userPosition} />
+
         </BookSection>
       )}
 
