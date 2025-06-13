@@ -36,13 +36,25 @@ import { geocodeAddress, calculateDistance } from './Map';
 
 const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
   const [nearbyBooks, setNearbyBooks] = useState([]);
-  const [loading, setLoading] = useState(true); // מתחיל בטעינה
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [locationSource, setLocationSource] = useState('');
   const [debugInfo, setDebugInfo] = useState('');
   const swiperRef = useRef();
   const location = useLocation();
+
+  // בדיקת תקינות מיקום בתוך useEffect ולא לפני הקריאה ל-hooks
+  useEffect(() => {
+    if (!userPosition || !Array.isArray(userPosition) || userPosition.length !== 2) {
+      setLoading(false);
+      return;
+    }
+
+    setUserLocation(userPosition);
+    setLocationSource('מיקום נוכחי');
+    setDebugInfo(`מיקום נוכחי: ${userPosition[0]}, ${userPosition[1]}`);
+  }, [userPosition]);
 
   // קבלת מיקום המשתמש
   useEffect(() => {
@@ -154,8 +166,7 @@ useEffect(() => {
 
     // 2. נבחר רק 50 עם מידע בסיסי
     const listings = listingsRaw
-      .filter(listing => listing.location && listing.book && bookMap.has(listing.book.id))
-      .slice(0, 50);
+      .filter(listing => listing.location && listing.book && bookMap.has(listing.book.id));
 
     const geocodeCache = new Map();
 

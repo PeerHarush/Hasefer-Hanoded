@@ -31,6 +31,7 @@ import {
 import API_BASE_URL from '../config';
 import GenresSelect from '../components/GenresSelect';
 import Map from '../components/Map';
+import { LOCATION_IQ_TOKEN } from '../config';
 
 function UserProfile() {
   const [profile, setProfile] = useState({

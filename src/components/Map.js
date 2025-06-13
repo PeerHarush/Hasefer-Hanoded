@@ -49,88 +49,14 @@ const reverseGeocode = async (position) => {
   }
 };
 
-// פונקציה להמרת כתובת לקואורדינטות
-// const geocodeAddress = async (address) => {
-//   if (!address || address.trim().length < 2) return null;
 
-//   const trimmed = address.trim();
-
-//   try {
-//     // ניסיון ראשון - עם "ישראל"
-// let url = `https://us1.locationiq.com/v1/search?key=${LOCATION_IQ_TOKEN}&q=${encodeURIComponent(trimmed)}&format=json&limit=1&accept-language=he&countrycodes=il`;
-//     let res = await fetch(url);
-//     let data = await res.json();
-
-//     // אם לא נמצא, ניסיון שני - בלי "ישראל" אבל עם countrycodes
-//     if (!data.length) {
-//       url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmed)}&limit=1&accept-language=he&countrycodes=il`;
-//       res = await fetch(url);
-//       data = await res.json();
-//     }
-
-//     // אם עדיין לא נמצא, ניסיון שלישי - חיפוש בטווח גיאוגרפי רחב יותר
-//     if (!data.length) {
-//      const fallback = trimmed.split(',')[0];
-//       url = `https://us1.locationiq.com/v1/search?key=${LOCATION_IQ_TOKEN}&q=${encodeURIComponent(fallback)}&format=json&limit=1&accept-language=he`;
-//       res = await fetch(url);
-//       data = await res.json();
-//     }
-
-//     if (data && data.length > 0) {
-//       const { lat, lon } = data[0];
-//       return [parseFloat(lat), parseFloat(lon)];
-//     }
-
-//     return null;
-//   } catch (err) {
-//     console.error('Geocode error:', err);
-//     return null;
-//   }
-// };
-// const geocodeAddress = async (address) => {
-//   if (!address || address.trim().length < 2) return null;
-
-//   const trimmed = address.trim();
-
-//   try {
-//     // ניסיון ראשון - עם "ישראל"
-// let url = `https://us1.locationiq.com/v1/search?key=${LOCATION_IQ_TOKEN}&q=${encodeURIComponent(trimmed)}&format=json&limit=1&accept-language=he&countrycodes=il`;
-//     let res = await fetch(url);
-//     let data = await res.json();
-
-//     // אם לא נמצא, ניסיון שני - בלי "ישראל" אבל עם countrycodes
-//     if (!data.length) {
-//       url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmed)}&limit=1&accept-language=he&countrycodes=il`;
-//       res = await fetch(url);
-//       data = await res.json();
-//     }
-
-//     // אם עדיין לא נמצא, ניסיון שלישי - חיפוש בטווח גיאוגרפי רחב יותר
-//     if (!data.length) {
-//      const fallback = trimmed.split(',')[0];
-//       url = `https://us1.locationiq.com/v1/search?key=${LOCATION_IQ_TOKEN}&q=${encodeURIComponent(fallback)}&format=json&limit=1&accept-language=he`;
-//       res = await fetch(url);
-//       data = await res.json();
-//     }
-
-//     if (data && data.length > 0) {
-//       const { lat, lon } = data[0];
-//       return [parseFloat(lat), parseFloat(lon)];
-//     }
-
-//     return null;
-//   } catch (err) {
-//     console.error('Geocode error:', err);
-//     return null;
-//   }
-// };
 const geocodeAddress = async (address) => {
   if (!address || address.trim().length < 2) return null;
 
   const trimmed = address.trim();
 
   try {
-    const url = `https://us1.locationiq.com/v1/search?key=${LOCATION_IQ_TOKEN}&q=${encodeURIComponent(trimmed)}&format=json&limit=1&accept-language=he`;
+    const url = `https://us1.locationiq.com/v1/search?key=${LOCATION_IQ_TOKEN}&q=${encodeURIComponent(trimmed)}&format=json&limit=1&accept-language=he&countrycodes=il`;
     const res = await fetch(url);
     const data = await res.json();
 

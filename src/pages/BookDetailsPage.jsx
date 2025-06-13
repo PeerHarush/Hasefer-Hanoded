@@ -24,6 +24,7 @@ import {
   GenreLink
 } from '../styles/BookDetailsPage.styles';
 import { Modal, Button as BootstrapButton } from 'react-bootstrap';
+import { LOCATION_IQ_TOKEN } from '../config';
 
 import Table from 'react-bootstrap/Table';
 import BookReviews from '../components/BookReviews.js'; // ייבוא קומפוננטת הביקורות
@@ -194,7 +195,9 @@ const BookDetails = () => {
     }
   };
     // סינון העותקים שקשורים רק לספר הזה
-const relevantCopies = copies.filter(copy => copy?.book && copy.book.id === book.id);
+const relevantCopies = book
+  ? copies.filter(copy => copy?.book && copy.book.id === book.id)
+  : [];
   const sortedCopies = [...relevantCopies].sort((a, b) => {
     const distA = parseFloat(distanceMap[a.id]) || Infinity;
     const distB = parseFloat(distanceMap[b.id]) || Infinity;
