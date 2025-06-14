@@ -32,7 +32,22 @@ import {
 import 'swiper/css';
 import 'swiper/css/navigation';
 import API_BASE_URL from '../config';
-import { geocodeAddress, calculateDistance } from './Map';
+import { geocodeAddress as baseGeocodeAddress, calculateDistance } from './Map';
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+const geocodeWithRetry = async (address, retries = 2, delay = 400) => {
+  let coords = await baseGeocodeAddress(address);
+  let attempt = 1;
+
+  while ((!coords || coords.length !== 2) && attempt <= retries) {
+    await sleep(delay * attempt); // השהיה מדורגת
+    coords = await baseGeocodeAddress(address);
+    attempt++;
+  }
+
+  return coords;
+};
 
 const NearbyBooksCarousel = ({ userPosition }) => {
   const [nearbyBooks, setNearbyBooks] = useState([]);
@@ -43,6 +58,7 @@ const NearbyBooksCarousel = ({ userPosition }) => {
   const [debugInfo, setDebugInfo] = useState('');
   const swiperRef = useRef();
   const location = useLocation();
+ 
 
   const latestRunIdRef = useRef(0); // מזהה ריצה אחרון
 
@@ -174,8 +190,11 @@ for (const listing of listings) {
   try {
     let coords = geocodeCache.get(listing.location);
     if (!coords) {
-      coords = await geocodeAddress(listing.location);
-      geocodeCache.set(listing.location, coords);
+      coords = await geocodeWithRetry(listing.location, 2, 400);
+      if (coords && coords.length === 2) {
+        geocodeCache.set(listing.location, coords);
+      }
+      await sleep(500); // 🕒 השהיה בין קריאות ל-LocationIQ
     }
 
     if (!coords || coords.length !== 2) continue;
@@ -195,11 +214,12 @@ for (const listing of listings) {
       sellerLocation: listing.location,
     });
 
-  } catch {
-    // מתעלם מטעויות, ממשיך לעותק הבא
+  } catch (err) {
+    console.warn(`⚠️ שגיאה בטיפול בעותק ${listing.id}:`, err);
     continue;
   }
 }
+
 
     // 3. סינון לפי מרחק
 const nearby = processed
@@ -216,8 +236,7 @@ for (const book of nearby) {
   }
 }
 
-// ⬅️ זה צריך לבוא **אחרי** הלולאה, לא בפנים!
-const final = uniqueBooks.slice(0, 6);
+
 
 // 🛡️ הגנה נגד תוצאות ישנות
 if (currentRunId !== latestRunIdRef.current) {
@@ -225,7 +244,7 @@ if (currentRunId !== latestRunIdRef.current) {
   return;
 }
 
-setNearbyBooks(final);
+setNearbyBooks(uniqueBooks);
    
     // sessionStorage.setItem(cacheKey, JSON.stringify(final));
     // setDebugInfo(prev => `${prev} | נשמר ב־sessionStorage`);
@@ -239,8 +258,6 @@ setNearbyBooks(final);
 
   if (userLocation) {
     fetchNearbyBooks();
-  } else {
-    setLoading(false);
   }
 }, [userLocation]);
 
@@ -297,7 +314,7 @@ if (error && !userLocation) {
       <GlobalSwiperStyle />
       <SectionTitle>
        
-        ספרים זמינים בקרבתך (עד 10 ק"מ)
+        ספרים זמינים בקרבתך (עד 10 ק"מ)📍
         <NearbyInfo>
             {nearbyBooks.length} ספרים נמצאו • לפי {locationSource}
             </NearbyInfo>
