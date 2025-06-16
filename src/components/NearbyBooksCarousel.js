@@ -32,9 +32,24 @@ import {
 import 'swiper/css';
 import 'swiper/css/navigation';
 import API_BASE_URL from '../config';
-import { geocodeAddress, calculateDistance } from './Map';
+import { geocodeAddress as baseGeocodeAddress, calculateDistance } from './Map';
 
-const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+const geocodeWithRetry = async (address, retries = 2, delay = 400) => {
+  let coords = await baseGeocodeAddress(address);
+  let attempt = 1;
+
+  while ((!coords || coords.length !== 2) && attempt <= retries) {
+    await sleep(delay * attempt); // השהיה מדורגת
+    coords = await baseGeocodeAddress(address);
+    attempt++;
+  }
+
+  return coords;
+};
+
+const NearbyBooksCarousel = ({ userPosition }) => {
   const [nearbyBooks, setNearbyBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -43,6 +58,7 @@ const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
   const [debugInfo, setDebugInfo] = useState('');
   const swiperRef = useRef();
   const location = useLocation();
+ 
 
   const latestRunIdRef = useRef(0); // מזהה ריצה אחרון
 
@@ -52,7 +68,6 @@ const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
     const determineUserLocation = async () => {
       console.log('🔍 NearbyBooksCarousel: מתחיל תהליך קביעת מיקום');
       console.log('📍 userPosition:', userPosition);
-      console.log('🏠 userProfileAddress:', userProfileAddress);
       
       setLoading(true);
       setError(null);
@@ -72,16 +87,31 @@ const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
           console.log('📡 מנסה לקבל מיקום נוכחי');
           
           const position = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(
-              resolve,
-              reject,
-              {
-                enableHighAccuracy: false,
-                timeout: 10000,  
-                maximumAge: 300000 // 5 דקות
-              }
-            );
-          });
+  navigator.geolocation.getCurrentPosition(
+    resolve,
+    (geoError) => {
+      if (geoError.code === 1) {
+        // המשתמש סירב לאפשר גישה למיקום
+        console.warn('⚠️ המשתמש סירב לשתף מיקום');
+        setUserLocation(null);
+        setDebugInfo('המשתמש סירב לשתף מיקום');
+        setLoading(false);
+      } else {
+        // שגיאה אחרת
+        console.error('❌ שגיאה בקביעת מיקום:', geoError);
+        setError('שגיאה בקביעת מיקום');
+        setDebugInfo(`שגיאה: ${geoError.message}`);
+        setLoading(false);
+      }
+    },
+    {
+      enableHighAccuracy: false,
+      timeout: 10000,
+      maximumAge: 300000,
+    }
+  );
+});
+
 
           const coords = [position.coords.latitude, position.coords.longitude];
           setUserLocation(coords);
@@ -91,18 +121,7 @@ const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
           return;
         }
 
-        // אם לא הצלחנו לקבל מיקום נוכחי, נסה כתובת פרופיל
-        if (userProfileAddress && userProfileAddress.trim()) {
-          console.log('🏠 מנסה להמיר כתובת פרופיל למיקום:', userProfileAddress);
-          const coords = await geocodeAddress(userProfileAddress);
-          if (coords && Array.isArray(coords) && coords.length === 2) {
-            setUserLocation(coords);
-            setLocationSource('כתובת פרופיל');
-            setDebugInfo(`כתובת פרופיל: ${userProfileAddress} -> ${coords[0]}, ${coords[1]}`);
-            console.log('🏠 מיקום נקבע לפי כתובת פרופיל:', coords);
-            return;
-          }
-        }
+        
 
         // אם לא הצלחנו לקבל מיקום כלל
         console.log('❌ לא הצלחנו לקבל מיקום');
@@ -119,7 +138,7 @@ const NearbyBooksCarousel = ({ userPosition, userProfileAddress }) => {
     };
 
     determineUserLocation();
-  }, [userPosition, userProfileAddress]);
+  }, [userPosition]);
 
   // חיפוש ספרים בקרבת המשתמש
 useEffect(() => {
@@ -165,37 +184,42 @@ useEffect(() => {
 
     const geocodeCache = new Map();
 
-    const processed = await Promise.all(
-      listings.map(async (listing) => {
-        try {
-          let coords;
-          if (geocodeCache.has(listing.location)) {
-            coords = geocodeCache.get(listing.location);
-          } else {
-            coords = await geocodeAddress(listing.location);
-            geocodeCache.set(listing.location, coords);
-          }
+    const processed = [];
 
-          if (!coords || coords.length !== 2) return null;
+for (const listing of listings) {
+  try {
+    let coords = geocodeCache.get(listing.location);
+    if (!coords) {
+      coords = await geocodeWithRetry(listing.location, 2, 400);
+      if (coords && coords.length === 2) {
+        geocodeCache.set(listing.location, coords);
+      }
+      await sleep(500); // 🕒 השהיה בין קריאות ל-LocationIQ
+    }
 
-          const distance = calculateDistance(userLocation, coords);
-          if (distance > 10) return null;
+    if (!coords || coords.length !== 2) continue;
 
-          const book = bookMap.get(listing.book.id);
+    const distance = calculateDistance(userLocation, coords);
+    if (distance > 10) continue;
 
-          return {
-            ...book,
-            distance: Number(distance.toFixed(1)),
-            listingId: listing.id,
-            price: listing.price,
-            condition: listing.condition,
-            sellerLocation: listing.location,
-          };
-        } catch {
-          return null;
-        }
-      })
-    );
+    const book = bookMap.get(listing.book.id);
+    if (!book) continue;
+
+    processed.push({
+      ...book,
+      distance: Number(distance.toFixed(1)),
+      listingId: listing.id,
+      price: listing.price,
+      condition: listing.condition,
+      sellerLocation: listing.location,
+    });
+
+  } catch (err) {
+    console.warn(`⚠️ שגיאה בטיפול בעותק ${listing.id}:`, err);
+    continue;
+  }
+}
+
 
     // 3. סינון לפי מרחק
 const nearby = processed
@@ -212,8 +236,7 @@ for (const book of nearby) {
   }
 }
 
-// ⬅️ זה צריך לבוא **אחרי** הלולאה, לא בפנים!
-const final = uniqueBooks.slice(0, 6);
+
 
 // 🛡️ הגנה נגד תוצאות ישנות
 if (currentRunId !== latestRunIdRef.current) {
@@ -221,7 +244,7 @@ if (currentRunId !== latestRunIdRef.current) {
   return;
 }
 
-setNearbyBooks(final);
+setNearbyBooks(uniqueBooks);
    
     // sessionStorage.setItem(cacheKey, JSON.stringify(final));
     // setDebugInfo(prev => `${prev} | נשמר ב־sessionStorage`);
@@ -235,8 +258,6 @@ setNearbyBooks(final);
 
   if (userLocation) {
     fetchNearbyBooks();
-  } else {
-    setLoading(false);
   }
 }, [userLocation]);
 
@@ -250,14 +271,17 @@ setNearbyBooks(final);
     );
   }
 
-  // הצגת שגיאה
-  if (error) {
-    return (
-      <LoadingBox >
-        <MessageText>❌ {error}</MessageText>
-      </LoadingBox>
-    );
-  }
+if (error && !userLocation) {
+  return (
+    <NoLocationBox>
+      <MessageText> 📍לא הצלחנו לקבל את המיקום שלך</MessageText>
+      <SubMessageText>
+        רוצה לראות ספרים בקרבתך? אפשר גישה למיקום 😊
+      </SubMessageText>
+    </NoLocationBox>
+  );
+}
+
 
   // אם אין מיקום או אין ספרים קרובים
   if (!userLocation) {
@@ -265,7 +289,7 @@ setNearbyBooks(final);
      <NoLocationBox>
             <MessageText> 📍לא הצלחנו לקבל את המיקום שלך</MessageText>
             <SubMessageText>
-                אנא אפשר גישה למיקום או וודא שיש לך כתובת בפרופיל
+  רוצה לראות ספרים בקרבתך? אפשר גישה למיקום 😊
             </SubMessageText>
             </NoLocationBox>
 
@@ -290,7 +314,7 @@ setNearbyBooks(final);
       <GlobalSwiperStyle />
       <SectionTitle>
        
-        ספרים זמינים בקרבתך (עד 10 ק"מ)
+        ספרים זמינים בקרבתך (עד 10 ק"מ)📍
         <NearbyInfo>
             {nearbyBooks.length} ספרים נמצאו • לפי {locationSource}
             </NearbyInfo>
