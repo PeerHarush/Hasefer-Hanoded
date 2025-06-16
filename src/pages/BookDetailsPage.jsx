@@ -487,7 +487,7 @@ const distanceCache = useRef(new window.Map());
                         <td>{copy.location}</td>
                         <td>
                           {isCalculatingDistances ? (
-                            '🔍'
+                            '⌛'
                           ) : distanceMap[copy.id] !== undefined ? (
                             `${distanceMap[copy.id]} ק"מ`
                           ) : (
