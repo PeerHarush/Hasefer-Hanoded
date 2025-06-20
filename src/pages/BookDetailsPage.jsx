@@ -54,11 +54,11 @@ const BookDetailsPage = () => {
   const [userAddress, setUserAddress] = useState('');
   const [showMap, setShowMap] = useState(false);
   const [distanceMap, setDistanceMap] = useState({});
-  
-  
+
+
   const [isCalculatingDistances, setIsCalculatingDistances] = useState(false);
   const [distanceError, setDistanceError] = useState(null);
-  
+
 
   const isCalculatingRef = useRef(false);
 
@@ -82,43 +82,43 @@ const BookDetailsPage = () => {
   };
 
   const geocodeCache = new Map();
-const cacheExpiry = new Map();
-const CACHE_DURATION = 10 * 60 * 1000; // 10 דקות
+  const cacheExpiry = new Map();
+  const CACHE_DURATION = 10 * 60 * 1000; // 10 דקות
 
-const geocodeWithCache = async (address) => {
-  const now = Date.now();
-  const key = address.trim().toLowerCase();
+  const geocodeWithCache = async (address) => {
+    const now = Date.now();
+    const key = address.trim().toLowerCase();
 
-  if (geocodeCache.has(key) && now < cacheExpiry.get(key)) {
-    return geocodeCache.get(key);
-  }
-
-  const coords = await geocodeAddress(address);
-  if (coords?.length === 2) {
-    geocodeCache.set(key, coords);
-    cacheExpiry.set(key, now + CACHE_DURATION);
-    return coords;
-  }
-
-  return null;
-};
-
-
-const calculateDistanceWithRetry = async (userPos, location, retries = 3) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const coords = await geocodeWithCache(location);
-      if (coords?.length === 2) {
-        const d = calculateDistance(userPos, coords);
-        return d?.toFixed(1) || null;
-      }
-    } catch (err) {
-      console.warn(`ניסיון ${i + 1} נכשל:`, err);
+    if (geocodeCache.has(key) && now < cacheExpiry.get(key)) {
+      return geocodeCache.get(key);
     }
-    await new Promise(r => setTimeout(r, 1000 * (i + 1)));
-  }
-  return null;
-};
+
+    const coords = await geocodeAddress(address);
+    if (coords?.length === 2) {
+      geocodeCache.set(key, coords);
+      cacheExpiry.set(key, now + CACHE_DURATION);
+      return coords;
+    }
+
+    return null;
+  };
+
+
+  const calculateDistanceWithRetry = async (userPos, location, retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const coords = await geocodeWithCache(location);
+        if (coords?.length === 2) {
+          const d = calculateDistance(userPos, coords);
+          return d?.toFixed(1) || null;
+        }
+      } catch (err) {
+        console.warn(`ניסיון ${i + 1} נכשל:`, err);
+      }
+      await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+    }
+    return null;
+  };
 
 
   const updateDistances = async (userPos) => {
@@ -182,7 +182,7 @@ const calculateDistanceWithRetry = async (userPos, location, retries = 3) => {
   };
 
 
-  
+
   const getCurrentPosition = () => {
     if (!navigator.geolocation) {
       console.log('❌ Geolocation לא נתמך');
@@ -211,7 +211,7 @@ const calculateDistanceWithRetry = async (userPos, location, retries = 3) => {
     );
   };
 
-  
+
   const handleAddressSearch = async () => {
     if (!userAddress || userAddress.trim().length < 3) {
       alert('אנא הזן כתובת תקינה');
@@ -241,17 +241,17 @@ const calculateDistanceWithRetry = async (userPos, location, retries = 3) => {
     }
   };
 
-  
- useEffect(() => {
-  if (book && copies.length > 0 && !userPosition && !userAddress && !isCalculatingRef.current) {
-    
-    console.log('🎯 מנסה להשיג מיקום נוכחי...');
-    getCurrentPosition();
-  }
-}, [book, copies, userPosition, userAddress]);
+
+  useEffect(() => {
+    if (book && copies.length > 0 && !userPosition && !userAddress && !isCalculatingRef.current) {
+
+      console.log('🎯 מנסה להשיג מיקום נוכחי...');
+      getCurrentPosition();
+    }
+  }, [book, copies, userPosition, userAddress]);
 
 
-  
+
   useEffect(() => {
     if (userPosition && book && copies.length > 0 && !isCalculatingRef.current) {
       console.log('🎯 מיקום השתנה, מחשב מרחקים מחדש');
@@ -259,7 +259,7 @@ const calculateDistanceWithRetry = async (userPos, location, retries = 3) => {
     }
   }, [userPosition, book, copies]);
 
-  
+
   useEffect(() => {
     const handleScroll = () => {
       if (!titleRef.current) return;
@@ -333,14 +333,14 @@ const calculateDistanceWithRetry = async (userPos, location, retries = 3) => {
 
     fetchCopies();
   }, []);
-useEffect(() => {
-  if (!userPosition && userAddress && book && copies.length > 0 && !isCalculatingRef.current) {
-    console.log("📌 אין מיקום נוכחי, מחשב לפי כתובת");
-    handleAddressSearch();
-  }
-}, [userAddress, userPosition, book, copies]);
+  useEffect(() => {
+    if (!userPosition && userAddress && book && copies.length > 0 && !isCalculatingRef.current) {
+      console.log("📌 אין מיקום נוכחי, מחשב לפי כתובת");
+      handleAddressSearch();
+    }
+  }, [userAddress, userPosition, book, copies]);
 
-  
+
   const handleAddToWishlist = async () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -439,7 +439,7 @@ useEffect(() => {
   const relevantCopies = book
     ? copies.filter(copy => copy?.book && copy.book.id === book.id)
     : [];
-    
+
   const sortedCopies = [...relevantCopies].sort((a, b) => {
     const distA = parseFloat(distanceMap[a.id]) || Infinity;
     const distB = parseFloat(distanceMap[b.id]) || Infinity;
@@ -453,14 +453,14 @@ useEffect(() => {
           <BookInfo>
             <h1 ref={titleRef}>{book.title}</h1>
             <h3>{book.authors}</h3>
-            
+
             {book.genres && book.genres.length > 0 && (
               <div style={{ fontSize: '1rem', margin: '10px 0', color: '#555' }}>
-                 ז׳אנר:{' '}
+                ז׳אנר:{' '}
                 {book.genres.map((genre) => {
                   const genreObj = genresList.find(g => g.name === genre);
                   const genreId = genreObj ? genreObj.id : null;
-                  
+
                   return genreId ? (
                     <GenreLink
                       key={genre}
@@ -472,7 +472,7 @@ useEffect(() => {
                     <span key={genre} style={{ marginLeft: '5px', marginRight: '5px' }}>
                       {genre}
                     </span>
-                    );
+                  );
                 })}
               </div>
             )}
@@ -489,29 +489,29 @@ useEffect(() => {
               </MobileButtonsContainer>
             )}
 
-            {relevantCopies.length > 0 && (
+            {relevantCopies.length > 0 ? (
               <>
                 <h3>עותקים זמינים</h3>
-                
-                
-                
-                
-               {distanceError && (
-  <ErrorBox>
-    <span>⚠️ {distanceError}</span>
-    <RetryLink onClick={() => {
-      if (userPosition) {
-        updateDistances(userPosition);
-      } else {
-        getCurrentPosition();
-      }
-    }}>
-      🔁 נסה שוב
-    </RetryLink>
-  </ErrorBox>
-)}
 
-                
+
+
+
+                {distanceError && (
+                  <ErrorBox>
+                    <span>⚠️ {distanceError}</span>
+                    <RetryLink onClick={() => {
+                      if (userPosition) {
+                        updateDistances(userPosition);
+                      } else {
+                        getCurrentPosition();
+                      }
+                    }}>
+                      🔁 נסה שוב
+                    </RetryLink>
+                  </ErrorBox>
+                )}
+
+
                 <Table striped bordered hover responsive>
                   <thead>
                     <tr>
@@ -558,7 +558,7 @@ useEffect(() => {
                   <ControlsContainer>
                     {!showAddressInput && (
                       <SmallButton onClick={() => setShowAddressInput(true)}>
-                      לשורת החיפוש לצורך חישוב מרחק ממיקום אחר
+                        לשורת החיפוש לצורך חישוב מרחק ממיקום אחר
                       </SmallButton>
                     )}
 
@@ -583,7 +583,7 @@ useEffect(() => {
                       {showMap ? 'הסתר מפה' : 'הצג מפה'}
                     </SmallButton>
                   </ControlsContainer>
-                  
+
                   {showMap && (
                     <MapWrapper>
                       <MapComponent
@@ -600,12 +600,15 @@ useEffect(() => {
                         helpText="לחץ על המפה לעדכון המיקום או הקלד כתובת בשורת החיפוש שמעל הטבלה"
                       />
                     </MapWrapper>
-                    
+
                   )}
                 </MapControlsWrapper>
-                    
+
 
               </>
+            ) : (
+              <h3>אין עותקים זמינים<br /><br /></h3>
+                
             )}
 
             <h3> ביקורות </h3>
@@ -614,7 +617,7 @@ useEffect(() => {
               onSuccess={() => setShowReviewSuccess(true)}
             />
           </BookInfo>
-          
+
           <Modal show={showReviewSuccess} onHide={() => setShowReviewSuccess(false)} centered>
             <Modal.Header>
               <Modal.Title> ביקורת נשלחה בהצלחה!🎉</Modal.Title>
@@ -653,7 +656,7 @@ useEffect(() => {
           </Sidebar>
         </Wrapper>
       </PageContainer>
-      
+
       {book && <SimilarBooksList currentBook={book} />}
     </>
   );
