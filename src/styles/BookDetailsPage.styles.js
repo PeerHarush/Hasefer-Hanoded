@@ -262,3 +262,33 @@ export const GenreLink = styled(Link)`
 }
 `;
 
+export const ErrorBox = styled.div`
+  padding: 10px;
+  background-color: #ffebee;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: #c62828;
+`;
+
+export const RetryLink = styled.span`
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.95rem;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+export const SubMessageText = styled.p`
+  font-size: 0.95rem;
+  color: #555;
+  margin: 0.5rem 0;
+  text-align: right;
+`;
+
