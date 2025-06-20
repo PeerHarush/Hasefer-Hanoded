@@ -59,7 +59,6 @@ const BookDetailsPage = () => {
   const [isCalculatingDistances, setIsCalculatingDistances] = useState(false);
   const [distanceError, setDistanceError] = useState(null);
   
-const [positionSource, setPositionSource] = useState(null);
 
   const isCalculatingRef = useRef(false);
 
@@ -71,15 +70,7 @@ const [positionSource, setPositionSource] = useState(null);
     }
   };
 
- const getDistanceNote = () => {
-  if (positionSource === "geolocation") {
-    return <SubMessageText>📍 המרחקים מחושבים לפי המיקום הנוכחי שלך</SubMessageText>;
-  } else if (positionSource === "default") {
-    return <SubMessageText>⚠️ המרחקים מחושבים לפי מיקום ברירת מחדל (תל אביב). תוכל לבחור כתובת אחרת בלחיצה על המפה או בכתיבה בשורת החיפוש שמתחת לטבלה</SubMessageText>;
-  } else {
-    return null;
-  }
-};
+
 
 
 
@@ -204,7 +195,6 @@ const calculateDistanceWithRetry = async (userPos, location, retries = 3) => {
         const userPos = [position.coords.latitude, position.coords.longitude];
         console.log('📍 מיקום נוכחי נקבע:', userPos);
         setUserPosition(userPos);
-        setPositionSource("geolocation");
 
         setTimeout(() => updateDistances(userPos), 100);
       },
@@ -254,7 +244,7 @@ const calculateDistanceWithRetry = async (userPos, location, retries = 3) => {
   
  useEffect(() => {
   if (book && copies.length > 0 && !userPosition && !userAddress && !isCalculatingRef.current) {
-    setPositionSource("default");
+    
     console.log('🎯 מנסה להשיג מיקום נוכחי...');
     getCurrentPosition();
   }
@@ -269,12 +259,7 @@ const calculateDistanceWithRetry = async (userPos, location, retries = 3) => {
     }
   }, [userPosition, book, copies]);
 
-  useEffect(() => {
-    if (!userPosition && userAddress && copies.length > 0 && book && !isCalculatingRef.current) {
-      console.log("📌 אין מיקום נוכחי, מנסה לפי כתובת מהפרופיל");
-      handleAddressSearch();
-    }
-  }, [userAddress, book, copies, userPosition]);
+  
   useEffect(() => {
     const handleScroll = () => {
       if (!titleRef.current) return;
@@ -507,7 +492,7 @@ useEffect(() => {
             {relevantCopies.length > 0 && (
               <>
                 <h3>עותקים זמינים</h3>
-                {getDistanceNote()}
+                
                 
                 
                 
@@ -573,7 +558,7 @@ useEffect(() => {
                   <ControlsContainer>
                     {!showAddressInput && (
                       <SmallButton onClick={() => setShowAddressInput(true)}>
-                        חיפוש לפי מרחק ממיקום שונה
+                      לשורת החיפוש לצורך חישוב מרחק ממיקום אחר
                       </SmallButton>
                     )}
 
@@ -611,9 +596,8 @@ useEffect(() => {
                         }}
                         address={userAddress}
                         updateAddress={(newAddress) => setUserAddress(newAddress)}
-                        userProfileAddress={userAddress}
                         autoLocate={!userPosition && !userAddress}
-                        helpText="לחץ על המפה לעדכון המיקום או הקלד כתובת"
+                        helpText="לחץ על המפה לעדכון המיקום או הקלד כתובת בשורת החיפוש שמעל הטבלה"
                       />
                     </MapWrapper>
                     
