@@ -1,4 +1,3 @@
-// Map.jsx - תיקון בעיית הוולידציה
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { MapContainer as LeafletMapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';

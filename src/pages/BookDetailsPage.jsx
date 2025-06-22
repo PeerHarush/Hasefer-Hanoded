@@ -1,4 +1,3 @@
-// BookDetailsPage.jsx - תיקון בעיות המרחקים
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import API_BASE_URL from '../config';
@@ -22,18 +21,21 @@ import {
   MapWrapper,
   SmallButton,
   SimilarBooksSection,
-  GenreLink
+  GenreLink,
+  ErrorBox,
+  RetryLink,
+  SubMessageText
 } from '../styles/BookDetailsPage.styles';
 import { Modal, Button as BootstrapButton } from 'react-bootstrap';
 import { LOCATION_IQ_TOKEN } from '../config';
 
 import Table from 'react-bootstrap/Table';
 import BookReviews from '../components/BookReviews.js';
-import Map, { geocodeAddress, calculateDistance } from '../components/Map';
+import MapComponent, { geocodeAddress, calculateDistance } from '../components/Map';
 import SimilarBooksList from '../components/SimilarBooksList';
 import { genresList } from "../components/GenresSelect";
 
-const BookDetails = () => {
+const BookDetailsPage = () => {
   const [showReviewSuccess, setShowReviewSuccess] = useState(false);
   const { bookTitle } = useParams();
   const [book, setBook] = useState(null);
@@ -52,13 +54,11 @@ const BookDetails = () => {
   const [userAddress, setUserAddress] = useState('');
   const [showMap, setShowMap] = useState(false);
   const [distanceMap, setDistanceMap] = useState({});
-  
-  // 🔥 הוספת מצבי טעינה וטיפול בשגיאות
+
+
   const [isCalculatingDistances, setIsCalculatingDistances] = useState(false);
   const [distanceError, setDistanceError] = useState(null);
-  
-  // 🔥 Cache למניעת חישובים כפולים
-const distanceCache = useRef(new window.Map());
+
 
   const isCalculatingRef = useRef(false);
 
@@ -70,6 +70,10 @@ const distanceCache = useRef(new window.Map());
     }
   };
 
+
+
+
+
   const conditionTranslations = {
     'New': 'חדש',
     'Used - Like New': 'כמו חדש',
@@ -77,7 +81,46 @@ const distanceCache = useRef(new window.Map());
     'Used - Poor': 'משומש',
   };
 
-  // 🔥 פונקציה משופרת לחישוב מרחקים עם הגנות
+  const geocodeCache = new Map();
+  const cacheExpiry = new Map();
+  const CACHE_DURATION = 10 * 60 * 1000; // 10 דקות
+
+  const geocodeWithCache = async (address) => {
+    const now = Date.now();
+    const key = address.trim().toLowerCase();
+
+    if (geocodeCache.has(key) && now < cacheExpiry.get(key)) {
+      return geocodeCache.get(key);
+    }
+
+    const coords = await geocodeAddress(address);
+    if (coords?.length === 2) {
+      geocodeCache.set(key, coords);
+      cacheExpiry.set(key, now + CACHE_DURATION);
+      return coords;
+    }
+
+    return null;
+  };
+
+
+  const calculateDistanceWithRetry = async (userPos, location, retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const coords = await geocodeWithCache(location);
+        if (coords?.length === 2) {
+          const d = calculateDistance(userPos, coords);
+          return d?.toFixed(1) || null;
+        }
+      } catch (err) {
+        console.warn(`ניסיון ${i + 1} נכשל:`, err);
+      }
+      await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+    }
+    return null;
+  };
+
+
   const updateDistances = async (userPos) => {
     if (!userPos || !book || isCalculatingRef.current) {
       console.log('🚫 מדלג על חישוב מרחקים - תנאים לא מתקיימים');
@@ -90,7 +133,6 @@ const distanceCache = useRef(new window.Map());
       return;
     }
 
-    // 🔥 נעל את התהליך למניעת קריאות כפולות
     isCalculatingRef.current = true;
     setIsCalculatingDistances(true);
     setDistanceError(null);
@@ -98,8 +140,7 @@ const distanceCache = useRef(new window.Map());
     console.log(`🔍 מתחיל חישוב מרחקים עבור ${relevantCopies.length} עותקים`);
 
     const distances = {};
-    const cacheKey = `${userPos[0]},${userPos[1]}`;
-    
+
     try {
       for (const copy of relevantCopies) {
         if (!copy.location || typeof copy.location !== 'string') {
@@ -108,30 +149,14 @@ const distanceCache = useRef(new window.Map());
         }
 
         try {
-          // 🔥 בדיקת cache
-          const locationCacheKey = `${copy.location}_${cacheKey}`;
-          if (distanceCache.current.has(locationCacheKey)) {
-            distances[copy.id] = distanceCache.current.get(locationCacheKey);
-            console.log(`💾 מרחק מהcache לעותק ${copy.id}: ${distances[copy.id]} ק"מ`);
-            continue;
-          }
+          await new Promise(resolve => setTimeout(resolve, 300));
 
-          // 🔥 השהיה בין קריאות למניעת rate limiting
-          await new Promise(resolve => setTimeout(resolve, 500));
-
-          const copyPosition = await geocodeAddress(copy.location);
-          if (copyPosition && copyPosition.length === 2) {
-            const distance = calculateDistance(userPos, copyPosition);
-            const roundedDistance = distance ? distance.toFixed(1) : null;
-            
-            distances[copy.id] = roundedDistance;
-            
-            // 🔥 שמירה בcache
-            distanceCache.current.set(locationCacheKey, roundedDistance);
-            
-            console.log(`✅ מרחק חושב לעותק ${copy.id}: ${roundedDistance} ק"מ`);
+          const distance = await calculateDistanceWithRetry(userPos, copy.location);
+          if (distance !== null) {
+            distances[copy.id] = distance;
+            console.log(`✅ מרחק חושב לעותק ${copy.id}: ${distance} ק"מ`);
           } else {
-            console.log(`❌ לא הצלחתי לחשב מיקום עבור עותק ${copy.id}`);
+            console.log(`❌ לא הצלחנו לחשב מרחק לעותק ${copy.id}`);
           }
         } catch (err) {
           console.error(`❌ שגיאה בחישוב מרחק לעותק ${copy.id}:`, err);
@@ -139,7 +164,6 @@ const distanceCache = useRef(new window.Map());
         }
       }
 
-      // 🔥 עדכון ה-state רק אם יש תוצאות
       if (Object.keys(distances).length > 0) {
         setDistanceMap(prev => ({ ...prev, ...distances }));
         console.log(`✅ עודכנו מרחקים עבור ${Object.keys(distances).length} עותקים`);
@@ -157,7 +181,8 @@ const distanceCache = useRef(new window.Map());
     }
   };
 
-  // 🔥 פונקציה משופרת לקבלת מיקום
+
+
   const getCurrentPosition = () => {
     if (!navigator.geolocation) {
       console.log('❌ Geolocation לא נתמך');
@@ -170,7 +195,7 @@ const distanceCache = useRef(new window.Map());
         const userPos = [position.coords.latitude, position.coords.longitude];
         console.log('📍 מיקום נוכחי נקבע:', userPos);
         setUserPosition(userPos);
-        // 🔥 הוספת השהיה קטנה לוודא שהstate התעדכן
+
         setTimeout(() => updateDistances(userPos), 100);
       },
       (error) => {
@@ -186,7 +211,7 @@ const distanceCache = useRef(new window.Map());
     );
   };
 
-  // 🔥 פונקציה משופרת לחיפוש כתובת
+
   const handleAddressSearch = async () => {
     if (!userAddress || userAddress.trim().length < 3) {
       alert('אנא הזן כתובת תקינה');
@@ -201,7 +226,7 @@ const distanceCache = useRef(new window.Map());
       if (position && position.length === 2) {
         console.log('📍 מיקום נמצא לכתובת:', position);
         setUserPosition(position);
-        // 🔥 הוספת השהיה קטנה
+
         setTimeout(() => updateDistances(position), 100);
       } else {
         setDistanceError('לא הצלחנו למצוא את הכתובת');
@@ -216,15 +241,17 @@ const distanceCache = useRef(new window.Map());
     }
   };
 
-  // 🔥 useEffect משופר עם תנאים ברורים יותר
+
   useEffect(() => {
-    if (book && copies.length > 0 && !userPosition && !isCalculatingRef.current) {
-      console.log('🎯 מתחיל קבלת מיקום נוכחי');
+    if (book && copies.length > 0 && !userPosition && !userAddress && !isCalculatingRef.current) {
+
+      console.log('🎯 מנסה להשיג מיקום נוכחי...');
       getCurrentPosition();
     }
-  }, [book, copies, userPosition]);
+  }, [book, copies, userPosition, userAddress]);
 
-  // 🔥 useEffect נפרד לטיפול בשינויי מיקום
+
+
   useEffect(() => {
     if (userPosition && book && copies.length > 0 && !isCalculatingRef.current) {
       console.log('🎯 מיקום השתנה, מחשב מרחקים מחדש');
@@ -232,7 +259,7 @@ const distanceCache = useRef(new window.Map());
     }
   }, [userPosition, book, copies]);
 
-  // שאר הuseEffect הקיימים...
+
   useEffect(() => {
     const handleScroll = () => {
       if (!titleRef.current) return;
@@ -306,8 +333,14 @@ const distanceCache = useRef(new window.Map());
 
     fetchCopies();
   }, []);
+  useEffect(() => {
+    if (!userPosition && userAddress && book && copies.length > 0 && !isCalculatingRef.current) {
+      console.log("📌 אין מיקום נוכחי, מחשב לפי כתובת");
+      handleAddressSearch();
+    }
+  }, [userAddress, userPosition, book, copies]);
 
-  // שאר הפונקציות הקיימות...
+
   const handleAddToWishlist = async () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -406,7 +439,7 @@ const distanceCache = useRef(new window.Map());
   const relevantCopies = book
     ? copies.filter(copy => copy?.book && copy.book.id === book.id)
     : [];
-    
+
   const sortedCopies = [...relevantCopies].sort((a, b) => {
     const distA = parseFloat(distanceMap[a.id]) || Infinity;
     const distB = parseFloat(distanceMap[b.id]) || Infinity;
@@ -420,14 +453,14 @@ const distanceCache = useRef(new window.Map());
           <BookInfo>
             <h1 ref={titleRef}>{book.title}</h1>
             <h3>{book.authors}</h3>
-            
+
             {book.genres && book.genres.length > 0 && (
               <div style={{ fontSize: '1rem', margin: '10px 0', color: '#555' }}>
-                 ז׳אנר:{' '}
+                ז׳אנר:{' '}
                 {book.genres.map((genre) => {
                   const genreObj = genresList.find(g => g.name === genre);
                   const genreId = genreObj ? genreObj.id : null;
-                  
+
                   return genreId ? (
                     <GenreLink
                       key={genre}
@@ -439,7 +472,7 @@ const distanceCache = useRef(new window.Map());
                     <span key={genre} style={{ marginLeft: '5px', marginRight: '5px' }}>
                       {genre}
                     </span>
-                    );
+                  );
                 })}
               </div>
             )}
@@ -456,19 +489,29 @@ const distanceCache = useRef(new window.Map());
               </MobileButtonsContainer>
             )}
 
-            {relevantCopies.length > 0 && (
+            {relevantCopies.length > 0 ? (
               <>
                 <h3>עותקים זמינים</h3>
-                
-                {/* 🔥 מצב טעינה ושגיאות */}
-                
-                
+
+
+
+
                 {distanceError && (
-                  <div style={{ padding: '10px', backgroundColor: '#ffebee', borderRadius: '5px', marginBottom: '10px', color: '#c62828' }}>
-                    ⚠️ {distanceError}
-                  </div>
+                  <ErrorBox>
+                    <span>⚠️ {distanceError}</span>
+                    <RetryLink onClick={() => {
+                      if (userPosition) {
+                        updateDistances(userPosition);
+                      } else {
+                        getCurrentPosition();
+                      }
+                    }}>
+                      🔁 נסה שוב
+                    </RetryLink>
+                  </ErrorBox>
                 )}
-                
+
+
                 <Table striped bordered hover responsive>
                   <thead>
                     <tr>
@@ -515,7 +558,7 @@ const distanceCache = useRef(new window.Map());
                   <ControlsContainer>
                     {!showAddressInput && (
                       <SmallButton onClick={() => setShowAddressInput(true)}>
-                        חיפוש לפי מרחק ממיקום שונה
+                        לשורת החיפוש לצורך חישוב מרחק ממיקום אחר
                       </SmallButton>
                     )}
 
@@ -525,7 +568,7 @@ const distanceCache = useRef(new window.Map());
                           type="text"
                           value={userAddress}
                           onChange={(e) => setUserAddress(e.target.value)}
-                          placeholder="הזן כתובת"
+                          placeholder="הזן כתובת או לחץ על נקודה במפה "
                         />
                         <SmallButton onClick={handleAddressSearch} disabled={isCalculatingDistances}>
                           {isCalculatingDistances ? '🔍' : 'חפש'}
@@ -540,10 +583,10 @@ const distanceCache = useRef(new window.Map());
                       {showMap ? 'הסתר מפה' : 'הצג מפה'}
                     </SmallButton>
                   </ControlsContainer>
-                  
+
                   {showMap && (
                     <MapWrapper>
-                      <Map
+                      <MapComponent
                         position={userPosition}
                         setPosition={(pos) => {
                           console.log('🗺️ מיקום עודכן מהמפה:', pos);
@@ -553,14 +596,19 @@ const distanceCache = useRef(new window.Map());
                         }}
                         address={userAddress}
                         updateAddress={(newAddress) => setUserAddress(newAddress)}
-                        userProfileAddress={userAddress}
                         autoLocate={!userPosition && !userAddress}
-                        helpText="לחץ על המפה לעדכון המיקום או הקלד כתובת"
+                        helpText="לחץ על המפה לעדכון המיקום או הקלד כתובת בשורת החיפוש שמעל הטבלה"
                       />
                     </MapWrapper>
+
                   )}
                 </MapControlsWrapper>
+
+
               </>
+            ) : (
+              <h3>אין עותקים זמינים<br /><br /></h3>
+                
             )}
 
             <h3> ביקורות </h3>
@@ -569,7 +617,7 @@ const distanceCache = useRef(new window.Map());
               onSuccess={() => setShowReviewSuccess(true)}
             />
           </BookInfo>
-          
+
           <Modal show={showReviewSuccess} onHide={() => setShowReviewSuccess(false)} centered>
             <Modal.Header>
               <Modal.Title> ביקורת נשלחה בהצלחה!🎉</Modal.Title>
@@ -608,10 +656,10 @@ const distanceCache = useRef(new window.Map());
           </Sidebar>
         </Wrapper>
       </PageContainer>
-      
+
       {book && <SimilarBooksList currentBook={book} />}
     </>
   );
 };
 
-export default BookDetails;
+export default BookDetailsPage;
