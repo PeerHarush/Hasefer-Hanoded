@@ -35,7 +35,7 @@ import RecommendedBooksCarousel from '../components/RecommendedBooksCarousel';
 function Home() {
   const [userPoints, setUserPoints] = useState(0);
   const [userPosition, setUserPosition] = useState(null);
-  
+
   const navigate = useNavigate();
   const [userName, setUserName] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -317,8 +317,9 @@ function Home() {
         <BookSection>
           
           
-          <NearbyBooksCarousel userPosition={userPosition} />
-
+          <NearbyBooksCarousel 
+            userPosition={userPosition} 
+          />
         </BookSection>
       )}
 
