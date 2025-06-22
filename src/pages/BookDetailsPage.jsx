@@ -183,33 +183,50 @@ const BookDetailsPage = () => {
 
 
 
-  const getCurrentPosition = () => {
-    if (!navigator.geolocation) {
-      console.log('❌ Geolocation לא נתמך');
-      setShowMap(true);
-      return;
+  const fallbackToProfileAddress = async () => {
+  const profileAddress = localStorage.getItem('userProfileAddress'); // או שליפה מה־API שלך
+
+  if (profileAddress && profileAddress.length > 5) {
+    console.log('📍 מנסה לפי כתובת פרופיל:', profileAddress);
+    setUserAddress(profileAddress);
+    const coords = await geocodeAddress(profileAddress);
+    if (coords) {
+      setUserPosition(coords);
+      setTimeout(() => updateDistances(coords), 100);
+    } else {
+      setDistanceError('❌ לא הצלחנו להמיר כתובת פרופיל למיקום');
     }
+  } else {
+    setDistanceError('❌ אין כתובת פרופיל זמינה');
+  }
+};
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const userPos = [position.coords.latitude, position.coords.longitude];
-        console.log('📍 מיקום נוכחי נקבע:', userPos);
-        setUserPosition(userPos);
 
-        setTimeout(() => updateDistances(userPos), 100);
-      },
-      (error) => {
-        console.error('❌ שגיאה בקבלת מיקום:', error);
-        setDistanceError('לא הצלחנו לקבל את המיקום שלך');
-        setShowMap(true);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 300000
-      }
-    );
-  };
+const getCurrentPosition = () => {
+  if (!navigator.geolocation) {
+    console.log('❌ Geolocation לא נתמך');
+    fallbackToProfileAddress();
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const userPos = [position.coords.latitude, position.coords.longitude];
+      console.log('📍 מיקום נוכחי נקבע:', userPos);
+      setUserPosition(userPos);
+      setTimeout(() => updateDistances(userPos), 100);
+    },
+    (error) => {
+      console.error('❌ שגיאה בקבלת מיקום:', error);
+      fallbackToProfileAddress(); // אם geolocation נכשל – ננסה לפי כתובת פרופיל
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 300000
+    }
+  );
+};
 
 
   const handleAddressSearch = async () => {
@@ -258,6 +275,31 @@ const BookDetailsPage = () => {
       updateDistances(userPosition);
     }
   }, [userPosition, book, copies]);
+
+useEffect(() => {
+  const token = localStorage.getItem('access_token');
+  if (!token) return;
+
+  const fetchUserAddress = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'שגיאה בפרטי המשתמש');
+
+      if (data.address) {
+        setUserAddress(data.address);
+        localStorage.setItem('userProfileAddress', data.address); 
+      }
+    } catch (err) {
+      console.error('❌ שגיאה בטעינת כתובת פרופיל:', err.message);
+    }
+  };
+
+  fetchUserAddress();
+}, []);
 
 
   useEffect(() => {
@@ -333,12 +375,13 @@ const BookDetailsPage = () => {
 
     fetchCopies();
   }, []);
-  useEffect(() => {
-    if (!userPosition && userAddress && book && copies.length > 0 && !isCalculatingRef.current) {
-      console.log("📌 אין מיקום נוכחי, מחשב לפי כתובת");
-      handleAddressSearch();
-    }
-  }, [userAddress, userPosition, book, copies]);
+  
+useEffect(() => {
+  if (!userPosition && userAddress && book && copies.length > 0 && !isCalculatingRef.current) {
+    console.log("📌 אין מיקום נוכחי, מחשב לפי כתובת");
+    handleAddressSearch();
+  }
+}, [userAddress, userPosition, book, copies]);
 
 
   const handleAddToWishlist = async () => {
