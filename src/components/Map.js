@@ -228,11 +228,6 @@ const Map = ({
     console.warn('⚠️ לא הצלחנו להמיר את כתובת המשתמש למיקום');
   }
 
-  // ❌ אם אין כתובת או שהכתובת לא ניתנת להמרה → ברירת מחדל
-  console.log('📍 עובר למיקום ברירת מחדל: תל אביב');
-  setPosition([32.0853, 34.7818]);
-  setValidationState('not_found');
-  setLastUpdateSource('geolocation');
 }, [userProfileAddress, setPosition, updateAddress]);
 
   // טיפול בקליק על המפה
