@@ -7,7 +7,6 @@ import LatestReviewsCarousel from '../components/LatestReviewsCarousel.js';
 import UserProgressBar from '../components/UserProgressBar';
 import CountdownTimer from '../components/CountdownTimer';
 import NearbyBooksCarousel from '../components/NearbyBooksCarousel';
-import { LOCATION_IQ_TOKEN } from '../config';
 
 import {
   PageWrapper,
@@ -36,7 +35,6 @@ import RecommendedBooksCarousel from '../components/RecommendedBooksCarousel';
 function Home() {
   const [userPoints, setUserPoints] = useState(0);
   const [userPosition, setUserPosition] = useState(null);
-  const [userProfileAddress, setUserProfileAddress] = useState('');
 
   const navigate = useNavigate();
   const [userName, setUserName] = useState(null);
@@ -122,7 +120,6 @@ function Home() {
         localStorage.setItem('user_id', data.id);
         setUserName(data.full_name);
         setUserPoints(data.points || 0);  
-        setUserProfileAddress(data.address || ''); // שמירת כתובת פרופיל
 
         const genres = Array.isArray(data.favorite_genres)
           ? data.favorite_genres
@@ -322,7 +319,6 @@ function Home() {
           
           <NearbyBooksCarousel 
             userPosition={userPosition} 
-            userProfileAddress={userProfileAddress} 
           />
         </BookSection>
       )}
