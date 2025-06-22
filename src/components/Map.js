@@ -207,30 +207,33 @@ const Map = ({
   }, [autoLocate, setPosition, updateAddress]);
 
   // פונקציה לחזרה לכתובת פרופיל
-  const fallbackToProfileAddress = useCallback(async () => {
-    if (userProfileAddress) {
-      const coords = await geocodeAddress(userProfileAddress);
-      if (coords) {
-        setPosition(coords);
-        setValidationState('valid');
-        lastValidatedAddress.current = userProfileAddress;
-      } else {
-        // מיקום ברירת מחדל - תל אביב
-        setPosition([32.0853, 34.7818]);
-        setValidationState('not_found');
-      }
-      
-      setLastUpdateSource('geolocation');
+ const fallbackToProfileAddress = useCallback(async () => {
+  if (userProfileAddress && userProfileAddress.length > 5) {
+    console.log('📌 מנסה לחשב מיקום לפי כתובת מהפרופיל:', userProfileAddress);
+    const coords = await geocodeAddress(userProfileAddress);
+
+    if (coords) {
+      setPosition(coords);
+      setValidationState('valid');
+      lastValidatedAddress.current = userProfileAddress;
+
       if (updateAddress) {
         updateAddress(userProfileAddress);
       }
-    } else {
-      // מיקום ברירת מחדל - תל אביב
-      setPosition([32.0853, 34.7818]);
-      setValidationState('not_found');
+
       setLastUpdateSource('geolocation');
+      return; // ✅ הצליח לפי כתובת מהפרופיל – לא ממשיכים לברירת מחדל
     }
-  }, [userProfileAddress, setPosition, updateAddress]);
+
+    console.warn('⚠️ לא הצלחנו להמיר את כתובת המשתמש למיקום');
+  }
+
+  // ❌ אם אין כתובת או שהכתובת לא ניתנת להמרה → ברירת מחדל
+  console.log('📍 עובר למיקום ברירת מחדל: תל אביב');
+  setPosition([32.0853, 34.7818]);
+  setValidationState('not_found');
+  setLastUpdateSource('geolocation');
+}, [userProfileAddress, setPosition, updateAddress]);
 
   // טיפול בקליק על המפה
   const handleMapClick = useCallback(async (coords) => {
